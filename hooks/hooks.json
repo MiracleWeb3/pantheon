@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "hooks": {
+    "stop": [
+      {
+        "type": "command",
+        "bash": "python3 \"${PLUGIN_ROOT}/hooks/capture-learning.py\"",
+        "timeoutSec": 5
+      }
+    ]
+  }
+}

@@ -1,0 +1,6 @@
+# modus is a plugin, not an app — nothing to build. Ignore only local cruft.
+.modus/
+learning-inbox.md
+__pycache__/
+*.pyc
+.DS_Store

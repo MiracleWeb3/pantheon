@@ -1,0 +1,16 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "modus",
+  "description": "Our approach to solving problems, as a Claude Code plugin.",
+  "owner": {
+    "name": "CyberPunk"
+  },
+  "plugins": [
+    {
+      "name": "modus",
+      "description": "Orient, match the tool to the problem, separate your passes, compound what you learn. Four skills (ship, hardbug, orient, memory-loop) plus a learning-capture hook.",
+      "source": "./",
+      "category": "productivity"
+    }
+  ]
+}

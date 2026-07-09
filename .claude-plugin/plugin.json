@@ -1,0 +1,12 @@
+{
+  "$schema": "https://anthropic.com/claude-code/plugin.schema.json",
+  "name": "modus",
+  "version": "0.1.0",
+  "description": "A disciplined problem-solving method for Claude Code: orient before you act, match the tool to the problem's shape, keep your passes separate, and compound what you learn across sessions.",
+  "author": {
+    "name": "CyberPunk"
+  },
+  "homepage": "https://github.com/OWNER/modus",
+  "keywords": ["methodology", "workflow", "planning", "debugging", "memory", "productivity"],
+  "hooks": "./hooks/hooks.json"
+}
