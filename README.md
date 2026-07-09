@@ -13,9 +13,13 @@ Mythical names, plain-English triggers — each skill auto-fires on natural lang
 | Skill | Say | What it does |
 |---|---|---|
 | **`ariadne`** | *"how does this work?"* | The thread through the labyrinth: read the code-map + past decisions + prior lessons **before** editing. Grepping blind is the anti-pattern. |
+| **`oracle`** | *"how do I use X?"* | The Delphic oracle: consult the real docs before using an unfamiliar SDK or API — never code it from memory. |
 | **`daedalus`** | *"build this right"* | The master craftsman: scope → plan → challenge the plan → build → review with a **different lens**. |
+| **`prometheus`** | *"test first"* | Foresight: the failing test written before the code. Red → green → refactor. |
 | **`hydra`** | *"this bug is nasty"* | Slay it, then cauterize: root cause before fix, reproduce before editing, seal it with a regression test so the head can't grow back. |
 | **`argus`** | *"this is huge"* | The hundred eyes: decompose a too-big task, fan out one fresh-context subagent per slice, synthesize. (The RLM / divide-and-conquer discipline.) |
+| **`themis`** | *"review this"* | The scales of judgment: an independent, adversarial review pass — correctness, security, quality — where the reviewer is never the author. |
+| **`charon`** | *"land it"* | The ferryman: clean atomic commits, a well-formed PR, finish-the-branch hygiene. Ships only when asked. |
 | **`lethe`** | *"simplest thing that works"* | The river of forgetting: YAGNI, stdlib before custom, native before dependency, one line before fifty, deletion before addition. |
 | **`mnemosyne`** | *"remember this"* | The mother of memory: capture corrections the moment they land, consolidate into durable memory, promote what recurs into always-loaded rules. Ships the learning hook. |
 
@@ -44,7 +48,7 @@ claude plugin marketplace add MiracleWeb3/pantheon
 claude plugin install pantheon@pantheon
 ```
 
-Restart Claude Code. Skills auto-route on their descriptions, or invoke explicitly: `/pantheon:ariadne`, `/pantheon:daedalus`, `/pantheon:hydra`, `/pantheon:argus`, `/pantheon:lethe`, `/pantheon:mnemosyne`.
+Restart Claude Code. Skills auto-route on their descriptions, or invoke explicitly: `/pantheon:ariadne`, `/pantheon:oracle`, `/pantheon:daedalus`, `/pantheon:prometheus`, `/pantheon:hydra`, `/pantheon:argus`, `/pantheon:themis`, `/pantheon:charon`, `/pantheon:lethe`, `/pantheon:mnemosyne`.
 
 ## The learning hook
 

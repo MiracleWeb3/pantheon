@@ -1,8 +1,8 @@
 {
   "$schema": "https://anthropic.com/claude-code/plugin.schema.json",
   "name": "pantheon",
-  "version": "0.2.0",
-  "description": "A disciplined problem-solving method for Claude Code — a pantheon of skills (ariadne, daedalus, hydra, argus, lethe, mnemosyne): orient before you act, match the tool to the problem's shape, do the least that works, and compound what you learn.",
+  "version": "0.3.0",
+  "description": "A disciplined problem-solving method for Claude Code — a pantheon of ten skills spanning the full lifecycle (orient, research, build, test-first, debug, decompose, review, land, simplify, remember): orient before you act, match the tool to the problem's shape, do the least that works, and compound what you learn.",
   "author": {
     "name": "CyberPunk"
   },
