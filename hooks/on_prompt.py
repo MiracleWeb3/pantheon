@@ -38,6 +38,9 @@ ROUTES = [
     ("dashboard", r"\b(pantheon (dashboard|stats|status|report)|"
                   r"show (me )?(the )?dashboard|"
                   r"what (did|have) (you|we|pantheon) (do|done) (today|this week|lately))\b"),
+    ("doctor", r"\b(pantheon (doctor|is broken|isn'?t working|not working|acting up)|"
+               r"fix pantheon|(diagnose|repair) (the )?plugin|"
+               r"plugin (is )?(broken|not working))\b"),
     ("hydra", r"\b(nasty bug|hard bug|difficult bug|bug (keeps|is back|returns|again)|"
               r"regression|flaky|keeps? (failing|breaking|happening)|"
               r"can'?t (figure|work) out (why|what)|no idea why|"
@@ -253,6 +256,107 @@ def context_lines(transcript_path, session, cfg):
             "natural pause."]
 
 
+# ── cost guardrails ──────────────────────────────────────────────────────────
+_BUDGET_STATE = os.path.join(os.path.expanduser("~"), ".claude", "pantheon",
+                             "budget-state.json")
+
+
+def _ledger_sums():
+    """(last-24h, last-7d) USD from the HUD spend ledger."""
+    ev = os.path.join(os.path.expanduser("~"), ".claude", "pantheon",
+                      "usage-events.jsonl")
+    s24 = s7 = 0.0
+    now = time.time()
+    try:
+        for ln in open(ev, encoding="utf-8"):
+            try:
+                e = json.loads(ln)
+                t = datetime.datetime.fromisoformat(e["t"]).timestamp()
+            except Exception:
+                continue
+            if now - t <= 7 * 86400:
+                s7 += e["d"]
+                if now - t <= 86400:
+                    s24 += e["d"]
+    except Exception:
+        pass
+    return s24, s7
+
+
+def _session_cost(session):
+    try:
+        st = json.load(open(os.path.join(os.path.expanduser("~"), ".claude",
+                                         "pantheon", "usage-state.json"),
+                            encoding="utf-8"))
+        return float(st.get(session, 0.0))
+    except Exception:
+        return 0.0
+
+
+def _fired_before(session, key):
+    """True if this budget level already fired this session; records it if not."""
+    try:
+        st = json.load(open(_BUDGET_STATE, encoding="utf-8"))
+    except Exception:
+        st = {}
+    fired = st.get(session, [])
+    if key in fired:
+        return True
+    try:
+        st[session] = fired + [key]
+        if len(st) > 40:
+            st = {session: fired + [key]}
+        os.makedirs(os.path.dirname(_BUDGET_STATE), exist_ok=True)
+        json.dump(st, open(_BUDGET_STATE, "w", encoding="utf-8"))
+    except Exception:
+        pass
+    return False
+
+
+def budget_output(prompt, cfg, session):
+    """Cost guardrails: (context lines, block dict or None). Caps come from
+    config; spend comes from the HUD's self-maintained ledger. mode:
+    warn = tell the user once · ask = require an explicit go-ahead ·
+    block = refuse further prompts (saying 'budget' passes through)."""
+    b = cfg.get("budget") or {}
+    caps = {s: float(b[s]) for s in ("session", "daily", "weekly")
+            if isinstance(b.get(s), (int, float)) and b[s] > 0}
+    if not caps:
+        return [], None
+    s24, s7 = _ledger_sums()
+    spend = {"session": _session_cost(session), "daily": s24, "weekly": s7}
+    mode = b.get("mode", "warn")
+    for scope in ("session", "daily", "weekly"):
+        cap = caps.get(scope)
+        if cap is None:
+            continue
+        sp = spend[scope]
+        if sp >= cap:
+            if mode == "block" and "budget" not in (prompt or "").lower():
+                return [], {"decision": "block", "reason":
+                            f"pantheon budget: {scope} spend ${sp:.2f} has hit the "
+                            f"${cap:.2f} cap. Raise or remove budget.{scope} in "
+                            f"~/.claude/pantheon/config.json, set budget.mode to "
+                            f"\"warn\", or include the word 'budget' in your message "
+                            f"— those pass through so you can sort it out."}
+            if _fired_before(session, f"100:{scope}"):
+                return [f"[PANTHEON BUDGET] still over the {scope} cap "
+                        f"(${sp:.2f}/${cap:.2f}) — stay token-frugal."], None
+            if mode == "ask":
+                return [f"[PANTHEON BUDGET] The {scope} budget is exhausted "
+                        f"(${sp:.2f} of ${cap:.2f}). Before any token-heavy work, "
+                        f"tell the user and ASK whether to continue or wind down; "
+                        f"honor their answer for the rest of the session."], None
+            return [f"[PANTHEON BUDGET] The {scope} budget cap is exceeded "
+                    f"(${sp:.2f} of ${cap:.2f}). Tell the user in one short line at "
+                    f"the start of your reply and keep responses token-frugal."], None
+        if sp >= 0.8 * cap and not _fired_before(session, f"80:{scope}"):
+            return [f"[PANTHEON BUDGET] {scope} spend ${sp:.2f} is at "
+                    f"{int(sp / cap * 100)}% of the ${cap:.2f} cap — mention it "
+                    f"briefly and prefer token-frugal approaches."], None
+    return [], None
+
+
 def main() -> int:
     raw = sys.stdin.read()
     payload = json.loads(raw) if raw.strip() else {}
@@ -262,6 +366,14 @@ def main() -> int:
     cfg = _config.load(cwd) if _config else dict(routing="on", recall=0, disciplines={})
 
     out, routed = [], None
+    try:
+        blines, block = budget_output(prompt, cfg, session)
+        if block:
+            print(json.dumps(block))
+            return 0
+        out += blines
+    except Exception:
+        pass
     try:
         lines, routed = route_lines(prompt, cfg, cwd, session)
         out += lines
@@ -300,6 +412,7 @@ def selftest() -> int:
         "build the dependency graph for this project": "arachne",
         "document this decision in the wiki": "alexandria",
         "show me the pantheon dashboard": "dashboard",
+        "pantheon isn't working, routing went silent": "doctor",
     }
     for prompt, want in cases.items():
         got, _, cluster = detect(prompt)
@@ -331,8 +444,30 @@ def selftest() -> int:
     # Context guard: threshold 0 or no transcript → silent.
     assert context_lines("", "s", {"context_guard": 85}) == []
     assert context_lines("/nonexistent", "s", {"context_guard": 0}) == []
-    print("selftest ok — 14 routes, 4 silences, custom routes, persistence, "
-          "recall gates, clarifier, context guard")
+    # Budget: no caps → silent; over-cap block honors the 'budget' passthrough;
+    # warn fires full text once then a short reminder; 80% fires once.
+    global _ledger_sums, _session_cost, _BUDGET_STATE
+    import tempfile
+    assert budget_output("x", {"budget": {}}, "s") == ([], None)
+    _BUDGET_STATE = os.path.join(tempfile.mkdtemp(prefix="pantheon-bs-"), "b.json")
+    keep = (_ledger_sums, _session_cost)
+    _ledger_sums = lambda: (0.0, 30.0)
+    _session_cost = lambda s: 0.0
+    cfgb = {"budget": {"weekly": 25.0, "mode": "block"}}
+    lines, block = budget_output("do big work", cfgb, "s1")
+    assert block and block["decision"] == "block" and "weekly" in block["reason"]
+    lines, block = budget_output("raise my budget please", cfgb, "s1")
+    assert block is None and lines and "exceeded" in lines[0]
+    lines, _ = budget_output("more budget talk", cfgb, "s1")
+    assert "still over" in lines[0]
+    _ledger_sums = lambda: (0.0, 21.0)  # 84% of 25
+    cfgw = {"budget": {"weekly": 25.0, "mode": "warn"}}
+    lines, _ = budget_output("hello there friend", cfgw, "s2")
+    assert lines and "84%" in lines[0]
+    assert budget_output("hello again friend", cfgw, "s2") == ([], None)
+    _ledger_sums, _session_cost = keep
+    print("selftest ok — 15 routes, 4 silences, custom routes, persistence, "
+          "recall gates, clarifier, context guard, budget modes")
     return 0
 
 

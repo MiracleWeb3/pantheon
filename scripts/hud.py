@@ -137,10 +137,10 @@ def effort(transcript_path, session_id):
 
 
 def usage(session_id, total_cost):
-    """Roll a per-session cost-delta ledger → (spend_1h, spend_7d). Claude Code
-    exposes only cumulative session cost, so we diff it ourselves over time."""
+    """Roll a per-session cost-delta ledger → (spend_1h, spend_24h, spend_7d).
+    Claude Code exposes only cumulative session cost, so we diff it ourselves."""
     if not session_id or not isinstance(total_cost, (int, float)):
-        return None, None
+        return None, None, None
     try:
         os.makedirs(PANDIR, exist_ok=True)
         state_p = os.path.join(PANDIR, "usage-state.json")
@@ -159,8 +159,9 @@ def usage(session_id, total_cost):
             state[session_id] = total_cost
             json.dump(state, open(state_p, "w", encoding="utf-8"))
         h1 = now - datetime.timedelta(hours=1)
+        d1 = now - datetime.timedelta(days=1)
         d7 = now - datetime.timedelta(days=7)
-        s1 = s7 = 0.0
+        s1 = s24 = s7 = 0.0
         keep = []
         try:
             for ln in open(ev_p, encoding="utf-8"):
@@ -172,15 +173,41 @@ def usage(session_id, total_cost):
                 if t >= d7:
                     keep.append(ln)
                     s7 += e["d"]
+                    if t >= d1:
+                        s24 += e["d"]
                     if t >= h1:
                         s1 += e["d"]
             if len(keep) > 5000:  # prune the log opportunistically
                 open(ev_p, "w", encoding="utf-8").writelines(keep)
         except Exception:
             pass
-        return s1, s7
+        return s1, s24, s7
     except Exception:
-        return None, None
+        return None, None, None
+
+
+def budget_flag(session_cost, s24, s7):
+    """'' | 'near' | 'over' against the config budget caps. Uses a file-scoped
+    import so a broken lib/ can never take the statusline down with it."""
+    try:
+        import importlib.util
+        lib = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                           "lib", "config.py")
+        spec = importlib.util.spec_from_file_location("pantheon_cfg", lib)
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        b = mod.load(os.getcwd()).get("budget") or {}
+    except Exception:
+        return ""
+    out = ""
+    for scope, spend in (("session", session_cost), ("daily", s24), ("weekly", s7)):
+        cap = b.get(scope)
+        if isinstance(cap, (int, float)) and cap > 0:
+            if spend >= cap:
+                return "over"
+            if spend >= 0.8 * cap:
+                out = "near"
+    return out
 
 
 def fmt_dur(ms):
@@ -230,10 +257,16 @@ def build_line(p):
     tc = cost.get("total_cost_usd")
     if isinstance(tc, (int, float)) and tc > 0:
         seg.append(f"{DIM}${tc:.2f}{RESET}")
-    s1, s7 = usage(p.get("session_id"), tc)
+    s1, s24, s7 = usage(p.get("session_id"), tc)
     if s1 is not None and (s1 > 0 or s7 > 0):
         seg.append(f"{DIM}⧖1h{RESET} ${s1:.2f}")
         seg.append(f"{DIM}wk{RESET} ${s7:.2f}")
+    flag = budget_flag(tc if isinstance(tc, (int, float)) else 0.0,
+                       s24 or 0.0, s7 or 0.0)
+    if flag == "over":
+        seg.append(f"{RED}⚠budget{RESET}")
+    elif flag == "near":
+        seg.append(f"{YELLOW}budget≈{RESET}")
 
     br = git_branch(cwd)
     if br:
@@ -271,6 +304,12 @@ def main():
 
 
 def selftest():
+    # All ledger/cache writes go to a temp dir — the doctor runs this selftest
+    # routinely, and it must never touch the user's real spend history.
+    global PANDIR
+    _old_pandir = PANDIR
+    import tempfile
+    PANDIR = tempfile.mkdtemp(prefix="pantheon-hud-")
     p = {"model": {"display_name": "Fable 5"},
          "workspace": {"current_dir": os.getcwd()},
          "session_id": "selftest-sess",
@@ -284,16 +323,12 @@ def selftest():
     assert fmt_dur(45_000) == "45s" and fmt_dur(90_000) == "1m"
     assert context_pct("/nonexistent") == -1
     assert git_branch("/nonexistent/path") == ""
-    s1, s7 = usage("selftest-sess", 2.5)   # first call: full 2.5 is the delta
-    assert s1 is not None and s7 >= 2.5, (s1, s7)
-    s1b, _ = usage("selftest-sess", 2.5)   # no change → no new delta
+    s1, s24, s7 = usage("selftest-sess", 2.5)  # first call: full 2.5 is the delta
+    assert s1 is not None and s7 >= 2.5 and s24 >= 2.5, (s1, s24, s7)
+    s1b, _, _ = usage("selftest-sess", 2.5)    # no change → no new delta
+    assert budget_flag(0.0, 0.0, 0.0) == ""    # zero spend never flags
     assert chained_line("{}", "echo X") == "X" and chained_line("{}", "exit 1") == ""
-    # cleanup selftest ledger noise
-    for fn in ("usage-events.jsonl", "usage-state.json"):
-        try:
-            os.remove(os.path.join(PANDIR, fn))
-        except Exception:
-            pass
+    PANDIR = _old_pandir
     print("selftest ok —", line)
     return 0
 

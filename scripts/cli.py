@@ -159,6 +159,13 @@ def cmd_dashboard(a):
     return subprocess.call(args)
 
 
+def cmd_doctor(a):
+    args = [sys.executable, os.path.join(_HERE, "doctor.py")]
+    if a.fix:
+        args.append("--fix")
+    return subprocess.call(args)
+
+
 def cmd_version(a):
     try:
         with open(os.path.join(_ROOT, ".claude-plugin", "plugin.json"),
@@ -202,6 +209,10 @@ def build_parser():
     d.add_argument("--plain", action="store_true")
     d.set_defaults(fn=cmd_dashboard)
 
+    dr = sub.add_parser("doctor", help="diagnose + fix the install")
+    dr.add_argument("--fix", action="store_true")
+    dr.set_defaults(fn=cmd_doctor)
+
     v = sub.add_parser("version")
     v.set_defaults(fn=cmd_version)
     return ap
@@ -224,6 +235,8 @@ def selftest() -> int:
     assert a.fn is cmd_lesson and a.text == "some text"
     a = ap.parse_args(["dashboard", "--plain"])
     assert a.fn is cmd_dashboard and a.plain
+    a = ap.parse_args(["doctor", "--fix"])
+    assert a.fn is cmd_doctor and a.fix
     assert _age(time.time() - 30) == "0m" and _age(time.time() - 90000) == "1d"
     s1, s7 = _spend()
     assert s1 >= 0 and s7 >= s1
