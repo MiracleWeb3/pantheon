@@ -9,7 +9,7 @@ without needing to be re-read or edited.
 
 Fail-silent. Self-check: python3 session-start.py --selftest
 """
-import sys, os, json
+import sys, os, json, datetime
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 try:
@@ -44,6 +44,64 @@ def directive(cfg: dict) -> str:
     return " ".join(parts)
 
 
+RAW_MANIFEST = "https://raw.githubusercontent.com/MiracleWeb3/pantheon/main/.claude-plugin/plugin.json"
+CHECK_EVERY_HOURS = 24
+
+
+def _semver(v: str):
+    try:
+        return tuple(int(x) for x in str(v).split("."))
+    except Exception:
+        return ()
+
+
+def _newer(latest: str, installed: str) -> bool:
+    a, b = _semver(latest), _semver(installed)
+    return bool(a and b and a > b)
+
+
+def check_update(cfg: dict) -> str:
+    """One line when a newer version exists; '' otherwise. Networks at most
+    once per CHECK_EVERY_HOURS, 2s timeout, fail-silent (offline = silence)."""
+    if not cfg.get("updateCheck", True):
+        return ""
+    root = os.environ.get("CLAUDE_PLUGIN_ROOT", "")
+    try:
+        with open(os.path.join(root, ".claude-plugin", "plugin.json"), encoding="utf-8") as f:
+            installed = json.load(f).get("version", "")
+    except Exception:
+        return ""
+    cache_dir = os.path.join(os.path.expanduser("~"), ".claude", "pantheon")
+    cache_p = os.path.join(cache_dir, "update-check.json")
+    latest, now = None, datetime.datetime.now()
+    try:
+        with open(cache_p, encoding="utf-8") as f:
+            c = json.load(f)
+        if (now - datetime.datetime.fromisoformat(c["at"])).total_seconds() < CHECK_EVERY_HOURS * 3600:
+            latest = c.get("latest")
+    except Exception:
+        pass
+    if latest is None:
+        try:
+            import urllib.request
+            with urllib.request.urlopen(RAW_MANIFEST, timeout=2) as r:
+                latest = json.loads(r.read().decode()).get("version", "")
+        except Exception:
+            latest = ""  # offline / rate-limited — cache the miss, stay quiet
+        try:
+            os.makedirs(cache_dir, exist_ok=True)
+            with open(cache_p, "w", encoding="utf-8") as f:
+                json.dump({"at": now.isoformat(), "latest": latest}, f)
+        except Exception:
+            pass
+    if latest and _newer(latest, installed):
+        return (f"[PANTHEON UPDATE] v{latest} is available (installed: v{installed}). "
+                f"Tell the user in one short line at the start of your reply; to update: "
+                f"`claude plugin update pantheon@pantheon` + restart. "
+                f"(Disable this check: \"updateCheck\": false in ~/.claude/pantheon/config.json)")
+    return ""
+
+
 def main() -> int:
     raw = sys.stdin.read()
     payload = json.loads(raw) if raw.strip() else {}
@@ -52,6 +110,9 @@ def main() -> int:
     line = directive(cfg)
     if line:
         print(line)
+    upd = check_update(cfg)
+    if upd:
+        print(upd)
     return 0
 
 
@@ -63,7 +124,12 @@ def selftest() -> int:
     assert "OFF" in quiet
     dis = directive({"routing": "on", "announce": True, "preset": "custom", "disciplines": {"athena": False}})
     assert "athena" in dis
-    print("selftest ok — silent on full, speaks on economy/quiet/custom")
+    # update check: version compare + disabled + no-plugin-root all safe
+    assert _newer("0.6.0", "0.5.9") and not _newer("0.5.0", "0.5.0") and not _newer("x", "0.5.0")
+    assert check_update({"updateCheck": False}) == ""
+    os.environ.pop("CLAUDE_PLUGIN_ROOT", None)
+    assert check_update({"updateCheck": True}) == ""  # no root → silent, no network
+    print("selftest ok — directives + update-check guards")
     return 0
 
 

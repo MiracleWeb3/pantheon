@@ -29,7 +29,7 @@ PRESETS = {
     "economy": {"routing": "suggest", "announce": False},
     "quiet":   {"routing": "off",     "announce": False},
 }
-DEFAULT = dict(PRESETS["full"], disciplines={})
+DEFAULT = dict(PRESETS["full"], disciplines={}, updateCheck=True)
 
 
 def _read(path):
@@ -61,6 +61,8 @@ def load(cwd: str = "") -> dict:
         cfg["announce"] = raw["announce"]
     if isinstance(raw.get("disciplines"), dict):
         cfg["disciplines"] = {k: bool(v) for k, v in raw["disciplines"].items()}
+    if isinstance(raw.get("updateCheck"), bool):
+        cfg["updateCheck"] = raw["updateCheck"]
     cfg["preset"] = preset if preset in PRESETS else "custom" if raw else "full"
     return cfg
 

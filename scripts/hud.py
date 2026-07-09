@@ -99,10 +99,31 @@ def build_line(payload: dict) -> str:
     return f" {DIM}·{RESET} ".join(parts)
 
 
+def chained_line(raw: str, cmd: str) -> str:
+    """Run another statusline command with the same payload; its line comes
+    first, pantheon's segment is appended. Their HUD stays primary."""
+    import subprocess
+    try:
+        r = subprocess.run(cmd, shell=True, input=raw.encode(),
+                           capture_output=True, timeout=3)
+        other = r.stdout.decode(errors="replace").strip().splitlines()
+        return other[0] if other else ""
+    except Exception:
+        return ""
+
+
 def main() -> int:
     raw = sys.stdin.read()
     payload = json.loads(raw) if raw.strip() else {}
-    print(build_line(payload))
+    mine = build_line(payload)
+    if "--chain" in sys.argv:
+        i = sys.argv.index("--chain")
+        cmd = sys.argv[i + 1] if i + 1 < len(sys.argv) else ""
+        other = chained_line(raw, cmd) if cmd else ""
+        if other:
+            print(f"{other} {DIM}·{RESET} {mine}")
+            return 0
+    print(mine)
     return 0
 
 
@@ -114,6 +135,9 @@ def selftest() -> int:
     assert "Fable 5" in line and "🏛" in line and "$1.23" in line
     assert git_branch("/nonexistent/path") == ""      # no crash off-repo
     assert isinstance(inbox_count("/nonexistent"), int)
+    other = chained_line("{}", "echo OTHER-HUD")
+    assert other == "OTHER-HUD", other                 # chaining keeps their HUD
+    assert chained_line("{}", "exit 1") == ""          # broken chain → just ours
     print("selftest ok —", line)
     return 0
 

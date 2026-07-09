@@ -2,11 +2,11 @@
 
 # 🏛 pantheon
 
-**One install. Thirteen disciplines. Your coding agent stops winging it.**
+**One install. 13 core disciplines + 170 skills merged from the best open-source plugins. Your coding agent stops winging it.**
 
 *A problem-solving method for [Claude Code](https://claude.com/claude-code) — it reads your prompt, picks the right discipline, tells you what it's about to do, and does it the way a careful senior engineer would.*
 
-![version](https://img.shields.io/badge/version-0.5.0-6f42c1) ![license](https://img.shields.io/badge/license-MIT-blue) ![Claude Code](https://img.shields.io/badge/Claude%20Code-plugin-d97757) ![deps](https://img.shields.io/badge/dependencies-none-brightgreen)
+![version](https://img.shields.io/badge/version-0.6.0-6f42c1) ![license](https://img.shields.io/badge/license-MIT-blue) ![Claude Code](https://img.shields.io/badge/Claude%20Code-plugin-d97757) ![deps](https://img.shields.io/badge/dependencies-none-brightgreen)
 
 </div>
 
@@ -39,6 +39,8 @@ Restart Claude Code. That's it — it starts working on your next prompt.
 
 **⚙️ It's configurable.** Full experience by default; flip to **economy** (no announce prose, soft routing — save tokens) or **quiet** (fully manual), globally or per-project. Turn off any discipline you don't want. Just say *"set pantheon to economy mode."*
 
+**🔔 It tells you when it's updated.** Once a day (fail-silent, cached, 2s timeout) it checks GitHub for a newer version and surfaces a one-line heads-up with the update command — no telemetry, no phone-home beyond that version check, and off with `"updateCheck": false`.
+
 ## The pantheon
 
 Mythical names, plain-English triggers. Read top-to-bottom and it *is* the lifecycle of a change.
@@ -61,6 +63,17 @@ Mythical names, plain-English triggers. Read top-to-bottom and it *is* the lifec
 
 > **Three knowledge layers, unified.** `arachne` maps the *structure* (your graphify graph), `alexandria` records the *prose* (your Obsidian/ADR wiki — the "why"), and `mnemosyne` holds the *facts* (your memory bank of corrections). `ariadne` reads all three to orient before any work. Graph + wiki + memory, one method.
 
+## Everything, merged in
+
+pantheon doesn't just *point at* the best open-source plugins — it **vendors them in**, so one install gives you all of it. On top of the 13 core disciplines, it bundles the full skill sets of:
+
+- **[superpowers](https://github.com/anthropics/claude-plugins-official)** (Jesse Vincent, MIT) — brainstorming, systematic-debugging, TDD, plan writing/execution, parallel agents, git worktrees, and more.
+- **[oh-my-claudecode](https://github.com/Yeachan-Heo/oh-my-claudecode)** (Yeachan Heo, MIT) — its full skill catalog.
+- **[ponytail](https://github.com/DietrichGebert/ponytail)** (Dietrich Gebert, MIT) — the lazy-senior-dev discipline set.
+- **[ui-skills](https://www.ui-skills.com/) & design collections** — frontend-design, interface-design, animation, three.js, framework skills.
+
+Every vendored skill keeps its original license (see [`LICENSES/`](LICENSES/)) and is attributed in [`CREDITS.md`](CREDITS.md). All rights remain with the original authors. Don't want the bulk? `economy`/`quiet` config and per-skill `disciplines` toggles keep it lean.
+
 ## The two ideas underneath
 
 1. **Separate your passes.** Understand ≠ plan ≠ build ≠ verify, and the reviewer is never the author. `daedalus` and `hydra` are the same rigor pointed at opposite problem *shapes* — building vs. diagnosing — which is why they run nearly opposite sequences.
@@ -73,7 +86,8 @@ Mythical names, plain-English triggers. Read top-to-bottom and it *is* the lifec
 - **[oh-my-claudecode](https://github.com/Yeachan-Heo/oh-my-claudecode)** — `daedalus` drives its `deep-interview → ralplan → autopilot` pipeline; `hydra` uses its `tracer` agent and `ralph` loop; `argus` uses its Workflow engine.
 - **[superpowers](https://github.com/anthropics/claude-plugins-official)** — `daedalus` uses `brainstorming → writing-plans → verification-before-completion`; `prometheus` uses `test-driven-development`; `hydra` uses `systematic-debugging`.
 - **A code map** ([graphify](https://github.com/) or any repo map) — `ariadne` queries it before grepping.
-- **A decisions wiki** (Obsidian, `docs/adr/`) — `ariadne` reads it to learn *why* the code is the way it is.
+- **A decisions wiki** (Obsidian, `docs/adr/`) — `ariadne` / `alexandria` read and write it.
+- **Design skills** ([ui-skills](https://www.ui-skills.com/), `frontend-design`, `shadcn`, …) — `athena` drives whichever you have installed and reviews the output against its craft standard. It is the art-director, **not** a bundled copy of those collections.
 
 With none installed, every skill still works.
 
@@ -91,11 +105,18 @@ pantheon runs full-strength out of the box. Want it leaner — or fully manual? 
 | `economy` | soft one-line suggestions only | **hidden** | saving tokens — no announce prose, terse output |
 | `quiet` | **off** — you invoke skills yourself | hidden | full manual control |
 
-Override any single knob, or switch off a discipline you never want:
+Override any single knob, switch off a discipline, or silence update checks:
 
 ```json
-{ "routing": "suggest", "announce": false, "disciplines": { "athena": false } }
+{ "routing": "suggest", "announce": false, "disciplines": { "athena": false }, "updateCheck": false }
 ```
+
+| Knob | Values | Default |
+|---|---|---|
+| `routing` | `on` · `suggest` · `off` | `on` |
+| `announce` | `true` · `false` | `true` |
+| `disciplines` | `{ "<skill>": false }` | all on |
+| `updateCheck` | `true` · `false` | `true` |
 
 Or just tell your agent *"set pantheon to economy mode"* — it writes the file for you.
 
@@ -115,6 +136,20 @@ Add to `~/.claude/settings.json`:
 ```
 
 Active discipline · model · branch · unconsolidated lessons · session cost.
+
+**Already have a statusline** (from another plugin or your own)? Claude Code allows one `statusLine`, so pantheon won't silently fight it — you choose:
+
+- **Keep yours** — skip the HUD entirely; every other pantheon feature works without it.
+- **Chain both** — point `statusLine` at pantheon with `--chain` and your existing command; your line renders first, pantheon's segment appends:
+
+```json
+"statusLine": {
+  "type": "command",
+  "command": "python3 ~/.claude/plugins/marketplaces/pantheon/scripts/hud.py --chain 'your-existing-statusline-command'"
+}
+```
+
+If your command errors, pantheon shows just its own segment — never a blank bar.
 
 ## Under the hood
 
