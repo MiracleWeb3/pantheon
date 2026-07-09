@@ -14,7 +14,7 @@
 
 Most agent mistakes aren't capability failures — they're **sequencing** failures: editing before understanding the code, calling an API from memory that changed three versions ago, self-approving a broken diff, over-building what didn't need to exist, forgetting the correction you gave two messages ago. Raw intelligence doesn't fix these. **Discipline does.**
 
-`pantheon` is that discipline, packaged. Ten skills, each named for the myth that fits, each a countermeasure to one failure mode. It's **automatic** (a router fires the right one from plain language), **transparent** (each announces itself before acting), and **composable** (it makes oh-my-claudecode, superpowers, and graphify sharper — it never forks them).
+`pantheon` is that discipline, packaged. 13 core disciplines, each named for the myth that fits, each a countermeasure to one failure mode — **automatic** (a router fires the right one from plain language) and **transparent** (each announces itself before acting). On top, it **merges in** the best open-source plugins (superpowers, ponytail, oh-my-claudecode, ui-skills — attributed, licenses kept), so one install gives you everything.
 
 ```bash
 claude plugin marketplace add MiracleWeb3/pantheon
@@ -31,7 +31,7 @@ Restart Claude Code. That's it — it starts working on your next prompt.
 
 > 🏛 **hydra** — slay it, then cauterize. **Task:** the timestamp bug that reappears after each deploy. **Plan:** reproduce against real data → trace the inbound clock path → fix the shared carry, not the caller → add a regression test that fails on the old code.
 
-**🧩 It composes, never clones.** Every skill uses richer tools when you have them and falls back to first principles when you don't. Nothing is vendored or copied — pantheon is the *conductor*, your other plugins are the orchestra.
+**🧩 Everything, in one install.** The 13 core disciplines stand alone (no dependencies), and on top pantheon vendors in the full skill sets of the best open-source plugins — every one attributed in `CREDITS.md` with its license retained in `LICENSES/`. Uninstall the rest; this has it.
 
 **🧠 It remembers.** A learning loop captures your corrections and preferences the moment they land, consolidates them into durable memory, and promotes what recurs into always-loaded rules. Your agent gets more *yours* every session.
 
