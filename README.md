@@ -1,55 +1,55 @@
 # modus
 
-**A disciplined problem-solving method for [Claude Code](https://claude.com/claude-code), as a plugin.**
+**A disciplined problem-solving method for [Claude Code](https://claude.com/claude-code) and other coding agents — a small pantheon of skills, each a named power.**
 
-Most agent mistakes aren't capability failures — they're *sequencing* failures: acting before understanding, planning what isn't understood, self-approving work in the same breath it was written, and forgetting the correction you just got. `modus` encodes four habits that prevent those, and wires them to whatever planning/debugging tools you already have.
+Most agent mistakes aren't capability failures — they're *sequencing* failures: acting before understanding, planning what isn't understood, self-approving work in the same breath it was written, over-building what didn't need to exist, and forgetting the correction you just got. `modus` gives each of those failure modes a countermeasure, names it after the myth that fits, and wires it to whatever tools you already have.
 
-The whole method in one line: **orient before you act, match the tool to the problem's shape, keep your passes separate, and compound what you learn.**
+The whole method in one line: **orient before you act, match the tool to the problem's shape, do the least that works, and compound what you learn.**
 
-## The four skills
+## The pantheon
 
-| Skill | Use it when | What it does |
+Mythical names, plain-English triggers — each skill auto-fires on natural language *and* explains itself.
+
+| Skill | Say | What it does |
 |---|---|---|
-| **`orient`** | Before touching unfamiliar code | Read the structure map + past decisions + prior lessons *before* editing. Grepping blind is the anti-pattern. |
-| **`ship`** | Vague idea → feature, done right | Runs the quality gates in order: scope → plan → challenge the plan → build → review with a *different lens*. |
-| **`hardbug`** | A bug that resists the obvious fix | Diagnosis-first: root cause before fix, reproduce before editing, then lock it with a regression test. |
-| **`memory-loop`** | The user corrects you or states a preference | Capture it now, consolidate into durable memory, promote what recurs into always-loaded rules. |
+| **`ariadne`** | *"how does this work?"* | The thread through the labyrinth: read the code-map + past decisions + prior lessons **before** editing. Grepping blind is the anti-pattern. |
+| **`daedalus`** | *"build this right"* | The master craftsman: scope → plan → challenge the plan → build → review with a **different lens**. |
+| **`hydra`** | *"this bug is nasty"* | Slay it, then cauterize: root cause before fix, reproduce before editing, seal it with a regression test so the head can't grow back. |
+| **`argus`** | *"this is huge"* | The hundred eyes: decompose a too-big task, fan out one fresh-context subagent per slice, synthesize. (The RLM / divide-and-conquer discipline.) |
+| **`lethe`** | *"simplest thing that works"* | The river of forgetting: YAGNI, stdlib before custom, native before dependency, one line before fifty, deletion before addition. |
+| **`mnemosyne`** | *"remember this"* | The mother of memory: capture corrections the moment they land, consolidate into durable memory, promote what recurs into always-loaded rules. Ships the learning hook. |
 
-The unifying principle is **separate passes**: understand ≠ plan ≠ build ≠ verify, and the reviewer is never the author. `ship` and `hardbug` are the same discipline pointed at two different problem *shapes* — building vs. diagnosing — which is why they run almost opposite sequences.
+## The idea behind it
 
-## Why match the tool to the shape
+Two principles unify the pantheon:
 
-A feature and a bug fail differently, so they need opposite openings:
+1. **Separate your passes.** Understand ≠ plan ≠ build ≠ verify, and the reviewer is never the author. `daedalus` and `hydra` are the same discipline pointed at opposite problem *shapes* — building vs. diagnosing — which is why they run nearly opposite sequences.
+2. **Match the tool to the shape.** A feature is a *planning* problem (front-load scope + plan-review). A hard bug is a *diagnosis* problem (refuse to plan a fix until the mechanism is found). A too-big task is a *decomposition* problem (`argus`). Reaching for the wrong shape — a heavy build-pipeline on a bug, a lone context on a repo-wide migration — is the most common misroute. `modus` names the fork so you take the right branch.
 
-- **Building** is a *planning* problem → `ship` front-loads scoping and plan-review, because the risk is building the wrong thing well.
-- **A hard bug** is a *diagnosis* problem → `hardbug` refuses to plan a fix at all until the mechanism is found, because the risk is fixing a symptom confidently.
+## Composes with your stack — never replaces it
 
-Reaching for the heavy build-pipeline on a bug (or hand-waving a hard bug as a "quick fix") is the most common misroute. `modus` names the fork so you take the right branch.
+`modus` is a **method, not a monolith**. Each skill uses richer tools when they're installed and falls back to first principles when they're not. It orchestrates these; it does not fork or vendor them:
+
+- **[oh-my-claudecode](https://github.com/Yeachan-Heo/oh-my-claudecode)** — `daedalus` drives its `deep-interview → ralplan → autopilot` pipeline; `hydra` uses its `tracer` agent and `ralph` verification loop; `argus` uses its Workflow engine.
+- **[superpowers](https://github.com/anthropics/claude-plugins-official)** — `daedalus` uses `brainstorming → writing-plans → verification-before-completion`; `hydra` uses `systematic-debugging`.
+- **A code map** ([graphify](https://github.com/) or similar) — `ariadne` queries it before grepping.
+- **A decisions wiki** (Obsidian, `docs/adr/`) — `ariadne` reads it to learn *why* the code is the way it is.
+
+With none installed, every skill still works — it just does the steps by hand.
 
 ## Install
 
 ```bash
-claude plugin marketplace add OWNER/modus
+claude plugin marketplace add MiracleWeb3/modus
 claude plugin install modus@modus
 ```
 
-Restart Claude Code. The skills auto-route on their descriptions, or invoke explicitly: `/modus:ship`, `/modus:hardbug`, `/modus:orient`, `/modus:memory-loop`.
-
-## Optional integrations (it degrades gracefully without them)
-
-`modus` is a **method**, not a monolith — each skill uses richer tools when present and falls back when not:
-
-- **[oh-my-claudecode](https://github.com/Yeachan-Heo/oh-my-claudecode)** — `ship` uses its `deep-interview → ralplan → autopilot` consensus pipeline; `hardbug` uses its `tracer` agent and `ralph` verification loop.
-- **[superpowers](https://github.com/anthropics/claude-plugins-official)** — `ship` uses `brainstorming → writing-plans → verification-before-completion`; `hardbug` uses `systematic-debugging`.
-- **A code map** (e.g. [graphify](https://github.com/)) — `orient` queries it before grepping.
-- **A decisions wiki** (Obsidian vault, `docs/adr/`, …) — `orient` reads it to learn *why* the code is the way it is.
-
-With none of these installed, every skill still works — it just does the steps by hand.
+Restart Claude Code. Skills auto-route on their descriptions, or invoke explicitly: `/modus:ariadne`, `/modus:daedalus`, `/modus:hydra`, `/modus:argus`, `/modus:lethe`, `/modus:mnemosyne`.
 
 ## The learning hook
 
-A `stop` hook (`hooks/capture-learning.py`, stdlib-only, fails silent) appends each turn's user signal to a `learning-inbox.md`, flagging likely corrections. It's the safety net under `memory-loop`'s in-conversation capture. Self-check: `python3 hooks/capture-learning.py --selftest`.
+A `Stop` hook (`hooks/capture-learning.py`, stdlib-only, fails silent) appends each turn's user signal to a `learning-inbox.md`, flagging likely corrections — the net under `mnemosyne`'s in-conversation capture. Self-check: `python3 hooks/capture-learning.py --selftest`.
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT — see [LICENSE](LICENSE). Independent work; the tools it composes with are the property of their respective authors.

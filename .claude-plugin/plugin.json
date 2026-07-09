@@ -1,8 +1,8 @@
 {
   "$schema": "https://anthropic.com/claude-code/plugin.schema.json",
   "name": "modus",
-  "version": "0.1.1",
-  "description": "A disciplined problem-solving method for Claude Code: orient before you act, match the tool to the problem's shape, keep your passes separate, and compound what you learn across sessions.",
+  "version": "0.2.0",
+  "description": "A disciplined problem-solving method for Claude Code — a pantheon of skills (ariadne, daedalus, hydra, argus, lethe, mnemosyne): orient before you act, match the tool to the problem's shape, do the least that works, and compound what you learn.",
   "author": {
     "name": "CyberPunk"
   },
