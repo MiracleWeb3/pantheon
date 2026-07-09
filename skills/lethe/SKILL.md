@@ -34,4 +34,4 @@ Never simplify away input validation at trust boundaries, error handling that pr
 
 Non-trivial logic (a branch, a loop, a parser, a money/security path) leaves ONE runnable check behind — the smallest thing that fails if the logic breaks. No frameworks, no fixtures unless asked. Trivial one-liners need none; YAGNI applies to tests too.
 
-<!-- modus: the economy discipline — original, in the spirit of "lazy senior dev" minimalism. Pairs with every other skill: orient fully, then build/fix the least that works. -->
+<!-- pantheon: the economy discipline — original, in the spirit of "lazy senior dev" minimalism. Pairs with every other skill: orient fully, then build/fix the least that works. -->

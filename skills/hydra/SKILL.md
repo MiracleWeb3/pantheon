@@ -22,4 +22,4 @@ Cut off one of the Hydra's heads and two grow back — until Heracles seared eac
 - **Never declare "impossible / unrecoverable" from a test that could be confounded.** A broken probe (empty token, wrong element, unengaged path) yields a confident wrong "it can't be done." Reproduce on the real production path before concluding anything is a hard ceiling.
 - **State confidence honestly.** A fast wrong "solved!" costs more than a slow "let me verify the mechanism first."
 
-<!-- modus: router over diagnosis + verification tools. The value is the ORDER (orient → diagnose → reproduce → root-fix → cauterize) and the discipline, not new code. -->
+<!-- pantheon: router over diagnosis + verification tools. The value is the ORDER (orient → diagnose → reproduce → root-fix → cauterize) and the discipline, not new code. -->

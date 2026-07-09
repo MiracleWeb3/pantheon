@@ -30,4 +30,4 @@ For huge or sprawling builds, decompose with `argus` first, then run each slice 
 - A **bug** → `hydra`. You cannot spec what you don't yet understand.
 - A **clear, bounded task** → just implement it (or one executor subagent). Wrapping a one-liner in this pipeline is ceremony, not quality.
 
-<!-- modus: pure router over the method + whatever planning/execution tools are installed. The value is the gate ORDER, not new machinery. -->
+<!-- pantheon: pure router over the method + whatever planning/execution tools are installed. The value is the gate ORDER, not new machinery. -->

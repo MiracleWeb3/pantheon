@@ -1,8 +1,8 @@
-# modus
+# pantheon
 
 **A disciplined problem-solving method for [Claude Code](https://claude.com/claude-code) and other coding agents — a small pantheon of skills, each a named power.**
 
-Most agent mistakes aren't capability failures — they're *sequencing* failures: acting before understanding, planning what isn't understood, self-approving work in the same breath it was written, over-building what didn't need to exist, and forgetting the correction you just got. `modus` gives each of those failure modes a countermeasure, names it after the myth that fits, and wires it to whatever tools you already have.
+Most agent mistakes aren't capability failures — they're *sequencing* failures: acting before understanding, planning what isn't understood, self-approving work in the same breath it was written, over-building what didn't need to exist, and forgetting the correction you just got. `pantheon` gives each of those failure modes a countermeasure, names it after the myth that fits, and wires it to whatever tools you already have.
 
 The whole method in one line: **orient before you act, match the tool to the problem's shape, do the least that works, and compound what you learn.**
 
@@ -24,11 +24,11 @@ Mythical names, plain-English triggers — each skill auto-fires on natural lang
 Two principles unify the pantheon:
 
 1. **Separate your passes.** Understand ≠ plan ≠ build ≠ verify, and the reviewer is never the author. `daedalus` and `hydra` are the same discipline pointed at opposite problem *shapes* — building vs. diagnosing — which is why they run nearly opposite sequences.
-2. **Match the tool to the shape.** A feature is a *planning* problem (front-load scope + plan-review). A hard bug is a *diagnosis* problem (refuse to plan a fix until the mechanism is found). A too-big task is a *decomposition* problem (`argus`). Reaching for the wrong shape — a heavy build-pipeline on a bug, a lone context on a repo-wide migration — is the most common misroute. `modus` names the fork so you take the right branch.
+2. **Match the tool to the shape.** A feature is a *planning* problem (front-load scope + plan-review). A hard bug is a *diagnosis* problem (refuse to plan a fix until the mechanism is found). A too-big task is a *decomposition* problem (`argus`). Reaching for the wrong shape — a heavy build-pipeline on a bug, a lone context on a repo-wide migration — is the most common misroute. `pantheon` names the fork so you take the right branch.
 
 ## Composes with your stack — never replaces it
 
-`modus` is a **method, not a monolith**. Each skill uses richer tools when they're installed and falls back to first principles when they're not. It orchestrates these; it does not fork or vendor them:
+`pantheon` is a **method, not a monolith**. Each skill uses richer tools when they're installed and falls back to first principles when they're not. It orchestrates these; it does not fork or vendor them:
 
 - **[oh-my-claudecode](https://github.com/Yeachan-Heo/oh-my-claudecode)** — `daedalus` drives its `deep-interview → ralplan → autopilot` pipeline; `hydra` uses its `tracer` agent and `ralph` verification loop; `argus` uses its Workflow engine.
 - **[superpowers](https://github.com/anthropics/claude-plugins-official)** — `daedalus` uses `brainstorming → writing-plans → verification-before-completion`; `hydra` uses `systematic-debugging`.
@@ -40,11 +40,11 @@ With none installed, every skill still works — it just does the steps by hand.
 ## Install
 
 ```bash
-claude plugin marketplace add MiracleWeb3/modus
-claude plugin install modus@modus
+claude plugin marketplace add MiracleWeb3/pantheon
+claude plugin install pantheon@pantheon
 ```
 
-Restart Claude Code. Skills auto-route on their descriptions, or invoke explicitly: `/modus:ariadne`, `/modus:daedalus`, `/modus:hydra`, `/modus:argus`, `/modus:lethe`, `/modus:mnemosyne`.
+Restart Claude Code. Skills auto-route on their descriptions, or invoke explicitly: `/pantheon:ariadne`, `/pantheon:daedalus`, `/pantheon:hydra`, `/pantheon:argus`, `/pantheon:lethe`, `/pantheon:mnemosyne`.
 
 ## The learning hook
 

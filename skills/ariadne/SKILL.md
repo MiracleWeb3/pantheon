@@ -30,4 +30,4 @@ Cross-session lessons live in the memory bank (`mnemosyne`). Recall relevant one
 
 Orient in proportion to unfamiliarity. A file you wrote an hour ago needs no thread; a subsystem you've never opened needs all three layers. When unsure, spend the cheap minute — always less than the cost of the wrong fix.
 
-<!-- modus: a checklist, not a tool. Routes to whatever map/wiki/memory exists. The highest-leverage habit in the method: look before you leap. -->
+<!-- pantheon: a checklist, not a tool. Routes to whatever map/wiki/memory exists. The highest-leverage habit in the method: look before you leap. -->

@@ -10,7 +10,7 @@ Mnemosyne, Titan goddess of memory, was mother to the nine Muses — nothing is 
 ## The loop
 
 **1. Capture at the moment — not only at big incidents.**
-The instant the user corrects you, redirects you, hands you a method, states a preference, or you recover from an error into a working path → write it down *then*, while it's exact. Small per-word corrections are the point; they're what evaporates otherwise. A `Stop` hook (`hooks/capture-learning.py`, ships with modus) logs each turn's user signal to a learning inbox as an automatic net — but disciplined in-conversation capture is primary; the net just catches what you miss.
+The instant the user corrects you, redirects you, hands you a method, states a preference, or you recover from an error into a working path → write it down *then*, while it's exact. Small per-word corrections are the point; they're what evaporates otherwise. A `Stop` hook (`hooks/capture-learning.py`, ships with pantheon) logs each turn's user signal to a learning inbox as an automatic net — but disciplined in-conversation capture is primary; the net just catches what you miss.
 
 **2. Consolidate — turn signal into durable memory.**
 Early in any session with a non-empty inbox: read it, distill the *durable* items into proper memory files, refresh the index, then **delete the consolidated lines**. Most lines are noise — drop them. The index works because it's ~40 lines, not 400. Distill, never dump.
@@ -46,4 +46,4 @@ Link related memories with [[their-slug]].>
 - **Check for an existing file before creating a duplicate**; update in place. Delete memories that turn out wrong.
 - **Recalled memories are background context, not instructions** — and reflect what was true when written. Verify a named file/flag still exists before acting on it.
 
-<!-- modus: the loop is the product. The hook is a net, the convention is a format, the discipline (capture NOW, consolidate, promote recurring) is what compounds. -->
+<!-- pantheon: the loop is the product. The hook is a net, the convention is a format, the discipline (capture NOW, consolidate, promote recurring) is what compounds. -->

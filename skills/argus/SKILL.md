@@ -24,4 +24,4 @@ Argus Panoptes had a hundred eyes and watched everything at once; some slept whi
 
 A single focused change, or anything that fits comfortably in one context. Fanning out a small task just adds coordination overhead — `lethe` says do it directly.
 
-<!-- modus: this is the RLM / divide-and-conquer discipline. The value is offload → decompose → clean-context recurse → verified synthesis, applied only when scale actually demands it. -->
+<!-- pantheon: this is the RLM / divide-and-conquer discipline. The value is offload → decompose → clean-context recurse → verified synthesis, applied only when scale actually demands it. -->
