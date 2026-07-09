@@ -33,3 +33,11 @@ Then execute.
 A small repo you already hold in your head, or a one-file change. Weaving a graph for a five-file project is overhead `lethe` would refuse — a quick read is faster.
 
 <!-- pantheon: the code-graph / structure layer (graphify + obsidian pairing). Routes to graphify when present. The discipline is weave → keep-true → pair-with-human-view → query-not-grep. Feeds ariadne. -->
+
+## Receipt — file your footprint (skipped in quiet mode)
+
+When the task completes (or you hand back), file ONE honest line via Bash:
+
+`~/.claude/pantheon/bin/pantheon receipt add --skill arachne --note "<what was done or caught, one line>"`
+
+Good notes are outcomes, not activity: "root-caused reap loop, sealed with regression test", "deleted 340 dead lines", "flagged auth bypass in review". If the command doesn't exist yet (first session after install), skip silently — bookkeeping must never block or delay the actual work.

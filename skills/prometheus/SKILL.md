@@ -36,3 +36,11 @@ Repeat one small behavior at a time.
 Complements the others: `hydra` cauterizes a bug with a regression test *after* diagnosis; `prometheus` writes the test *before* the code. `lethe`'s "leave one runnable check" is the floor; `prometheus` is the full discipline for logic that warrants it.
 
 <!-- pantheon: red→green→refactor. Routes to the tdd skill or the hand loop. The value is check-FIRST, so the contract is pinned before the code can drift. -->
+
+## Receipt — file your footprint (skipped in quiet mode)
+
+When the task completes (or you hand back), file ONE honest line via Bash:
+
+`~/.claude/pantheon/bin/pantheon receipt add --skill prometheus --note "<what was done or caught, one line>"`
+
+Good notes are outcomes, not activity: "root-caused reap loop, sealed with regression test", "deleted 340 dead lines", "flagged auth bypass in review". If the command doesn't exist yet (first session after install), skip silently — bookkeeping must never block or delay the actual work.

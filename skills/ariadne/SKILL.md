@@ -39,3 +39,11 @@ Cross-session lessons live in the memory bank (`mnemosyne`). Recall relevant one
 Orient in proportion to unfamiliarity. A file you wrote an hour ago needs no thread; a subsystem you've never opened needs all three layers. When unsure, spend the cheap minute — always less than the cost of the wrong fix.
 
 <!-- pantheon: a checklist, not a tool. Routes to whatever map/wiki/memory exists. The highest-leverage habit in the method: look before you leap. -->
+
+## Receipt — file your footprint (skipped in quiet mode)
+
+When the task completes (or you hand back), file ONE honest line via Bash:
+
+`~/.claude/pantheon/bin/pantheon receipt add --skill ariadne --note "<what was done or caught, one line>"`
+
+Good notes are outcomes, not activity: "root-caused reap loop, sealed with regression test", "deleted 340 dead lines", "flagged auth bypass in review". If the command doesn't exist yet (first session after install), skip silently — bookkeeping must never block or delay the actual work.

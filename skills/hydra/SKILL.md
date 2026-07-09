@@ -31,3 +31,11 @@ Then execute the plan. This keeps automation transparent — the human always se
 - **State confidence honestly.** A fast wrong "solved!" costs more than a slow "let me verify the mechanism first."
 
 <!-- pantheon: router over diagnosis + verification tools. The value is the ORDER (orient → diagnose → reproduce → root-fix → cauterize) and the discipline, not new code. -->
+
+## Receipt — file your footprint (skipped in quiet mode)
+
+When the task completes (or you hand back), file ONE honest line via Bash:
+
+`~/.claude/pantheon/bin/pantheon receipt add --skill hydra --note "<what was done or caught, one line>"`
+
+Good notes are outcomes, not activity: "root-caused reap loop, sealed with regression test", "deleted 340 dead lines", "flagged auth bypass in review". If the command doesn't exist yet (first session after install), skip silently — bookkeeping must never block or delay the actual work.

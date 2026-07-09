@@ -43,3 +43,11 @@ Never simplify away input validation at trust boundaries, error handling that pr
 Non-trivial logic (a branch, a loop, a parser, a money/security path) leaves ONE runnable check behind — the smallest thing that fails if the logic breaks. No frameworks, no fixtures unless asked. Trivial one-liners need none; YAGNI applies to tests too.
 
 <!-- pantheon: the economy discipline — original, in the spirit of "lazy senior dev" minimalism. Pairs with every other skill: orient fully, then build/fix the least that works. -->
+
+## Receipt — file your footprint (skipped in quiet mode)
+
+When the task completes (or you hand back), file ONE honest line via Bash:
+
+`~/.claude/pantheon/bin/pantheon receipt add --skill lethe --note "<what was done or caught, one line>"`
+
+Good notes are outcomes, not activity: "root-caused reap loop, sealed with regression test", "deleted 340 dead lines", "flagged auth bypass in review". If the command doesn't exist yet (first session after install), skip silently — bookkeeping must never block or delay the actual work.

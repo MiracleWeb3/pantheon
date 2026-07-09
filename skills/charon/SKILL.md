@@ -37,3 +37,11 @@ Then execute the plan. This keeps automation transparent — the human always se
 The last mile after `themis` approves — foresight (`prometheus`), build (`daedalus`), review (`themis`), then the ferry across.
 
 <!-- pantheon: the finish line. Routes to git tooling; the discipline is atomic commits, why-not-what messages, secrets-scan, and never-ship-unasked. -->
+
+## Receipt — file your footprint (skipped in quiet mode)
+
+When the task completes (or you hand back), file ONE honest line via Bash:
+
+`~/.claude/pantheon/bin/pantheon receipt add --skill charon --note "<what was done or caught, one line>"`
+
+Good notes are outcomes, not activity: "root-caused reap loop, sealed with regression test", "deleted 340 dead lines", "flagged auth bypass in review". If the command doesn't exist yet (first session after install), skip silently — bookkeeping must never block or delay the actual work.

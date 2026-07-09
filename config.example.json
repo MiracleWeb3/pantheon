@@ -1,4 +1,36 @@
 {
-  "_comment": "pantheon config. Copy to ~/.claude/pantheon/config.json (global) or <project>/.pantheon/config.json (per-project — wins). preset: full | economy | quiet. Override with routing (on|suggest|off), announce (true|false), and per-skill disciplines ({\"athena\": false}).",
-  "preset": "full"
+  "_comment": "pantheon config. Copy to ~/.claude/pantheon/config.json (global) or <project>/.pantheon/config.json (per-project — wins). Only 'preset' is required; every other key overrides it. Presets: full | economy | quiet.",
+  "preset": "full",
+
+  "_routing": "on = auto-fire the matched discipline · suggest = one-line nudge · off = manual",
+  "routing": "on",
+
+  "_announce": "skills open with the one-block 🏛 announce (false saves tokens)",
+  "announce": true,
+
+  "_recall": "max past lessons auto-injected per prompt (0 = off, up to 3)",
+  "recall": 3,
+
+  "_gate": "verification gate on Stop: block = refuse fake 'done' (failing tests / TODO stubs / unverified code) · warn = message only · off",
+  "gate": "block",
+
+  "_clarify": "auto intent-clarifier: vague + large asks trigger 2-3 sharp questions before any work",
+  "clarify": true,
+
+  "_context_guard": "context %% that triggers a checkpoint nudge before the window fills (0 = off)",
+  "context_guard": 85,
+
+  "_receipts": "disciplines file one-line receipts; the dashboard renders them",
+  "receipts": true,
+
+  "_budget": "USD caps read from the HUD spend ledger. mode: warn | ask | block. null = no cap",
+  "budget": { "session": null, "daily": null, "weekly": null, "mode": "warn" },
+
+  "_disciplines": "per-skill opt-out, e.g. {\"athena\": false}",
+  "disciplines": {},
+
+  "_custom_routes": "your own regex -> skill routes; they win over built-ins",
+  "custom_routes": {},
+
+  "updateCheck": true
 }

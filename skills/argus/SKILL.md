@@ -35,3 +35,11 @@ Then execute the plan. This keeps automation transparent — the human always se
 A single focused change, or anything that fits comfortably in one context. Fanning out a small task just adds coordination overhead — `lethe` says do it directly.
 
 <!-- pantheon: this is the RLM / divide-and-conquer discipline. The value is offload → decompose → clean-context recurse → verified synthesis, applied only when scale actually demands it. -->
+
+## Receipt — file your footprint (skipped in quiet mode)
+
+When the task completes (or you hand back), file ONE honest line via Bash:
+
+`~/.claude/pantheon/bin/pantheon receipt add --skill argus --note "<what was done or caught, one line>"`
+
+Good notes are outcomes, not activity: "root-caused reap loop, sealed with regression test", "deleted 340 dead lines", "flagged auth bypass in review". If the command doesn't exist yet (first session after install), skip silently — bookkeeping must never block or delay the actual work.

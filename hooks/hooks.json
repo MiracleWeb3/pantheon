@@ -1,5 +1,5 @@
 {
-  "description": "pantheon: config-aware prompt router (auto-fires the right discipline), learning capture, and a session-start config directive.",
+  "description": "pantheon: prompt router + retrieval-augmented recall (UserPromptSubmit), learning capture + receipts + blocking verification gate (Stop), config directive + store migration + CLI shim + update check (SessionStart).",
   "hooks": {
     "SessionStart": [
       {
@@ -19,7 +19,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"$CLAUDE_PLUGIN_ROOT\"/hooks/route.py",
+            "command": "python3 \"$CLAUDE_PLUGIN_ROOT\"/hooks/on_prompt.py",
             "timeout": 5
           }
         ]
@@ -31,8 +31,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"$CLAUDE_PLUGIN_ROOT\"/hooks/capture-learning.py",
-            "timeout": 5
+            "command": "python3 \"$CLAUDE_PLUGIN_ROOT\"/hooks/on_stop.py",
+            "timeout": 8
           }
         ]
       }

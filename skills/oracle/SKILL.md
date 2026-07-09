@@ -38,3 +38,11 @@ Something you genuinely use every day and the code confirms the shape. Don't cer
 Pairs with `daedalus`: when a build touches unfamiliar tech, `oracle` runs inside the scope step so the plan is grounded in how the API actually works.
 
 <!-- pantheon: prevents the #1 agent failure — confidently misusing an API. Routes to doc tools; the discipline is "verify the external contract, never recall it." -->
+
+## Receipt — file your footprint (skipped in quiet mode)
+
+When the task completes (or you hand back), file ONE honest line via Bash:
+
+`~/.claude/pantheon/bin/pantheon receipt add --skill oracle --note "<what was done or caught, one line>"`
+
+Good notes are outcomes, not activity: "root-caused reap loop, sealed with regression test", "deleted 340 dead lines", "flagged auth bypass in review". If the command doesn't exist yet (first session after install), skip silently — bookkeeping must never block or delay the actual work.

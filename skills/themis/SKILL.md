@@ -37,3 +37,11 @@ Then execute the plan. This keeps automation transparent — the human always se
 Pairs as the gate after `daedalus`/`hydra` and before `charon` — nothing gets ferried across until it's been weighed.
 
 <!-- pantheon: the missing half of "separate your passes". Routes to review agents; the discipline is adversarial, severity-ranked, self-verified, reviewer≠author. -->
+
+## Receipt — file your footprint (skipped in quiet mode)
+
+When the task completes (or you hand back), file ONE honest line via Bash:
+
+`~/.claude/pantheon/bin/pantheon receipt add --skill themis --note "<what was done or caught, one line>"`
+
+Good notes are outcomes, not activity: "root-caused reap loop, sealed with regression test", "deleted 340 dead lines", "flagged auth bypass in review". If the command doesn't exist yet (first session after install), skip silently — bookkeeping must never block or delay the actual work.

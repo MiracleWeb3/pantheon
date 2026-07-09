@@ -39,3 +39,11 @@ For huge or sprawling builds, decompose with `argus` first, then run each slice 
 - A **clear, bounded task** → just implement it (or one executor subagent). Wrapping a one-liner in this pipeline is ceremony, not quality.
 
 <!-- pantheon: pure router over the method + whatever planning/execution tools are installed. The value is the gate ORDER, not new machinery. -->
+
+## Receipt — file your footprint (skipped in quiet mode)
+
+When the task completes (or you hand back), file ONE honest line via Bash:
+
+`~/.claude/pantheon/bin/pantheon receipt add --skill daedalus --note "<what was done or caught, one line>"`
+
+Good notes are outcomes, not activity: "root-caused reap loop, sealed with regression test", "deleted 340 dead lines", "flagged auth bypass in review". If the command doesn't exist yet (first session after install), skip silently — bookkeeping must never block or delay the actual work.

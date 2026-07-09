@@ -55,3 +55,11 @@ Categorize pages (architecture / decision / debugging / convention) so the index
 Don't wiki what the code already says plainly, or a throwaway one-off. Capture the *non-obvious why*, not a paraphrase of the diff — that's `lethe` applied to documentation.
 
 <!-- pantheon: the Karpathy LLM-wiki / prose-knowledge layer. Routes to OMC wiki or an Obsidian vault; the discipline is query-before / write-after / curate-don't-dump. Compounds understanding across sessions. -->
+
+## Receipt — file your footprint (skipped in quiet mode)
+
+When the task completes (or you hand back), file ONE honest line via Bash:
+
+`~/.claude/pantheon/bin/pantheon receipt add --skill alexandria --note "<what was done or caught, one line>"`
+
+Good notes are outcomes, not activity: "root-caused reap loop, sealed with regression test", "deleted 340 dead lines", "flagged auth bypass in review". If the command doesn't exist yet (first session after install), skip silently — bookkeeping must never block or delay the actual work.

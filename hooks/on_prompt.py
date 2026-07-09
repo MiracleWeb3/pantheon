@@ -1,27 +1,36 @@
 #!/usr/bin/env python3
-"""pantheon prompt router (UserPromptSubmit hook).
+"""pantheon prompt hook (UserPromptSubmit) — route + recall.
 
-Reads the user's prompt, detects which discipline it calls for, and injects
-a routing hint so the agent invokes the right pantheon skill automatically.
-The user can always invoke skills explicitly — explicit beats automatic.
+Two jobs on every user prompt:
+  1. ROUTE — detect which discipline the prompt calls for and inject a hint so
+     the agent invokes the right pantheon skill automatically. Explicit always
+     beats automatic. Custom routes from config win over built-ins.
+     Every fire is logged to the store so routing can adapt to what you accept.
+  2. RECALL — retrieval-augmented memory: match the prompt against captured
+     lessons and inject the top 1–3 relevant ones. Memory that surfaces itself.
 
 Design constraints:
 - NEVER break the session: any failure exits 0 silently.
-- Silent unless the signal is strong. A noisy router is worse than none.
-- At most ONE route per prompt (the highest-priority match).
-- stdlib only. Self-check: python3 route.py --selftest
+- Silent unless the signal is strong. A noisy hook is worse than none.
+- stdlib only. Self-check: python3 on_prompt.py --selftest
 """
-import sys, os, json, re, datetime
+import sys, os, json, re, time, datetime
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+_HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.join(os.path.dirname(_HERE), "lib"))
 try:
     import config as _config
+    import store as _store
+    import paths as _paths
 except Exception:
-    _config = None
+    _config = _store = _paths = None
 
 # Priority-ordered routing table: first match wins.
 # Patterns require word boundaries; all matching is case-insensitive.
 ROUTES = [
+    ("dashboard", r"\b(pantheon (dashboard|stats|status|report)|"
+                  r"show (me )?(the )?dashboard|"
+                  r"what (did|have) (you|we|pantheon) (do|done) (today|this week|lately))\b"),
     ("hydra", r"\b(nasty bug|hard bug|difficult bug|bug (keeps|is back|returns|again)|"
               r"regression|flaky|keeps? (failing|breaking|happening)|"
               r"can'?t (figure|work) out (why|what)|no idea why|"
@@ -67,52 +76,64 @@ PERSISTENCE = re.compile(
     r"work until|no matter how long)\b", re.IGNORECASE)
 
 
-def detect(prompt: str):
-    """Return (skill, persistence) for a prompt. skill may be None."""
+def detect(prompt: str, custom: dict = None):
+    """Return (skill, persistence, cluster). skill may be None.
+    cluster is the stats key: the route name, or 'custom:<skill>'."""
     if not prompt or "pantheon:" in prompt or prompt.lstrip().startswith("/"):
-        return None, False  # explicit invocation or slash command — stay silent
-    skill = None
+        return None, False, None  # explicit invocation or slash command — stay silent
+    persist = bool(PERSISTENCE.search(prompt))
+    for pattern, skill in (custom or {}).items():
+        try:
+            if re.search(pattern, prompt, re.IGNORECASE):
+                return skill, persist, "custom:" + skill
+        except re.error:
+            continue
     for name, pattern in ROUTES:
         if re.search(pattern, prompt, re.IGNORECASE):
-            skill = name
-            break
-    return skill, bool(PERSISTENCE.search(prompt))
+            return name, persist, name
+    return None, persist, None
 
 
-def remember(skill: str, cwd: str) -> None:
-    """Record the last route for the HUD. Best-effort."""
+def remember(skill: str, cwd: str, rowid, session: str) -> None:
+    """Record the last route for the HUD and for outcome resolution on Stop."""
     try:
         d = os.path.join(os.path.expanduser("~"), ".claude", "pantheon")
         os.makedirs(d, exist_ok=True)
         with open(os.path.join(d, "last-route.json"), "w", encoding="utf-8") as f:
             json.dump({"skill": skill, "at": datetime.datetime.now().isoformat(),
-                       "cwd": cwd}, f)
+                       "cwd": cwd, "rowid": rowid, "session": session,
+                       "resolved": False}, f)
     except Exception:
         pass
 
 
-def main() -> int:
-    raw = sys.stdin.read()
-    payload = json.loads(raw) if raw.strip() else {}
-    cwd = payload.get("cwd", "")
-    cfg = _config.load(cwd) if _config else {"routing": "on", "disciplines": {}}
+def route_lines(prompt, cfg, cwd, session):
+    """The routing hint (list of context lines), or []."""
     if cfg.get("routing", "on") == "off":
-        return 0  # automaticness disabled by config (quiet mode)
-    prompt = payload.get("prompt") or payload.get("user_prompt") or ""
-    skill, persistent = detect(prompt)
+        return []
+    skill, persistent, cluster = detect(prompt, cfg.get("custom_routes") or {})
     if not skill:
-        return 0  # silence is a feature
+        return []
     if _config and not _config.enabled(cfg, skill):
-        return 0  # this discipline is disabled in config
-    remember(skill, cwd)
+        return []
+    rowid = None
+    try:
+        if _store:
+            conn = _store.connect()
+            rowid = _store.log_route(conn, cluster, skill, session,
+                                     _paths.project_name(cwd) if _paths else "")
+            conn.close()
+    except Exception:
+        pass
+    remember(skill, cwd, rowid, session)
+    ns = f"pantheon:{skill}" if not cluster.startswith("custom:") else skill
     if cfg.get("routing") == "suggest":
         # economy: a soft one-line nudge, not an instruction — saves tokens
-        print(f"[PANTHEON: this reads like a '{skill}' task — /pantheon:{skill} if you want it.]")
-        return 0
+        return [f"[PANTHEON: this reads like a '{skill}' task — /{ns} if you want it.]"]
     lines = [
         f"[PANTHEON ROUTE: {skill}]",
         f"This prompt matches the '{skill}' discipline. Invoke the Skill tool with "
-        f"skill=\"pantheon:{skill}\" BEFORE responding, and follow it. If the match is "
+        f"skill=\"{ns}\" BEFORE responding, and follow it. If the match is "
         f"clearly incidental (the trigger word appeared in passing), proceed normally "
         f"and ignore this hint. An explicit skill/command from the user always wins.",
     ]
@@ -122,7 +143,55 @@ def main() -> int:
             "loop is available (e.g. oh-my-claudecode ralph), wrap the work in it; "
             "otherwise keep iterating with verification until the goal demonstrably "
             "passes, and say so honestly if blocked.")
-    print("\n".join(lines))
+    return lines
+
+
+def recall_lines(prompt, cfg, cwd, conn=None):
+    """Retrieval-augmented memory: relevant past lessons, or []."""
+    n = int(cfg.get("recall", 0) or 0)
+    if not _store or n <= 0 or len(prompt or "") < 20:
+        return []
+    own = conn is None
+    if own:
+        conn = _store.connect()
+    try:
+        hits = _store.recall(conn, prompt,
+                             keys=_paths.project_name(cwd) if _paths else "", limit=n)
+    finally:
+        if own:
+            conn.close()
+    if not hits:
+        return []
+    lines = ["[PANTHEON RECALL] Lessons captured in past sessions that match this "
+             "prompt — apply what fits, ignore what doesn't:"]
+    now = time.time()
+    for h in hits:
+        age = int(max(0, now - h["ts"]) // 86400)
+        when = "today" if age == 0 else f"{age}d ago"
+        lines.append(f"  • {h['text'][:240]}  ({when})")
+    return lines
+
+
+def main() -> int:
+    raw = sys.stdin.read()
+    payload = json.loads(raw) if raw.strip() else {}
+    cwd = payload.get("cwd", "")
+    session = payload.get("session_id", "")
+    prompt = payload.get("prompt") or payload.get("user_prompt") or ""
+    cfg = _config.load(cwd) if _config else dict(routing="on", recall=0, disciplines={})
+
+    out = []
+    for part in (route_lines, ):
+        try:
+            out += part(prompt, cfg, cwd, session)
+        except Exception:
+            pass
+    try:
+        out += recall_lines(prompt, cfg, cwd)
+    except Exception:
+        pass
+    if out:
+        print("\n".join(out))
     return 0
 
 
@@ -141,19 +210,28 @@ def selftest() -> int:
         "design the settings page, it looks generic": "athena",
         "build the dependency graph for this project": "arachne",
         "document this decision in the wiki": "alexandria",
+        "show me the pantheon dashboard": "dashboard",
     }
     for prompt, want in cases.items():
-        got, _ = detect(prompt)
+        got, _, cluster = detect(prompt)
         assert got == want, f"{prompt!r}: want {want}, got {got}"
+        assert cluster == want
     # Silence cases: no strong signal, explicit invocation, slash command.
     assert detect("thanks, looks great")[0] is None
     assert detect("what's the weather like")[0] is None
     assert detect("use pantheon:hydra on this")[0] is None
     assert detect("/pantheon:daedalus build the parser")[0] is None
+    # Custom routes win over built-ins; bad regexes are skipped safely.
+    got, _, cluster = detect("deploy this to fly for me",
+                             {"deploy .* fly": "my-deploy", "([bad": "x"})
+    assert got == "my-deploy" and cluster == "custom:my-deploy"
     # Persistence flag rides along with a route.
-    s, p = detect("fix this bug and keep going until it's done")
+    s, p, _ = detect("fix this bug and keep going until it's done")
     assert s == "hydra" and p
-    print("selftest ok — 13 routes, 4 silences, persistence flag")
+    # Recall path: quiet config or a short prompt stays silent.
+    assert recall_lines("hi", {"recall": 3}, "") == []
+    assert recall_lines("a long enough prompt about things", {"recall": 0}, "") == []
+    print("selftest ok — 14 routes, 4 silences, custom routes, persistence, recall gates")
     return 0
 
 

@@ -49,3 +49,11 @@ Pairs with `daedalus` (the build discipline pointed at the *visual* surface) and
 Backend, data, infra, or logic with no visual surface. And don't gold-plate a throwaway internal tool — match the craft to what the interface is *for* (`lethe`).
 
 <!-- pantheon: the UI-craft axis. Routes to design-skill collections when present; the discipline is the 7 craft principles as a rubric, applied and verified — not another component library. -->
+
+## Receipt — file your footprint (skipped in quiet mode)
+
+When the task completes (or you hand back), file ONE honest line via Bash:
+
+`~/.claude/pantheon/bin/pantheon receipt add --skill athena --note "<what was done or caught, one line>"`
+
+Good notes are outcomes, not activity: "root-caused reap loop, sealed with regression test", "deleted 340 dead lines", "flagged auth bypass in review". If the command doesn't exist yet (first session after install), skip silently — bookkeeping must never block or delay the actual work.

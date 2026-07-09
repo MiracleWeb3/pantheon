@@ -1,21 +1,29 @@
 #!/usr/bin/env python3
-"""pantheon SessionStart hook — inject active config once per session.
+"""pantheon SessionStart hook — config directive, store migration, CLI shim,
+update check.
 
-Only speaks when the config is non-default. In the default "full" experience it
-stays completely silent (zero token cost). When economy/quiet/custom is set, it
-injects one short directive that conditions every pantheon skill for the whole
-session — so the static SKILL.md announce blocks defer to the user's choice
-without needing to be re-read or edited.
+Four quiet jobs at session start:
+  1. CONFIG DIRECTIVE — inject one short line when config is non-default
+     (economy/quiet/custom); completely silent on default "full" (0 tokens).
+  2. STORE — open the SQLite store so schema migrations run before anything
+     else touches it this session.
+  3. SHIM — (re)write ~/.claude/pantheon/bin/pantheon pointing at the
+     currently-installed plugin root, so skills and the user always have a
+     stable `pantheon` command no matter where the plugin version lives.
+  4. UPDATE CHECK — daily, 2s timeout, fail-silent, cacheable, opt-out.
 
 Fail-silent. Self-check: python3 session-start.py --selftest
 """
 import sys, os, json, datetime
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+_HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.join(os.path.dirname(_HERE), "lib"))
 try:
     import config as _config
+    import store as _store
+    import paths as _paths
 except Exception:
-    _config = None
+    _config = _store = _paths = None
 
 
 def directive(cfg: dict) -> str:
@@ -28,6 +36,8 @@ def directive(cfg: dict) -> str:
         bits.append("auto-routing is OFF — the user invokes skills explicitly")
     elif routing == "suggest":
         bits.append("route only on a strong, confident match")
+    if not cfg.get("receipts", True):
+        bits.append("skip receipt filing")
     disabled = [k for k, v in cfg.get("disciplines", {}).items() if not v]
     always = "keep all prose terse and token-frugal" if not cfg.get("announce", True) else ""
 
@@ -42,6 +52,39 @@ def directive(cfg: dict) -> str:
     if disabled:
         parts.append("Disabled disciplines (do not auto-use): " + ", ".join(sorted(disabled)) + ".")
     return " ".join(parts)
+
+
+def ensure_store() -> None:
+    """Open the store once so migrations run at a calm moment."""
+    if _store:
+        _store.connect().close()
+
+
+SHIM_TEMPLATE = """#!/bin/sh
+# pantheon CLI shim — auto-refreshed each SessionStart; do not edit.
+exec python3 "{root}/scripts/cli.py" "$@"
+"""
+
+
+def write_shim(root: str = "", shim_path: str = "") -> bool:
+    """Point the stable `pantheon` command at the current plugin root."""
+    root = root or os.environ.get("CLAUDE_PLUGIN_ROOT", "")
+    if not root or not os.path.isfile(os.path.join(root, "scripts", "cli.py")):
+        return False
+    p = shim_path or (_paths.shim_path() if _paths else "")
+    if not p:
+        return False
+    content = SHIM_TEMPLATE.format(root=root)
+    try:
+        if os.path.isfile(p) and open(p, encoding="utf-8").read() == content:
+            return True
+        os.makedirs(os.path.dirname(p), exist_ok=True)
+        with open(p, "w", encoding="utf-8") as f:
+            f.write(content)
+        os.chmod(p, 0o755)
+        return True
+    except Exception:
+        return False
 
 
 RAW_MANIFEST = "https://raw.githubusercontent.com/MiracleWeb3/pantheon/main/.claude-plugin/plugin.json"
@@ -107,6 +150,14 @@ def main() -> int:
     payload = json.loads(raw) if raw.strip() else {}
     cwd = payload.get("cwd") or os.getcwd()
     cfg = _config.load(cwd) if _config else {"routing": "on", "announce": True, "preset": "full"}
+    try:
+        ensure_store()
+    except Exception:
+        pass
+    try:
+        write_shim()
+    except Exception:
+        pass
     line = directive(cfg)
     if line:
         print(line)
@@ -117,19 +168,31 @@ def main() -> int:
 
 
 def selftest() -> int:
-    assert directive({"routing": "on", "announce": True, "preset": "full", "disciplines": {}}) == ""
-    econ = directive({"routing": "suggest", "announce": False, "preset": "economy", "disciplines": {}})
+    assert directive({"routing": "on", "announce": True, "preset": "full",
+                      "disciplines": {}, "receipts": True}) == ""
+    econ = directive({"routing": "suggest", "announce": False, "preset": "economy",
+                      "disciplines": {}, "receipts": True})
     assert "economy" in econ and "announce" in econ and "terse" in econ
-    quiet = directive({"routing": "off", "announce": False, "preset": "quiet", "disciplines": {}})
-    assert "OFF" in quiet
-    dis = directive({"routing": "on", "announce": True, "preset": "custom", "disciplines": {"athena": False}})
+    quiet = directive({"routing": "off", "announce": False, "preset": "quiet",
+                       "disciplines": {}, "receipts": False})
+    assert "OFF" in quiet and "receipt" in quiet
+    dis = directive({"routing": "on", "announce": True, "preset": "custom",
+                     "disciplines": {"athena": False}, "receipts": True})
     assert "athena" in dis
+    # shim: writes against a fake root, idempotent second call, refuses junk root
+    import tempfile
+    root = os.path.dirname(_HERE)
+    p = os.path.join(tempfile.mkdtemp(prefix="pantheon-shim-"), "pantheon")
+    assert write_shim(root, p) and os.access(p, os.X_OK)
+    assert f'"{root}/scripts/cli.py"' in open(p, encoding="utf-8").read()
+    assert write_shim(root, p)  # unchanged content path
+    assert not write_shim("/nonexistent-root", p)
     # update check: version compare + disabled + no-plugin-root all safe
-    assert _newer("0.6.0", "0.5.9") and not _newer("0.5.0", "0.5.0") and not _newer("x", "0.5.0")
+    assert _newer("0.8.0", "0.7.0") and not _newer("0.5.0", "0.5.0") and not _newer("x", "0.5.0")
     assert check_update({"updateCheck": False}) == ""
     os.environ.pop("CLAUDE_PLUGIN_ROOT", None)
     assert check_update({"updateCheck": True}) == ""  # no root → silent, no network
-    print("selftest ok — directives + update-check guards")
+    print("selftest ok — directives + shim + update-check guards")
     return 0
 
 
