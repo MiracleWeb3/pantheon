@@ -4,3 +4,11 @@ learning-inbox.md
 __pycache__/
 *.pyc
 .DS_Store
+
+# transient / runtime state (never part of the plugin)
+.omc/
+_preview.html
+last-route.json
+usage-*.json*
+effort.json
+update-check.json
