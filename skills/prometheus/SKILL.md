@@ -7,6 +7,14 @@ description: "Write the test before the code — red/green/refactor TDD. Use whe
 
 Prometheus means *forethought*: he saw what was coming before it arrived. The test written **before** the code is exactly that — it pins the contract before the implementation exists to cheat against it. A test written after the fact tends to assert whatever the code happens to do; a test written first asserts what the code *should* do.
 
+## Announce yourself — always, first
+
+The moment this skill activates (manually or via the router), open your reply with one short block BEFORE any work:
+
+> 🏛 **prometheus** — foresight. **Task:** <the user's goal, restated in one line>. **Plan:** <your 2–4 concrete steps for THIS task, compressed to a line or two>.
+
+Then execute the plan. This keeps automation transparent — the human always sees which discipline took over, what it understood, and what it is about to do, and can redirect before any work happens. One block, no ceremony beyond it: announce, then act. (Goal here: "pin the contract with a failing test before the code.")
+
 ## The cycle
 
 1. **Red** — write a test that states the requirement, and **watch it fail**. A test that passes before you've written the code is testing nothing — that failing run is proof the test can detect the behavior's absence.

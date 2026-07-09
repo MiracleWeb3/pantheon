@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
-"""modus learning-capture hook (Stop event).
+"""pantheon learning-capture hook (Stop event).
 
 Appends each turn's user signal to a learning inbox so corrections and
 preferences can be consolidated into durable memory later (see the
-`memory-loop` skill). This is the safety net; disciplined in-conversation
+`mnemosyne` skill). This is the safety net; disciplined in-conversation
 capture is primary.
 
 Design constraints:
 - NEVER break the session: any failure exits 0 silently.
 - No network, no external deps, stdlib only.
-- Writes to <project>/.modus/learning-inbox.md when run inside a project,
-  else ~/.claude/modus/learning-inbox.md.
+- Writes to <project>/.pantheon/learning-inbox.md when run inside a project,
+  else ~/.claude/pantheon/learning-inbox.md.
 
 Self-check:  python3 capture-learning.py --selftest
 """
@@ -29,8 +29,8 @@ CORRECTION = re.compile(
 def inbox_path(cwd: str) -> str:
     """Project-local inbox if in a project, else a user-global one."""
     if cwd and os.path.isdir(cwd):
-        return os.path.join(cwd, ".modus", "learning-inbox.md")
-    return os.path.join(os.path.expanduser("~"), ".claude", "modus", "learning-inbox.md")
+        return os.path.join(cwd, ".pantheon", "learning-inbox.md")
+    return os.path.join(os.path.expanduser("~"), ".claude", "pantheon", "learning-inbox.md")
 
 
 def last_user_text(transcript_path: str) -> str:

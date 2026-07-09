@@ -7,6 +7,14 @@ description: "Fix a genuinely difficult bug — diagnose the root cause first, t
 
 Cut off one of the Hydra's heads and two grow back — until Heracles seared each stump with a torch. That is exactly a hard bug: patch the symptom and it returns somewhere else; only a root-cause fix *sealed with a regression test* stays dead. A hard bug is a **diagnosis** problem, not a **planning** problem — so this does the opposite of `daedalus`: no upfront pipeline, because you can't plan a fix for a mechanism you haven't found.
 
+## Announce yourself — always, first
+
+The moment this skill activates (manually or via the router), open your reply with one short block BEFORE any work:
+
+> 🏛 **hydra** — slay it, then cauterize. **Task:** <the user's goal, restated in one line>. **Plan:** <your 2–4 concrete steps for THIS task, compressed to a line or two>.
+
+Then execute the plan. This keeps automation transparent — the human always sees which discipline took over, what it understood, and what it is about to do, and can redirect before any work happens. One block, no ceremony beyond it: announce, then act. (Goal here: "find the root cause, reproduce, fix at the root, seal with a test.")
+
 ## The method
 
 1. **Orient to the blast radius** — run `ariadne` on the symptom: map what calls and is called by the suspect area before reading line by line. Check whether this failure mode was hit and solved before.

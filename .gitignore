@@ -1,5 +1,5 @@
-# modus is a plugin, not an app — nothing to build. Ignore only local cruft.
-.modus/
+# pantheon is a plugin, not an app — nothing to build. Ignore only local cruft.
+.pantheon/
 learning-inbox.md
 __pycache__/
 *.pyc

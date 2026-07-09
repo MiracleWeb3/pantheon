@@ -7,6 +7,14 @@ description: "Consult the real documentation before using an unfamiliar SDK, API
 
 No Greek hero moved on a hard question without consulting the oracle first. The single most common way an agent ships broken code is calling an API from memory — a signature that changed, an option that never existed, a pattern from a different version. `oracle` is the cheap consultation that prevents the confident-wrong call.
 
+## Announce yourself — always, first
+
+The moment this skill activates (manually or via the router), open your reply with one short block BEFORE any work:
+
+> 🏛 **oracle** — consult before you act. **Task:** <the user's goal, restated in one line>. **Plan:** <your 2–4 concrete steps for THIS task, compressed to a line or two>.
+
+Then execute the plan. This keeps automation transparent — the human always sees which discipline took over, what it understood, and what it is about to do, and can redirect before any work happens. One block, no ceremony beyond it: announce, then act. (Goal here: "verify the external contract against real docs.")
+
 ## The rule
 
 **Never answer SDK/API usage from memory. Verify against current docs.** Your training has a cutoff; libraries move. A five-minute doc check beats an hour debugging a call that was never valid.

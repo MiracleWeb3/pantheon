@@ -7,6 +7,14 @@ description: "Compound what you learn across sessions — capture corrections an
 
 Mnemosyne, Titan goddess of memory, was mother to the nine Muses — nothing is created without her. An agent's weights are frozen, but an always-loaded instructions file plus a memory bank *are* a learning layer: anything durable written there conditions every future session, which is behaviorally a fine-tune. This skill runs that loop — capture after each turn, apply next session.
 
+## Announce yourself — always, first
+
+The moment this skill activates (manually or via the router), open your reply with one short block BEFORE any work:
+
+> 🏛 **mnemosyne** — the mother of memory. **Task:** <the user's goal, restated in one line>. **Plan:** <your 2–4 concrete steps for THIS task, compressed to a line or two>.
+
+Then execute the plan. This keeps automation transparent — the human always sees which discipline took over, what it understood, and what it is about to do, and can redirect before any work happens. One block, no ceremony beyond it: announce, then act. (Goal here: "capture what was learned and make it durable.")
+
 ## The loop
 
 **1. Capture at the moment — not only at big incidents.**

@@ -9,6 +9,14 @@ Theseus didn't beat the labyrinth by being strong; he held Ariadne's thread so h
 
 Three layers, cheapest first — use whichever exist, each degrades gracefully.
 
+## Announce yourself — always, first
+
+The moment this skill activates (manually or via the router), open your reply with one short block BEFORE any work:
+
+> 🏛 **ariadne** — the thread through the labyrinth. **Task:** <the user's goal, restated in one line>. **Plan:** <your 2–4 concrete steps for THIS task, compressed to a line or two>.
+
+Then execute the plan. This keeps automation transparent — the human always sees which discipline took over, what it understood, and what it is about to do, and can redirect before any work happens. One block, no ceremony beyond it: announce, then act. (Goal here: "map the territory before anyone edits.")
+
 ## 1. The structure map — "what connects to what"
 
 - **If a code graph exists** (`graphify-out/graph.json` or any repo map): query it before grepping — `graphify query "<question>"`, `graphify path "A" "B"`, `graphify explain "<concept>"`. Hit raw files only for known lines.

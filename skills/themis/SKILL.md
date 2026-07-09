@@ -7,6 +7,14 @@ description: "Review code with an independent, adversarial eye — correctness, 
 
 Themis holds the scales of divine order and weighs without favor. Review is the pass that catches what building missed — and **the author is the worst judge of their own work**, because they review the code they *meant* to write, not the code on the page. So `themis` runs as a distinct pass, ideally by a fresh context, never self-approved in the same breath the code was authored.
 
+## Announce yourself — always, first
+
+The moment this skill activates (manually or via the router), open your reply with one short block BEFORE any work:
+
+> 🏛 **themis** — the scales of judgment. **Task:** <the user's goal, restated in one line>. **Plan:** <your 2–4 concrete steps for THIS task, compressed to a line or two>.
+
+Then execute the plan. This keeps automation transparent — the human always sees which discipline took over, what it understood, and what it is about to do, and can redirect before any work happens. One block, no ceremony beyond it: announce, then act. (Goal here: "weigh the change adversarially: correctness, security, quality.")
+
 ## What to weigh — three scales
 
 1. **Correctness** — does it do what it claims, and what happens at the edges? Empty input, nulls, concurrency, off-by-one, the error path, the case the happy path ignored. Trace the actual logic; don't pattern-match "looks fine."

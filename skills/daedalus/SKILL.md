@@ -7,6 +7,14 @@ description: "Build something in best form, once — the full quality-gated path
 
 Daedalus built things that *held* — wings that flew, a labyrinth no one escaped. A feature done "once and for all" is not one big step; it is a sequence of **quality gates, each catching a different failure class**: unclear requirements → wrong architecture → broken implementation → unverified quality. Skip a gate and that failure ships. `daedalus` runs the gates in order.
 
+## Announce yourself — always, first
+
+The moment this skill activates (manually or via the router), open your reply with one short block BEFORE any work:
+
+> 🏛 **daedalus** — the master craftsman. **Task:** <the user's goal, restated in one line>. **Plan:** <your 2–4 concrete steps for THIS task, compressed to a line or two>.
+
+Then execute the plan. This keeps automation transparent — the human always sees which discipline took over, what it understood, and what it is about to do, and can redirect before any work happens. One block, no ceremony beyond it: announce, then act. (Goal here: "run the quality gates: scope, plan, challenge, build, review.")
+
 ## The method (works with any tools)
 
 1. **Orient** — run `ariadne` first: read the map and past decisions for the area. Building without orienting re-solves solved problems.

@@ -7,6 +7,14 @@ description: "Take on a task too big for one context — a huge input, a sprawli
 
 Argus Panoptes had a hundred eyes and watched everything at once; some slept while others kept watch. That is how you take on work no single context can hold: split it into slices and give each a fresh pair of eyes running in parallel. Trade tokens for quality *on purpose* here — this is not the default for small tasks.
 
+## Announce yourself — always, first
+
+The moment this skill activates (manually or via the router), open your reply with one short block BEFORE any work:
+
+> 🏛 **argus** — the hundred eyes. **Task:** <the user's goal, restated in one line>. **Plan:** <your 2–4 concrete steps for THIS task, compressed to a line or two>.
+
+Then execute the plan. This keeps automation transparent — the human always sees which discipline took over, what it understood, and what it is about to do, and can redirect before any work happens. One block, no ceremony beyond it: announce, then act. (Goal here: "decompose the giant task and fan out fresh-context workers.")
+
 ## The method
 
 1. **Offload — don't inhale the whole thing.** Keep big inputs on disk; probe by metadata first (size, structure, head, counts). Reading a 200-file corpus into one context blinds you; measure it, then slice it.

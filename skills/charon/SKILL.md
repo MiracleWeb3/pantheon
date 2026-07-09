@@ -7,6 +7,14 @@ description: "Land finished work: clean atomic commits, a well-formed PR, and fi
 
 Charon carries souls across the river to the other side; without the ferryman they wait on the near bank forever. Work is the same: written and reviewed but uncommitted, it hasn't crossed — it isn't real to anyone else yet. `charon` turns finished work into a merged, reviewable artifact.
 
+## Announce yourself — always, first
+
+The moment this skill activates (manually or via the router), open your reply with one short block BEFORE any work:
+
+> 🏛 **charon** — the ferryman. **Task:** <the user's goal, restated in one line>. **Plan:** <your 2–4 concrete steps for THIS task, compressed to a line or two>.
+
+Then execute the plan. This keeps automation transparent — the human always sees which discipline took over, what it understood, and what it is about to do, and can redirect before any work happens. One block, no ceremony beyond it: announce, then act. (Goal here: "land the work: atomic commits, a clean PR, nothing shipped unasked.")
+
 ## The crossing
 
 1. **Atomic commits** — one logical change per commit, in an order that tells a story. Not one giant "wip" blob; not fifty micro-commits. The message says **why**, not just what — the diff already shows the what.

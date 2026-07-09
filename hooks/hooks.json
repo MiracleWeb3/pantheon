@@ -1,6 +1,18 @@
 {
-  "description": "modus learning-capture: log each turn's user signal to a consolidation inbox.",
+  "description": "pantheon: prompt router (auto-fires the right discipline) + learning capture (logs each turn's user signal for consolidation).",
   "hooks": {
+    "UserPromptSubmit": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PLUGIN_ROOT\"/hooks/route.py",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
     "Stop": [
       {
         "matcher": "*",
