@@ -1,12 +1,12 @@
 <div align="center">
 
-# 🏛 pantheon
+<img src="assets/banner.svg" alt="pantheon — disciplines for coding agents" width="660">
 
-**One install. 13 core disciplines + 170 skills merged from the best open-source plugins. Your coding agent stops winging it.**
+### One install. Your coding agent stops winging it.
 
-*A problem-solving method for [Claude Code](https://claude.com/claude-code) — it reads your prompt, picks the right discipline, tells you what it's about to do, and does it the way a careful senior engineer would.*
+13 disciplines + 170 skills from the best open-source plugins, merged into one — for [Claude Code](https://claude.com/claude-code).
 
-![version](https://img.shields.io/badge/version-0.7.0-6f42c1) ![license](https://img.shields.io/badge/license-MIT-blue) ![Claude Code](https://img.shields.io/badge/Claude%20Code-plugin-d97757) ![deps](https://img.shields.io/badge/dependencies-none-brightgreen)
+![version](https://img.shields.io/badge/version-0.7.0-8957e5?style=flat-square) &nbsp;![license](https://img.shields.io/badge/license-MIT-3fb950?style=flat-square) &nbsp;![Claude Code](https://img.shields.io/badge/Claude_Code-plugin-d97757?style=flat-square) &nbsp;![dependencies](https://img.shields.io/badge/dependencies-none-3fb950?style=flat-square) &nbsp;![skills](https://img.shields.io/badge/skills-185-8957e5?style=flat-square)
 
 </div>
 
