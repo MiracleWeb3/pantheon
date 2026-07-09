@@ -7,7 +7,7 @@ description: "Consult the real documentation before using an unfamiliar SDK, API
 
 No Greek hero moved on a hard question without consulting the oracle first. The single most common way an agent ships broken code is calling an API from memory — a signature that changed, an option that never existed, a pattern from a different version. `oracle` is the cheap consultation that prevents the confident-wrong call.
 
-## Announce yourself — always, first
+## Announce yourself — first (skipped in economy/quiet mode)
 
 The moment this skill activates (manually or via the router), open your reply with one short block BEFORE any work:
 

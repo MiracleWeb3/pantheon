@@ -7,7 +7,7 @@ description: "Write the test before the code — red/green/refactor TDD. Use whe
 
 Prometheus means *forethought*: he saw what was coming before it arrived. The test written **before** the code is exactly that — it pins the contract before the implementation exists to cheat against it. A test written after the fact tends to assert whatever the code happens to do; a test written first asserts what the code *should* do.
 
-## Announce yourself — always, first
+## Announce yourself — first (skipped in economy/quiet mode)
 
 The moment this skill activates (manually or via the router), open your reply with one short block BEFORE any work:
 

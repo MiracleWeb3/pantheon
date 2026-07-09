@@ -7,7 +7,7 @@ description: "Land finished work: clean atomic commits, a well-formed PR, and fi
 
 Charon carries souls across the river to the other side; without the ferryman they wait on the near bank forever. Work is the same: written and reviewed but uncommitted, it hasn't crossed — it isn't real to anyone else yet. `charon` turns finished work into a merged, reviewable artifact.
 
-## Announce yourself — always, first
+## Announce yourself — first (skipped in economy/quiet mode)
 
 The moment this skill activates (manually or via the router), open your reply with one short block BEFORE any work:
 

@@ -13,6 +13,12 @@ Design constraints:
 """
 import sys, os, json, re, datetime
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+try:
+    import config as _config
+except Exception:
+    _config = None
+
 # Priority-ordered routing table: first match wins.
 # Patterns require word boundaries; all matching is case-insensitive.
 ROUTES = [
@@ -23,6 +29,10 @@ ROUTES = [
     ("argus", r"\b(entire (codebase|repo)|whole (codebase|repo)|all (the )?files|"
               r"every (file|module|call ?site)|migrate everything|huge (task|input|file|dataset)|"
               r"too big|massive (refactor|migration|audit)|rlmit)\b"),
+    ("athena", r"\b(design (the|this|a|my)? ?(ui|ux|page|component|screen|interface|layout)|"
+               r"(build|make|create) (a |the |this )?(ui|component|page|landing|dashboard|screen|form|modal)|"
+               r"looks? (bad|generic|off|ugly|boring|like ai)|make it (look )?(good|better|beautiful|pretty|nicer)|"
+               r"(improve|polish) the (ui|ux|design|look|styling)|frontend design|the design)\b"),
     ("daedalus", r"\b(build (this|it|me)? ?(right|properly)|do (this|it) properly|"
                  r"once and for all|production[- ]quality|"
                  r"(implement|build|create|add) (the |a |an )?[a-z0-9_-]+ (feature|system|module|integration)|"
@@ -41,6 +51,12 @@ ROUTES = [
                   r"always do|never do|my preference|learn from this)\b"),
     ("lethe", r"\b(simplest|minimal(ist)?|yagni|over[- ]?engineer(ed|ing)?|"
               r"too (complex|complicated|much)|keep it simple|do less|bloat(ed)?)\b"),
+    ("arachne", r"\b(map (the|this|our)? ?(code ?base|repo|project|dependencies)|"
+                r"build (the|a)? ?(graph|dependency map)|graphify|knowledge graph|"
+                r"visuali[sz]e (the )?(code ?base|repo|dependencies)|dependency (map|graph))\b"),
+    ("alexandria", r"\b(document (this|the|it)|write (it|this) (to the )?(wiki|docs)|"
+                   r"(add|update) (a |the )?(wiki|adr|decision record)|knowledge base|"
+                   r"what do we know about|is there a (doc|page) (on|about))\b"),
     ("ariadne", r"\b(how does\b.{0,40}\bwork|where (is|does|do)|"
                 r"understand (the|this) (code(base)?|repo|project|flow)|"
                 r"get up to speed|orient|walk me through)\b"),
@@ -78,11 +94,21 @@ def remember(skill: str, cwd: str) -> None:
 def main() -> int:
     raw = sys.stdin.read()
     payload = json.loads(raw) if raw.strip() else {}
+    cwd = payload.get("cwd", "")
+    cfg = _config.load(cwd) if _config else {"routing": "on", "disciplines": {}}
+    if cfg.get("routing", "on") == "off":
+        return 0  # automaticness disabled by config (quiet mode)
     prompt = payload.get("prompt") or payload.get("user_prompt") or ""
     skill, persistent = detect(prompt)
     if not skill:
         return 0  # silence is a feature
-    remember(skill, payload.get("cwd", ""))
+    if _config and not _config.enabled(cfg, skill):
+        return 0  # this discipline is disabled in config
+    remember(skill, cwd)
+    if cfg.get("routing") == "suggest":
+        # economy: a soft one-line nudge, not an instruction — saves tokens
+        print(f"[PANTHEON: this reads like a '{skill}' task — /pantheon:{skill} if you want it.]")
+        return 0
     lines = [
         f"[PANTHEON ROUTE: {skill}]",
         f"This prompt matches the '{skill}' discipline. Invoke the Skill tool with "
@@ -112,6 +138,9 @@ def selftest() -> int:
         "remember this: I hate one-letter variables": "mnemosyne",
         "this feels over-engineered, keep it simple": "lethe",
         "how does the auth flow work in this repo": "ariadne",
+        "design the settings page, it looks generic": "athena",
+        "build the dependency graph for this project": "arachne",
+        "document this decision in the wiki": "alexandria",
     }
     for prompt, want in cases.items():
         got, _ = detect(prompt)
@@ -124,7 +153,7 @@ def selftest() -> int:
     # Persistence flag rides along with a route.
     s, p = detect("fix this bug and keep going until it's done")
     assert s == "hydra" and p
-    print("selftest ok — 10 routes, 4 silences, persistence flag")
+    print("selftest ok — 13 routes, 4 silences, persistence flag")
     return 0
 
 

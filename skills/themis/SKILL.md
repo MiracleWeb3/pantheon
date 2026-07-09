@@ -7,7 +7,7 @@ description: "Review code with an independent, adversarial eye — correctness, 
 
 Themis holds the scales of divine order and weighs without favor. Review is the pass that catches what building missed — and **the author is the worst judge of their own work**, because they review the code they *meant* to write, not the code on the page. So `themis` runs as a distinct pass, ideally by a fresh context, never self-approved in the same breath the code was authored.
 
-## Announce yourself — always, first
+## Announce yourself — first (skipped in economy/quiet mode)
 
 The moment this skill activates (manually or via the router), open your reply with one short block BEFORE any work:
 

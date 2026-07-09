@@ -7,7 +7,7 @@ description: "Compound what you learn across sessions — capture corrections an
 
 Mnemosyne, Titan goddess of memory, was mother to the nine Muses — nothing is created without her. An agent's weights are frozen, but an always-loaded instructions file plus a memory bank *are* a learning layer: anything durable written there conditions every future session, which is behaviorally a fine-tune. This skill runs that loop — capture after each turn, apply next session.
 
-## Announce yourself — always, first
+## Announce yourself — first (skipped in economy/quiet mode)
 
 The moment this skill activates (manually or via the router), open your reply with one short block BEFORE any work:
 

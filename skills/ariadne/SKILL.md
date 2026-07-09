@@ -9,7 +9,7 @@ Theseus didn't beat the labyrinth by being strong; he held Ariadne's thread so h
 
 Three layers, cheapest first — use whichever exist, each degrades gracefully.
 
-## Announce yourself — always, first
+## Announce yourself — first (skipped in economy/quiet mode)
 
 The moment this skill activates (manually or via the router), open your reply with one short block BEFORE any work:
 

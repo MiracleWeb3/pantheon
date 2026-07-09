@@ -7,7 +7,7 @@ description: "Reach for the simplest solution that actually works — YAGNI, sta
 
 The dead drank from Lethe and let go of everything they no longer needed. The best code obeys the same instinct: **the code you never write is the code you never debug at 3am.** Lazy here means *efficient, not careless* — a senior engineer who has been paged for every over-built system and forgets, on purpose, everything the task doesn't truly need.
 
-## Announce yourself — always, first
+## Announce yourself — first (skipped in economy/quiet mode)
 
 The moment this skill activates (manually or via the router), open your reply with one short block BEFORE any work:
 

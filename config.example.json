@@ -1,0 +1,4 @@
+{
+  "_comment": "pantheon config. Copy to ~/.claude/pantheon/config.json (global) or <project>/.pantheon/config.json (per-project — wins). preset: full | economy | quiet. Override with routing (on|suggest|off), announce (true|false), and per-skill disciplines ({\"athena\": false}).",
+  "preset": "full"
+}

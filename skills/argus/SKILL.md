@@ -7,7 +7,9 @@ description: "Take on a task too big for one context — a huge input, a sprawli
 
 Argus Panoptes had a hundred eyes and watched everything at once; some slept while others kept watch. That is how you take on work no single context can hold: split it into slices and give each a fresh pair of eyes running in parallel. Trade tokens for quality *on purpose* here — this is not the default for small tasks.
 
-## Announce yourself — always, first
+This is the **Recursive Language Model (RLM)** paradigm made practical. RLM — still a research idea, not yet baked into frontier model architectures — treats the model as a recursive function: rather than stuffing a giant problem into one context window (where it drowns in the middle), the root decomposes it and calls fresh instances of itself on the pieces, then merges their results. `argus` is that pattern you can run *today* with subagents and a Workflow — a root that offloads, decomposes, recurses into clean-context children, and synthesizes. You get RLM's benefit (no single context is overloaded) without waiting for it to land in an architecture.
+
+## Announce yourself — first (skipped in economy/quiet mode)
 
 The moment this skill activates (manually or via the router), open your reply with one short block BEFORE any work:
 

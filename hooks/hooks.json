@@ -1,6 +1,18 @@
 {
-  "description": "pantheon: prompt router (auto-fires the right discipline) + learning capture (logs each turn's user signal for consolidation).",
+  "description": "pantheon: config-aware prompt router (auto-fires the right discipline), learning capture, and a session-start config directive.",
   "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PLUGIN_ROOT\"/hooks/session-start.py",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
     "UserPromptSubmit": [
       {
         "matcher": "*",

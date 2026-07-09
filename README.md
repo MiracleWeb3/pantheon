@@ -2,11 +2,11 @@
 
 # 🏛 pantheon
 
-**One install. Ten disciplines. Your coding agent stops winging it.**
+**One install. Thirteen disciplines. Your coding agent stops winging it.**
 
 *A problem-solving method for [Claude Code](https://claude.com/claude-code) — it reads your prompt, picks the right discipline, tells you what it's about to do, and does it the way a careful senior engineer would.*
 
-![version](https://img.shields.io/badge/version-0.4.0-6f42c1) ![license](https://img.shields.io/badge/license-MIT-blue) ![Claude Code](https://img.shields.io/badge/Claude%20Code-plugin-d97757) ![deps](https://img.shields.io/badge/dependencies-none-brightgreen)
+![version](https://img.shields.io/badge/version-0.5.0-6f42c1) ![license](https://img.shields.io/badge/license-MIT-blue) ![Claude Code](https://img.shields.io/badge/Claude%20Code-plugin-d97757) ![deps](https://img.shields.io/badge/dependencies-none-brightgreen)
 
 </div>
 
@@ -37,6 +37,8 @@ Restart Claude Code. That's it — it starts working on your next prompt.
 
 **📊 It has a HUD.** An optional statusline shows the active discipline, model, branch, unconsolidated-lessons count, and session cost — one calm line.
 
+**⚙️ It's configurable.** Full experience by default; flip to **economy** (no announce prose, soft routing — save tokens) or **quiet** (fully manual), globally or per-project. Turn off any discipline you don't want. Just say *"set pantheon to economy mode."*
+
 ## The pantheon
 
 Mythical names, plain-English triggers. Read top-to-bottom and it *is* the lifecycle of a change.
@@ -44,8 +46,10 @@ Mythical names, plain-English triggers. Read top-to-bottom and it *is* the lifec
 | Skill | Say | The discipline |
 |---|---|---|
 | 🧵 **`ariadne`** | *"how does this work?"* | **Orient** — read the code-map, past decisions, and prior lessons *before* editing. The thread through the labyrinth. |
+| 🕸 **`arachne`** | *"map the codebase"* | **Map** — weave a navigable knowledge graph (nodes, edges, god-nodes) so orientation is a query, not a grep. Builds what `ariadne` reads. |
 | 🔮 **`oracle`** | *"how do I use X?"* | **Research** — consult the real docs before an unfamiliar SDK/API. Never code a contract from memory. |
 | 🏗 **`daedalus`** | *"build this right"* | **Build** — scope → plan → challenge the plan → build → review with a different lens. |
+| 🦉 **`athena`** | *"design the UI"* | **Craft** — interface work with real hierarchy, spacing, type, states, and accessibility. Intentional, never templated. |
 | 🔥 **`prometheus`** | *"test first"* | **Test-first** — the failing test before the code. Red → green → refactor. |
 | 🐉 **`hydra`** | *"this bug is nasty"* | **Debug** — root cause before fix, reproduce before editing, cauterize with a regression test. |
 | 👁 **`argus`** | *"this is huge"* | **Decompose** — split a too-big task, fan out one fresh-context worker per slice, synthesize. |
@@ -53,6 +57,9 @@ Mythical names, plain-English triggers. Read top-to-bottom and it *is* the lifec
 | ⛴ **`charon`** | *"land it"* | **Ship** — atomic commits, a clean PR, branch hygiene. Never ships unasked. |
 | 🌊 **`lethe`** | *"keep it simple"* | **Simplify** — YAGNI, stdlib before custom, native before dependency, deletion over addition. |
 | 📜 **`mnemosyne`** | *"remember this"* | **Learn** — capture corrections, consolidate to memory, promote what recurs into always-loaded rules. |
+| 📚 **`alexandria`** | *"document this"* | **Knowledge** — a curated project wiki (the Karpathy LLM-wiki model) whose prose compounds across sessions. |
+
+> **Three knowledge layers, unified.** `arachne` maps the *structure* (your graphify graph), `alexandria` records the *prose* (your Obsidian/ADR wiki — the "why"), and `mnemosyne` holds the *facts* (your memory bank of corrections). `ariadne` reads all three to orient before any work. Graph + wiki + memory, one method.
 
 ## The two ideas underneath
 
@@ -69,6 +76,28 @@ Mythical names, plain-English triggers. Read top-to-bottom and it *is* the lifec
 - **A decisions wiki** (Obsidian, `docs/adr/`) — `ariadne` reads it to learn *why* the code is the way it is.
 
 With none installed, every skill still works.
+
+## Configuration
+
+pantheon runs full-strength out of the box. Want it leaner — or fully manual? Drop a `config.json` at `~/.claude/pantheon/config.json` (global) or `<project>/.pantheon/config.json` (per-project, wins):
+
+```json
+{ "preset": "economy" }
+```
+
+| Preset | Routing | Announce block | For |
+|---|---|---|---|
+| `full` *(default)* | on — auto-fires the right skill | shown | the whole experience |
+| `economy` | soft one-line suggestions only | **hidden** | saving tokens — no announce prose, terse output |
+| `quiet` | **off** — you invoke skills yourself | hidden | full manual control |
+
+Override any single knob, or switch off a discipline you never want:
+
+```json
+{ "routing": "suggest", "announce": false, "disciplines": { "athena": false } }
+```
+
+Or just tell your agent *"set pantheon to economy mode"* — it writes the file for you.
 
 ## The HUD (optional)
 
@@ -89,7 +118,7 @@ Active discipline · model · branch · unconsolidated lessons · session cost.
 
 ## Under the hood
 
-- **Two hooks, stdlib-only, fail-silent.** `route.py` (UserPromptSubmit) auto-routes; `capture-learning.py` (Stop) feeds the memory loop. A broken hook never breaks your session.
+- **Three hooks, stdlib-only, fail-silent.** `route.py` (UserPromptSubmit) auto-routes; `capture-learning.py` (Stop) feeds the memory loop; `session-start.py` injects your config once per session. A broken hook never breaks your session.
 - **Zero dependencies.** No npm, no pip, no build step. Skills are Markdown; hooks and HUD are plain Python 3.
 - **Every hook and HUD ships a self-check** — `python3 hooks/route.py --selftest`, etc.
 
