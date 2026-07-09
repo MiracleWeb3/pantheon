@@ -2,7 +2,7 @@
   "$schema": "https://anthropic.com/claude-code/plugin.schema.json",
   "name": "pantheon",
   "version": "0.6.0",
-  "description": "A disciplined problem-solving method for Claude Code — thirteen mythically-named skills that auto-route from plain language, announce their plan first, and compose with your existing plugins instead of forking them: orient, map, research, build, craft UI, test-first, debug, decompose (RLM), review, land, simplify, document, remember. Configurable (full / economy / quiet), zero dependencies.",
+  "description": "One install, everything: 13 mythically-named core disciplines that auto-route from plain language and announce their plan, PLUS 170+ skills merged from superpowers, ponytail, oh-my-claudecode, and ui-skills (each attributed, licenses retained). Orient, map, research, build, craft UI, test-first, debug, decompose (RLM), review, land, simplify, document, remember — configurable (full / economy / quiet), zero dependencies.",
   "author": {
     "name": "CyberPunk"
   },
