@@ -6,7 +6,7 @@
 
 *A problem-solving method for [Claude Code](https://claude.com/claude-code) — it reads your prompt, picks the right discipline, tells you what it's about to do, and does it the way a careful senior engineer would.*
 
-![version](https://img.shields.io/badge/version-0.6.0-6f42c1) ![license](https://img.shields.io/badge/license-MIT-blue) ![Claude Code](https://img.shields.io/badge/Claude%20Code-plugin-d97757) ![deps](https://img.shields.io/badge/dependencies-none-brightgreen)
+![version](https://img.shields.io/badge/version-0.7.0-6f42c1) ![license](https://img.shields.io/badge/license-MIT-blue) ![Claude Code](https://img.shields.io/badge/Claude%20Code-plugin-d97757) ![deps](https://img.shields.io/badge/dependencies-none-brightgreen)
 
 </div>
 
@@ -35,7 +35,7 @@ Restart Claude Code. That's it — it starts working on your next prompt.
 
 **🧠 It remembers.** A learning loop captures your corrections and preferences the moment they land, consolidates them into durable memory, and promotes what recurs into always-loaded rules. Your agent gets more *yours* every session.
 
-**📊 It has a HUD.** An optional statusline shows the active discipline, model, branch, unconsolidated-lessons count, and session cost — one calm line.
+**📊 It has a real HUD.** An optional statusline that beats the defaults: active discipline, model, **reasoning effort**, **session time**, **live context fill %**, lines changed, session cost, and **rolling hourly + weekly spend** — the last two tracked by pantheon itself because Claude Code doesn't expose them.
 
 **⚙️ It's configurable.** Full experience by default; flip to **economy** (no announce prose, soft routing — save tokens) or **quiet** (fully manual), globally or per-project. Turn off any discipline you don't want. Just say *"set pantheon to economy mode."*
 
@@ -132,10 +132,24 @@ Add to `~/.claude/settings.json`:
 ```
 
 ```
-🏛 · hydra · Fable 5 · ⎇ main · 📥 3 · $0.42
+🏛 · hydra · Fable 5 · ✳max · ⧗2h35m · ▓47% · +420/-95 · $6.80 · ⧖1h $2.10 · wk $18.40 · ⎇ main · 📥3
 ```
 
-Active discipline · model · branch · unconsolidated lessons · session cost.
+Every segment is real data, shown only when it has a value:
+
+| Segment | Meaning | Source |
+|---|---|---|
+| `hydra` | active discipline | pantheon router |
+| `Fable 5` | model | payload |
+| `✳max` | reasoning effort | parsed from `/effort` in the transcript |
+| `⧗2h35m` | session wall-clock | `cost.total_duration_ms` |
+| `▓47%` | **live context fill** | last turn's real token `usage` (not file size) |
+| `+420/-95` | lines added / removed | `cost.total_lines_*` |
+| `$6.80` | this session's cost | `cost.total_cost_usd` |
+| `⧖1h $2.10` · `wk $18.40` | **rolling hourly / weekly spend** | pantheon's own cost-delta ledger |
+| `⎇ main` · `📥3` | branch · unconsolidated lessons | `.git/HEAD` · learning-inbox |
+
+The **hourly/weekly spend** and **live context %** are things Claude Code doesn't hand a statusline — pantheon derives them: it diffs cumulative session cost over time into an hour/week ledger, and reads the actual `input + cache` token count from the latest transcript record for a true context gauge. `▓` goes green → yellow → red as context fills, and flips to `ctx>200k` past the window.
 
 **Already have a statusline** (from another plugin or your own)? Claude Code allows one `statusLine`, so pantheon won't silently fight it — you choose:
 
