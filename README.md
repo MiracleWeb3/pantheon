@@ -171,6 +171,10 @@ If your command errors, pantheon shows just its own segment — never a blank ba
 - **Zero dependencies.** No npm, no pip, no build step. Skills are Markdown; hooks and HUD are plain Python 3.
 - **Every hook and HUD ships a self-check** — `python3 hooks/route.py --selftest`, etc.
 
+## Roadmap
+
+pantheon is early and moving fast — **12 features across four releases**: retrieval-augmented memory that surfaces the right past lesson at the right moment, per-discipline receipts, a TUI dashboard, a *blocking* verification gate, a router that learns you, cost guardrails, team packs, cross-agent portability, and more. See **[docs/ROADMAP.md](docs/ROADMAP.md)**.
+
 ## License
 
 MIT — see [LICENSE](LICENSE). Independent work; the tools it composes with belong to their respective authors, and are credited, not copied.
