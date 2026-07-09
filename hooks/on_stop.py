@@ -70,6 +70,37 @@ def capture(cwd: str, text: str) -> None:
             pass
 
 
+def route_outcome(routed: str, invoked: set) -> str:
+    """Pure decision: what happened to the routed skill this turn?"""
+    if routed in invoked:
+        return "accepted"
+    if invoked & OUR_SKILLS:
+        return "overridden"
+    return "ignored"
+
+
+def resolve_route(turn: dict, session: str) -> None:
+    """Close the loop for adaptive routing: record whether the last routed
+    skill was actually used, replaced with another discipline, or ignored."""
+    p = os.path.join(os.path.expanduser("~"), ".claude", "pantheon", "last-route.json")
+    try:
+        d = json.load(open(p, encoding="utf-8"))
+    except Exception:
+        return
+    if d.get("resolved") or d.get("session") != session or d.get("rowid") is None:
+        return
+    invoked = {s.split(":")[-1] for s in turn.get("skills", [])}
+    outcome = route_outcome(d.get("skill", ""), invoked)
+    if _store:
+        conn = _store.connect()
+        try:
+            _store.set_route_outcome(conn, d["rowid"], outcome)
+        finally:
+            conn.close()
+    d["resolved"], d["outcome"] = True, outcome
+    json.dump(d, open(p, "w", encoding="utf-8"))
+
+
 def auto_receipts(turn: dict, cfg: dict, session: str, cwd: str) -> None:
     """One receipt per pantheon skill invoked this turn. Skips when the skill
     already filed a richer manual receipt (via the CLI) in the last while."""
@@ -195,6 +226,10 @@ def main() -> int:
         auto_receipts(turn, cfg, session, cwd)
     except Exception:
         pass
+    try:
+        resolve_route(turn, session)
+    except Exception:
+        pass
     out = {}
     try:
         out = run_gate(turn, cfg, session, cwd)
@@ -232,7 +267,13 @@ def selftest() -> int:
     out = run_gate(dict(turn4, last_user="q"), {"gate": "warn"}, "s", "")
     assert "systemMessage" in out and "warn-only" in out["systemMessage"]
     assert run_gate(turn4, {"gate": "off"}, "s", "") == {}
-    print("selftest ok — capture regex, gate rules (fail/unverified/stub/docs), modes")
+    # adaptive-routing outcome decision
+    assert route_outcome("hydra", {"hydra"}) == "accepted"
+    assert route_outcome("hydra", {"lethe"}) == "overridden"
+    assert route_outcome("hydra", set()) == "ignored"
+    assert route_outcome("my-custom", {"my-custom"}) == "accepted"
+    print("selftest ok — capture regex, gate rules (fail/unverified/stub/docs), "
+          "modes, route outcomes")
     return 0
 
 
