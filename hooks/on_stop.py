@@ -112,9 +112,10 @@ def auto_receipts(turn: dict, cfg: dict, session: str, cwd: str) -> None:
     conn = _store.connect()
     try:
         for name in sorted(names):
+            # any recent receipt for this skill+session suppresses the auto one —
+            # the Stop hook re-runs after each gate block and must not re-file
             row = conn.execute(
-                "SELECT 1 FROM receipts WHERE skill=? AND session=? AND ts>? "
-                "AND note!='invoked' LIMIT 1",
+                "SELECT 1 FROM receipts WHERE skill=? AND session=? AND ts>? LIMIT 1",
                 (name, session, time.time() - 1800)).fetchone()
             if row:
                 continue
@@ -159,9 +160,11 @@ def _gate_state_path(session: str) -> str:
 
 
 def gate_blocks_used(session: str, turn_key: str) -> int:
+    """turn_key is a hash of the prompt text, so an identical prompt hours later
+    would collide with an exhausted counter — records expire after 2h."""
     try:
         rec = json.load(open(_gate_state_path(session), encoding="utf-8"))
-        if rec.get("turn_key") == turn_key:
+        if rec.get("turn_key") == turn_key and time.time() - rec.get("ts", 0) < 7200:
             return int(rec.get("blocks", 0))
     except Exception:
         pass
@@ -172,7 +175,7 @@ def gate_record_block(session: str, turn_key: str, used: int) -> None:
     try:
         p = _gate_state_path(session)
         os.makedirs(os.path.dirname(p), exist_ok=True)
-        json.dump({"turn_key": turn_key, "blocks": used + 1},
+        json.dump({"turn_key": turn_key, "blocks": used + 1, "ts": time.time()},
                   open(p, "w", encoding="utf-8"))
     except Exception:
         pass
@@ -294,6 +297,11 @@ def selftest() -> int:
     assert gate_blocks_used("sessA", "t2") == 0   # new turn resets
     assert gate_blocks_used("sessZ", "t1") == 0   # unknown session starts clean
     assert _gate_state_path("a") != _gate_state_path("b")
+    # identical prompt text hours later must not inherit the exhausted counter
+    stale = json.load(open(_gate_state_path("sessA"), encoding="utf-8"))
+    stale["ts"] = time.time() - 8000
+    json.dump(stale, open(_gate_state_path("sessA"), "w", encoding="utf-8"))
+    assert gate_blocks_used("sessA", "t1") == 0
     print("selftest ok — capture regex, gate rules (fail/unverified/stub/docs), "
           "modes, route outcomes")
     return 0

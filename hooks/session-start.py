@@ -91,8 +91,11 @@ def write_shim(root: str = "", shim_path: str = "") -> bool:
 
 def import_pack(cwd: str, conn=None) -> str:
     """Merge a team pack's lessons into the store (once per content hash) and
-    return its standards as a context line ('' when none)."""
+    return its standards as a context line ('' when none). Honors the
+    "packs": false opt-out completely — no import, no standards injection."""
     if not _config or not _store:
+        return ""
+    if not _config.load(cwd).get("packs", True):
         return ""
     path, pk = _config.find_pack(cwd)
     if not pk:

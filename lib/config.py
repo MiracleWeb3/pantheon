@@ -136,6 +136,7 @@ def load(cwd: str = "") -> dict:
         if raw["budget"].get("mode") in ("warn", "ask", "block"):
             b["mode"] = raw["budget"]["mode"]
     cfg["preset"] = preset if preset in PRESETS else "custom" if raw else "full"
+    cfg["packs"] = raw.get("packs", True) is not False
     return cfg
 
 

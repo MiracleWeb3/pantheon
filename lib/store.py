@@ -136,7 +136,8 @@ def recall(conn, text: str, keys: str = "", limit: int = 3):
         ov = len(want & kw)
         if not ov:
             continue
-        same_project = bool(keys) and keys in (r["keys"] or "")
+        # exact token match — 'web' must not claim lessons from 'website'
+        same_project = bool(keys) and keys in re.split(r"[,\s]+", r["keys"] or "")
         if ov < 2 and not same_project:
             continue
         age_days = max(0.0, (now - r["ts"]) / 86400)
@@ -237,6 +238,9 @@ def selftest() -> int:
     hits = recall(conn, "why is the DM bubble direction wrong on x.com?", keys="parserx")
     assert hits and "bg-class" in hits[0]["text"], hits
     assert recall(conn, "bake a chocolate cake tonight") == []
+    # project boost is exact-token: 'parser' must not substring-match 'parserx'
+    one_kw = recall(conn, "the direction of the wind tonight", keys="parser")
+    assert all("parserx" != l for h in one_kw for l in [h["keys"]]) or one_kw == []
     assert conn.execute("SELECT uses FROM lessons WHERE id=?", (lid,)).fetchone()[0] == 1
     assert len(keywords("Fix the hud.py effort segment ASAP")) >= 3
     # receipts
