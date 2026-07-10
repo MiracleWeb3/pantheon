@@ -6,7 +6,7 @@
 
 13 mythic disciplines + 3 power tools + 172 merged skills = **188 under pantheon-native names** — with memory that recalls itself, receipts for everything it does, and a verification gate that blocks fake "done". For [Claude Code](https://claude.com/claude-code).
 
-![version](https://img.shields.io/badge/version-1.2.0-8957e5?style=flat-square) &nbsp;![license](https://img.shields.io/badge/license-MIT-3fb950?style=flat-square) &nbsp;![Claude Code](https://img.shields.io/badge/Claude_Code-plugin-d97757?style=flat-square) &nbsp;![dependencies](https://img.shields.io/badge/dependencies-none-3fb950?style=flat-square) &nbsp;![skills](https://img.shields.io/badge/skills-188-8957e5?style=flat-square) &nbsp;![last commit](https://img.shields.io/github/last-commit/MiracleWeb3/pantheon?style=flat-square&color=d97757&label=last%20commit)
+![version](https://img.shields.io/badge/version-1.2.0-8957e5?style=flat-square) &nbsp;![license](https://img.shields.io/badge/license-MIT-3fb950?style=flat-square) &nbsp;![Claude Code](https://img.shields.io/badge/Claude_Code-plugin-d97757?style=flat-square) &nbsp;![dependencies](https://img.shields.io/badge/dependencies-none-3fb950?style=flat-square) &nbsp;![skills](https://img.shields.io/badge/skills-188-8957e5?style=flat-square) &nbsp;[![selftests](https://github.com/MiracleWeb3/pantheon/actions/workflows/selftest.yml/badge.svg)](https://github.com/MiracleWeb3/pantheon/actions/workflows/selftest.yml) &nbsp;![last commit](https://img.shields.io/github/last-commit/MiracleWeb3/pantheon?style=flat-square&color=d97757&label=last%20commit)
 
 **[See it work](#what-it-feels-like) · [The disciplines](#the-pantheon) · [Config](#configuration) · [The HUD](#the-hud-optional) · [CLI](#the-store-and-the-cli) · [Credits](CREDITS.md)**
 
@@ -29,6 +29,8 @@ claude plugin install pantheon@pantheon
 </div>
 
 Every move is visible: the router says **why** a discipline fired, recall puts the **relevant past lesson** on the table, the discipline announces **what it's about to do**, the gate refuses a **"done" that isn't**, and the receipt records **what actually happened**.
+
+<sub>Staged frames, real message formats — every line above is the exact text the hooks inject. (An asciinema of a live session is on the wishlist.)</sub>
 
 <table>
 <tr>
@@ -67,7 +69,7 @@ Three mechanics nobody else ships — everything else from the grid above gets i
 
 Because they each do *one layer*, and none of them **enforce** anything. Honest snapshot:
 
-| capability | **pantheon** | superpowers | oh-my-claudecode | claude-mem |
+| capability | **pantheon** | [superpowers](https://github.com/obra/superpowers) | [oh-my-claudecode](https://github.com/Yeachan-Heo/oh-my-claudecode) | [claude-mem](https://github.com/thedotmack/claude-mem) |
 |---|:---:|:---:|:---:|:---:|
 | a router that fires the right skill — and learns from your outcomes | ✅ | ⚠️ description matching only | ⚠️ magic keywords | ❌ |
 | memory that recalls itself, per-prompt relevance | ✅ | ❌ | ⚠️ manual lookup | ⚠️ session-start dump |
@@ -129,6 +131,8 @@ pantheon runs full-strength out of the box. Drop a `config.json` at `~/.claude/p
 | `full` *(default)* | on | shown | 3 lessons | **block** | the whole experience |
 | `economy` | suggest | hidden | 1 lesson | warn | saving tokens |
 | `quiet` | off | hidden | off | off | full manual control |
+
+**What the automation actually costs, measured from the injected strings:** a prompt that matches nothing gets **0 tokens** injected — silence is the default. When something fires: a route hint ≈ **110 tokens** (economy's one-line nudge ≈ 25), each recalled lesson ≈ **60–95**, the clarifier ≈ 100, the context-guard nudge ≈ 110 (once per session). Nothing is added session-wide on the default config — the session-start hook prints nothing unless your config is non-default.
 
 <details>
 <summary><b>Every knob</b> (override any single one)</summary>
@@ -236,7 +240,7 @@ With none installed, every skill still works.
 
 ## Under the hood
 
-- **Three hooks, stdlib-only, fail-silent.** `on_prompt.py` (UserPromptSubmit): route + recall + clarifier + context guard + budget. `on_stop.py` (Stop): learning capture + receipts + route outcomes + the verification gate. `session-start.py`: config directive, store migration, CLI shim, team-pack import, update check. A broken hook never breaks your session — every failure path exits 0.
+- **Three hooks, stdlib-only, fail-silent — audit them in 30 seconds:** [`hooks/on_prompt.py`](hooks/on_prompt.py) (UserPromptSubmit: route + recall + clarifier + context guard + budget), [`hooks/on_stop.py`](hooks/on_stop.py) (Stop: learning capture + receipts + route outcomes + the verification gate), [`hooks/session-start.py`](hooks/session-start.py) (config directive, store migration, CLI shim, team-pack import, update check). No network calls except the opt-out daily version check; a broken hook never breaks your session — every failure path exits 0.
 - **Zero dependencies.** No npm, no pip, no build step. Skills are Markdown; hooks, CLI, dashboard, and HUD are plain Python 3 (`sqlite3`/`curses` from the stdlib).
 - **Everything ships a self-check.** All 11 modules run `--selftest`; `pantheon doctor` runs the whole suite plus install checks in one command.
 
@@ -279,7 +283,7 @@ No — everything is namespaced (`pantheon:…` vs theirs). Better: pantheon *dr
 <details>
 <summary><b>Too many tokens?</b></summary>
 
-`"preset": "economy"` — no announce prose, soft routing, 1-lesson recall, warn-only gate. Or just tell the agent *"set pantheon to economy mode"*. `quiet` turns every automatic behavior off.
+The default is already frugal: prompts that match nothing get **zero** injected tokens, and the session-start hook is silent on default config. When automation does fire it's ~25–250 tokens (see the measured table in Configuration). Still too much? `"preset": "economy"` — no announce prose, soft routing, 1-lesson recall, warn-only gate. `quiet` turns every automatic behavior off. Or just tell the agent *"set pantheon to economy mode"*.
 
 </details>
 
