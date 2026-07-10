@@ -32,5 +32,8 @@
   "_custom_routes": "your own regex -> skill routes; they win over built-ins",
   "custom_routes": {},
 
+  "_packs": "honor a committed pantheon.pack.json (team config + standards + shared lessons)",
+  "packs": true,
+
   "updateCheck": true
 }

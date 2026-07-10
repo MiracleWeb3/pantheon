@@ -1,5 +1,7 @@
 # pantheon roadmap — v0.7 → v1.1
 
+> **Status: ALL 12 FEATURES SHIPPED** (v0.8 → v1.1, July 2026). Kept as the design record — what each feature does and why they layer in this order.
+
 The 12 features that make pantheon the only agent plugin worth keeping. Phased by moat-per-effort and dependency. Design decision: **max power** — a local SQLite store backs memory, receipts, metrics, and routing feedback, so features compound on one substrate instead of a dozen JSON files.
 
 ## Foundation — the store (lands with Phase 1)
@@ -18,7 +20,7 @@ Fail-safe rule unchanged: any hook that touches the DB wraps in try/except and e
 
 ---
 
-## Phase 1 — v0.8 "It remembers, it proves itself" (the moat four)
+## Phase 1 — v0.8 "It remembers, it proves itself" (the moat four) ✅ shipped
 
 **#1 Retrieval-augmented memory.** `mnemosyne` already captures; add *auto-recall*. A UserPromptSubmit hook keyword-matches the prompt + touched files against `lessons` and injects the top 1–3 relevant ones as context (`[PANTHEON RECALL] Last time near this: …`). Scored by keyword overlap × recency × weight. This is the headline feature — memory that surfaces itself.
 
@@ -30,7 +32,7 @@ Fail-safe rule unchanged: any hook that touches the DB wraps in try/except and e
 
 *Acceptance: recall injects a real past lesson on a repeat topic; a failing test blocks "done"; dashboard renders live DB data; receipts accrue. All hooks fail-silent + selftest.*
 
-## Phase 2 — v0.9 "It learns you"
+## Phase 2 — v0.9 "It learns you" ✅ shipped
 
 **#2 Adaptive routing.** Router logs each fire to `routes`; a lightweight follow-up records whether the routed skill was actually used or overridden. Weights per (phrase-cluster → skill) adjust, so routing personalizes. Ships with a decay so stale patterns fade.
 
@@ -38,13 +40,13 @@ Fail-safe rule unchanged: any hook that touches the DB wraps in try/except and e
 
 **#7 Proactive context management.** The HUD already computes context fill. Add a discipline + hook that at ≥85% offers/does a checkpoint: summarize the plan + open threads into `alexandria`/`lessons`, so a `/clear` loses nothing. Nobody handles the context wall gracefully today.
 
-## Phase 3 — v1.0 "It won't surprise you"
+## Phase 3 — v1.0 "It won't surprise you" ✅ shipped
 
 **#5 Cost guardrails.** `budget` config (`session`, `daily`, `weekly` USD). HUD turns red near cap; a hook warns at 80% and can hard-pause at 100% (`ask`/`warn`/`block` modes). Reads the same ledger the HUD already keeps.
 
 **#12 `/pantheon doctor` + auto-migrate.** Checks hook wiring, config validity, DB integrity, broken/duplicate skills, stale caches — and fixes what it can. SessionStart auto-migrates config + DB schema across versions silently.
 
-## Phase 4 — v1.1 "It spreads"
+## Phase 4 — v1.1 "It spreads" ✅ shipped
 
 **#9 Team packs.** `pantheon.pack.json` committed to a repo: disciplines on/off, shared lessons, standards, budget. On entering the repo, pantheon merges the pack (project > pack > user). A new hire inherits the team's accumulated wisdom on install — the real lock-in.
 
