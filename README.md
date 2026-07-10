@@ -145,7 +145,7 @@ See [`config.example.json`](config.example.json) for the annotated version. The 
 ## The HUD (optional)
 
 <div align="center">
-<img src="assets/hud.svg" alt="pantheon statusline — discipline, model, effort, session time, context fill, lines, cost, hourly and weekly spend, branch, inbox" width="760">
+<img src="assets/hud-line.svg" alt="pantheon statusline — discipline, model, effort, session time, context fill, lines, cost, hourly and weekly spend, branch, inbox" width="760">
 </div>
 
 Add to `~/.claude/settings.json`:
