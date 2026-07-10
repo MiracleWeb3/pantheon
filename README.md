@@ -4,9 +4,9 @@
 
 ### One install. Your coding agent stops winging it.
 
-13 mythic disciplines + 3 power tools + 172 merged skills = **188 under pantheon-native names** — with memory that recalls itself, receipts for everything it does, and a verification gate that blocks fake "done". For [Claude Code](https://claude.com/claude-code).
+**16 disciplines** (13 mythic + 3 power tools) **+ 172 merged skills = 188**, all under pantheon-native names — with memory that recalls itself, receipts for everything it does, and a verification gate that blocks fake "done". For [Claude Code](https://claude.com/claude-code).
 
-![version](https://img.shields.io/badge/version-1.2.0-8957e5?style=flat-square) &nbsp;![license](https://img.shields.io/badge/license-MIT-3fb950?style=flat-square) &nbsp;![Claude Code](https://img.shields.io/badge/Claude_Code-plugin-d97757?style=flat-square) &nbsp;![dependencies](https://img.shields.io/badge/dependencies-none-3fb950?style=flat-square) &nbsp;![skills](https://img.shields.io/badge/skills-188-8957e5?style=flat-square) &nbsp;[![selftests](https://github.com/MiracleWeb3/pantheon/actions/workflows/selftest.yml/badge.svg)](https://github.com/MiracleWeb3/pantheon/actions/workflows/selftest.yml) &nbsp;![last commit](https://img.shields.io/github/last-commit/MiracleWeb3/pantheon?style=flat-square&color=d97757&label=last%20commit)
+![version](https://img.shields.io/badge/version-1.2.0-8957e5?style=flat-square) &nbsp;![license](https://img.shields.io/badge/license-MIT-3fb950?style=flat-square) &nbsp;![Claude Code](https://img.shields.io/badge/Claude_Code-plugin-d97757?style=flat-square) &nbsp;![dependencies](https://img.shields.io/badge/dependencies-none-3fb950?style=flat-square) &nbsp;![skills](https://img.shields.io/badge/skills-188-8957e5?style=flat-square) &nbsp;[![selftests](https://img.shields.io/github/actions/workflow/status/MiracleWeb3/pantheon/selftest.yml?style=flat-square&label=selftests)](https://github.com/MiracleWeb3/pantheon/actions/workflows/selftest.yml) &nbsp;![last commit](https://img.shields.io/github/last-commit/MiracleWeb3/pantheon?style=flat-square&color=d97757&label=last%20commit)
 
 **[See it work](#what-it-feels-like) · [The disciplines](#the-pantheon) · [Config](#configuration) · [The HUD](#the-hud-optional) · [CLI](#the-store-and-the-cli) · [Credits](CREDITS.md)**
 
@@ -55,13 +55,13 @@ Every move is visible: the router says **why** a discipline fired, recall puts t
 
 Three mechanics nobody else ships — everything else from the grid above gets its own section below.
 
-**🗣 Every move is announced.** When a discipline activates — by your hand or the router's — it opens with one line: *which* power took over, *what* it understood your goal to be, and the *steps* it's about to take. You see the plan **before** any work happens, and can redirect. No silent automation — and the router itself is accountable: every fire logs whether you used it, replaced it, or ignored it, and a route you keep ignoring demotes itself to a soft suggestion (30-day decay, so it can earn its way back).
+**🗣 Every move is announced.** One line before any work: *which* discipline took over, *what* it understood, the *steps* it's about to take — redirect before anything happens. The router is accountable the same way: ignored routes demote themselves (30-day decay).
 
 > 🏛 **hydra** — slay it, then cauterize. **Task:** the timestamp bug that reappears after each deploy. **Plan:** reproduce against real data → trace the inbound clock path → fix the shared carry, not the caller → add a regression test that fails on the old code.
 
-**🧠 Memory with retrieval, not a diary.** A learning loop captures your corrections the moment they land into the local SQLite store; then every new prompt is scored against past lessons — *keyword overlap × recency × weight, with a same-project boost* — and the top matches inject themselves as context. Hit a bug near one you solved last month and the old lesson is already on the table. No `/remember`, no digging, no session-start dump of everything.
+**🧠 Memory with retrieval, not a diary.** Corrections are captured as they land; every new prompt is scored against them (*keyword overlap × recency × weight*, same-project boost) and the top lessons inject themselves. No `/remember`, no digging, no session-start dump.
 
-**🛡 "Done" is enforced, not asserted.** A Stop-hook **verification gate** inspects what actually happened in the turn: code changed while tests fail, `TODO`/`.skip`/placeholder stubs introduced, or a non-trivial change with **no verification run at all** — the agent is refused permission to stop and told exactly what to fix. Two blocks max, then it yields (no infinite loops); warn-only in `economy`. Other plugins *advise* this discipline. pantheon *enforces* it at the harness level.
+**🛡 "Done" is enforced, not asserted.** The Stop hook inspects the actual turn — failing tests on changed code, introduced `TODO`/`.skip` stubs, unverified non-trivial diffs — and refuses the stop with an exact fix list (two blocks max, then it yields). Others *advise* this. pantheon *enforces* it.
 
 <div align="center"><img src="assets/divider.svg" width="220" alt=""></div>
 
@@ -111,7 +111,7 @@ Plus three power tools in the same style: 📊 **`dashboard`** (the receipts led
 
 ## Everything, merged in
 
-pantheon doesn't just *point at* the best open-source plugins — it **vendors them in**, so one install gives you all of it. On top of the 16 core disciplines, it bundles the full skill sets of:
+pantheon doesn't just *point at* the best open-source plugins — it **vendors them in**, so one install gives you all of it. On top of the 16 disciplines (13 mythic + 3 power tools), it bundles the full skill sets of:
 
 - **[superpowers](https://github.com/obra/superpowers)** (Jesse Vincent, MIT) — brainstorming, systematic-debugging, TDD, plan writing/execution, parallel agents, git worktrees, and more.
 - **[oh-my-claudecode](https://github.com/Yeachan-Heo/oh-my-claudecode)** (Yeachan Heo, MIT) — its full skill catalog, including the big autonomous modes (now `sisyphus`, `automedon`, `hekaton`…).
@@ -207,7 +207,15 @@ Every segment is real data, shown only when it has a value. The **rolling hourly
 
 ## The store and the CLI
 
-Everything pantheon learns and does lands in **one SQLite store** — `~/.claude/pantheon/pantheon.db` (WAL, stdlib, schema-versioned, self-migrating). Lessons, receipts, route outcomes, metrics: one substrate, so every feature compounds on the others. A stable `pantheon` command is kept pointing at the installed plugin (refreshed every session start):
+Everything pantheon learns and does lands in **one SQLite store** — `~/.claude/pantheon/pantheon.db` (WAL, stdlib, schema-versioned, self-migrating). Lessons, receipts, route outcomes, metrics: one substrate, so every feature compounds on the others. This is what the receipts ledger looks like rendered:
+
+<div align="center">
+<img src="assets/dashboard.svg" alt="pantheon dashboard — discipline heatmap, spend sparkline, receipts feed, store health" width="760">
+</div>
+
+<sub>The real `pantheon dashboard --plain` output format, rendered from a demo store — your store stays on your machine.</sub>
+
+A stable `pantheon` command is kept pointing at the installed plugin (refreshed every session start):
 
 ```
 pantheon stats                          counts · top disciplines · spend
