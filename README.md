@@ -4,24 +4,50 @@
 
 ### One install. Your coding agent stops winging it.
 
-13 disciplines + 3 power tools + 170 merged skills — with memory that recalls itself, receipts for everything it does, and a verification gate that blocks fake "done". For [Claude Code](https://claude.com/claude-code).
+13 mythic disciplines + 3 power tools + 170 merged skills, every one under a pantheon-native name — with memory that recalls itself, receipts for everything it does, and a verification gate that blocks fake "done". For [Claude Code](https://claude.com/claude-code).
 
-![version](https://img.shields.io/badge/version-1.1.0-8957e5?style=flat-square) &nbsp;![license](https://img.shields.io/badge/license-MIT-3fb950?style=flat-square) &nbsp;![Claude Code](https://img.shields.io/badge/Claude_Code-plugin-d97757?style=flat-square) &nbsp;![dependencies](https://img.shields.io/badge/dependencies-none-3fb950?style=flat-square) &nbsp;![skills](https://img.shields.io/badge/skills-188-8957e5?style=flat-square)
+![version](https://img.shields.io/badge/version-1.2.0-8957e5?style=flat-square) &nbsp;![license](https://img.shields.io/badge/license-MIT-3fb950?style=flat-square) &nbsp;![Claude Code](https://img.shields.io/badge/Claude_Code-plugin-d97757?style=flat-square) &nbsp;![dependencies](https://img.shields.io/badge/dependencies-none-3fb950?style=flat-square) &nbsp;![skills](https://img.shields.io/badge/skills-188-8957e5?style=flat-square)
+
+**[See it work](#what-it-feels-like) · [The disciplines](#the-pantheon) · [Config](#configuration) · [The HUD](#the-hud-optional) · [CLI](#the-store-and-the-cli) · [Credits](CREDITS.md)**
 
 </div>
 
 ---
-
-Most agent mistakes aren't capability failures — they're **sequencing** failures: editing before understanding the code, calling an API from memory that changed three versions ago, self-approving a broken diff, over-building what didn't need to exist, forgetting the correction you gave two messages ago. Raw intelligence doesn't fix these. **Discipline does.**
-
-`pantheon` is that discipline, packaged. 13 core disciplines, each named for the myth that fits, each a countermeasure to one failure mode — **automatic** (a router fires the right one from plain language) and **transparent** (each announces itself before acting). On top, it **merges in** the best open-source plugins (superpowers, ponytail, oh-my-claudecode, ui-skills — attributed, licenses kept), so one install gives you everything.
 
 ```bash
 claude plugin marketplace add MiracleWeb3/pantheon
 claude plugin install pantheon@pantheon
 ```
 
-Restart Claude Code. That's it — it starts working on your next prompt.
+> [!TIP]
+> Restart Claude Code and it's live on your very next prompt. Token-shy? Say *"set pantheon to economy mode"* — one sentence, and it switches to a frugal profile.
+
+## What it feels like
+
+<div align="center">
+<img src="assets/demo.svg" alt="pantheon in action — auto-route, recall, announce, verification gate, receipt" width="760">
+</div>
+
+Every move is visible: the router says **why** a discipline fired, recall puts the **relevant past lesson** on the table, the discipline announces **what it's about to do**, the gate refuses a **"done" that isn't**, and the receipt records **what actually happened**.
+
+<table>
+<tr>
+<td width="50%">🎯 <b>Routes itself — and learns you.</b> Plain language fires the right discipline; routes you keep ignoring demote themselves.</td>
+<td width="50%">🧠 <b>Recalls itself.</b> Past lessons and corrections inject into matching prompts. No <code>/remember</code>, no digging.</td>
+</tr>
+<tr>
+<td>🛡 <b>Blocks fake "done".</b> Failing tests, TODO stubs, unverified code — the agent is refused permission to stop.</td>
+<td>🧾 <b>Proves itself.</b> Per-discipline receipts + a live dashboard: heatmap, spend, store health.</td>
+</tr>
+<tr>
+<td>💸 <b>Budget caps.</b> Session / daily / weekly USD limits — warn, ask, or hard-block at the cap.</td>
+<td>🩺 <b>Heals itself.</b> <code>pantheon doctor --fix</code> checks every moving part and repairs what's safe.</td>
+</tr>
+<tr>
+<td>🤝 <b>Spreads through teams.</b> A committed pack file shares config, standards, and lessons with every teammate.</td>
+<td>🔨 <b>Forge your own gods.</b> Mint custom disciplines with auto-routes; export them to Cursor / Codex.</td>
+</tr>
+</table>
 
 ## What makes it different
 
@@ -31,25 +57,17 @@ Restart Claude Code. That's it — it starts working on your next prompt.
 
 > 🏛 **hydra** — slay it, then cauterize. **Task:** the timestamp bug that reappears after each deploy. **Plan:** reproduce against real data → trace the inbound clock path → fix the shared carry, not the caller → add a regression test that fails on the old code.
 
-**🧩 Everything, in one install.** The 13 core disciplines stand alone (no dependencies), and on top pantheon vendors in the full skill sets of the best open-source plugins — every one attributed in `CREDITS.md` with its license retained in `LICENSES/`. Uninstall the rest; this has it.
-
-**🧠 It remembers — and recalls by itself.** A learning loop captures your corrections the moment they land into a local SQLite store. Then the headline feature: **retrieval-augmented memory** — every prompt is matched against past lessons (keyword overlap × recency × weight) and the relevant ones inject themselves as context. Hit a bug near one you've solved before and the old lesson is already on the table. No `/remember`, no digging.
+**🧠 It remembers — and recalls by itself.** A learning loop captures your corrections the moment they land into a local SQLite store. Then the headline feature: **retrieval-augmented memory** — every prompt is matched against past lessons (keyword overlap × recency × weight) and the relevant ones inject themselves as context. Hit a bug near one you've solved before and the old lesson is already on the table.
 
 **🛡 It blocks fake "done".** A Stop-hook **verification gate** inspects what actually happened in the turn: if code changed and tests are failing, `TODO`/`.skip`/placeholder stubs got introduced, or a non-trivial change shipped with **no verification at all**, the agent is refused permission to stop and told exactly what to fix (twice, max — then it yields; warn-only in `economy`). Other plugins *advise* this. pantheon *enforces* it.
 
 **🧾 It proves itself.** Every discipline files a one-line **receipt** (what it did or caught, tokens spent). `pantheon dashboard` renders the ledger: a per-discipline heatmap, a 7-day spend sparkline, the receipts feed, store health — the plugin's value made visible instead of vibes.
 
-**💸 It won't surprise you on cost.** Set `budget` caps (session / daily / weekly USD): a warning at 80%, then **warn / ask / hard-block** at the cap — and the HUD flags it. When anything misbehaves, `pantheon doctor` checks every moving part (hooks, config, store, ledger, skills) and `--fix` repairs what's safe to repair, always backing up first.
+**💸 It won't surprise you on cost.** Set `budget` caps (session / daily / weekly USD): a warning at 80%, then **warn / ask / hard-block** at the cap — and the HUD flags it. When anything misbehaves, `pantheon doctor` checks every moving part and `--fix` repairs what's safe to repair, always backing up first.
 
 **🤝 It spreads through your team.** Commit a `pantheon.pack.json` to a repo and every teammate inherits it on install: config, disabled disciplines, **team standards**, and shared lessons (imported once, deduped). A new hire gets the team's accumulated scar tissue on day one.
 
 **🔨 You can forge your own gods.** `pantheon forge new deploy-ritual --route "deploy .*prod"` scaffolds a custom discipline — announce block, method, verify step, receipt, auto-route — indistinguishable from a built-in. Share it as a single file, or `pantheon export` the disciplines for Cursor (`.mdc` rules) and Codex/OpenCode (`AGENTS.md`).
-
-**📊 It has a real HUD.** An optional statusline that beats the defaults: active discipline, model, **reasoning effort**, **session time**, **live context fill %**, lines changed, session cost, and **rolling hourly + weekly spend** — the last two tracked by pantheon itself because Claude Code doesn't expose them.
-
-**⚙️ It's configurable.** Full experience by default; flip to **economy** (no announce prose, soft routing — save tokens) or **quiet** (fully manual), globally or per-project. Turn off any discipline you don't want. Just say *"set pantheon to economy mode."*
-
-**🔔 It tells you when it's updated.** Once a day (fail-silent, cached, 2s timeout) it checks GitHub for a newer version and surfaces a one-line heads-up with the update command — no telemetry, no phone-home beyond that version check, and off with `"updateCheck": false`.
 
 ## The pantheon
 
@@ -77,39 +95,18 @@ Plus three power tools in the same style: 📊 **`dashboard`** (the receipts led
 
 ## Everything, merged in
 
-pantheon doesn't just *point at* the best open-source plugins — it **vendors them in**, so one install gives you all of it. On top of the 13 core disciplines, it bundles the full skill sets of:
+pantheon doesn't just *point at* the best open-source plugins — it **vendors them in**, so one install gives you all of it. On top of the 16 core disciplines, it bundles the full skill sets of:
 
 - **[superpowers](https://github.com/anthropics/claude-plugins-official)** (Jesse Vincent, MIT) — brainstorming, systematic-debugging, TDD, plan writing/execution, parallel agents, git worktrees, and more.
-- **[oh-my-claudecode](https://github.com/Yeachan-Heo/oh-my-claudecode)** (Yeachan Heo, MIT) — its full skill catalog.
-- **[ponytail](https://github.com/DietrichGebert/ponytail)** (Dietrich Gebert, MIT) — the lazy-senior-dev discipline set.
+- **[oh-my-claudecode](https://github.com/Yeachan-Heo/oh-my-claudecode)** (Yeachan Heo, MIT) — its full skill catalog, including the big autonomous modes (now `sisyphus`, `automedon`, `hekaton`…).
+- **[ponytail](https://github.com/DietrichGebert/ponytail)** (Dietrich Gebert, MIT) — the lazy-senior-dev discipline set (now the `spartan` family).
 - **[ui-skills](https://www.ui-skills.com/) & design collections** — frontend-design, interface-design, animation, three.js, framework skills.
 
 Every vendored skill keeps its original license (see [`LICENSES/`](LICENSES/)) and is attributed in [`CREDITS.md`](CREDITS.md). All rights remain with the original authors. And every one of them now carries a **pantheon-native name** — `spartan` for the lazy-dev discipline set, `sisyphus` / `automedon` / `hekaton` / `pythia` for the engine power modes, plain subject names for the guides — no borrowed branding; the full old→new map lives in [`CREDITS.md`](CREDITS.md). Don't want the bulk? `economy`/`quiet` config and per-skill `disciplines` toggles keep it lean.
 
-## The two ideas underneath
-
-1. **Separate your passes.** Understand ≠ plan ≠ build ≠ verify, and the reviewer is never the author. `daedalus` and `hydra` are the same rigor pointed at opposite problem *shapes* — building vs. diagnosing — which is why they run nearly opposite sequences.
-2. **Match the tool to the shape.** A feature is a *planning* problem. A hard bug is a *diagnosis* problem. A giant task is a *decomposition* problem. Reaching for the wrong shape — a heavy build-pipeline on a one-line bug, a single context on a repo-wide migration — is the most common misroute. pantheon names the fork so you take the right branch.
-
-## Composes with your stack — never replaces it
-
-`pantheon` is a **method, not a monolith**. It orchestrates these when present and does the steps by hand when not:
-
-- **[oh-my-claudecode](https://github.com/Yeachan-Heo/oh-my-claudecode)** — `daedalus` drives its `deep-interview → ralplan → autopilot` pipeline; `hydra` uses its `tracer` agent and `ralph` loop; `argus` uses its Workflow engine.
-- **[superpowers](https://github.com/anthropics/claude-plugins-official)** — `daedalus` uses `brainstorming → writing-plans → verification-before-completion`; `prometheus` uses `test-driven-development`; `hydra` uses `systematic-debugging`.
-- **A code map** ([graphify](https://github.com/) or any repo map) — `ariadne` queries it before grepping.
-- **A decisions wiki** (Obsidian, `docs/adr/`) — `ariadne` / `alexandria` read and write it.
-- **Design skills** ([ui-skills](https://www.ui-skills.com/), `frontend-design`, `shadcn`, …) — `athena` drives whichever you have installed and reviews the output against its craft standard. It is the art-director, **not** a bundled copy of those collections.
-
-With none installed, every skill still works.
-
 ## Configuration
 
-pantheon runs full-strength out of the box. Want it leaner — or fully manual? Drop a `config.json` at `~/.claude/pantheon/config.json` (global) or `<project>/.pantheon/config.json` (per-project, wins):
-
-```json
-{ "preset": "economy" }
-```
+pantheon runs full-strength out of the box. Drop a `config.json` at `~/.claude/pantheon/config.json` (global) or `<project>/.pantheon/config.json` (per-project, wins) — or just tell your agent *"set pantheon to economy mode"* and it writes the file for you.
 
 | Preset | Routing | Announce | Recall | Gate | For |
 |---|---|---|---|---|---|
@@ -117,7 +114,8 @@ pantheon runs full-strength out of the box. Want it leaner — or fully manual? 
 | `economy` | suggest | hidden | 1 lesson | warn | saving tokens |
 | `quiet` | off | hidden | off | off | full manual control |
 
-Override any single knob:
+<details>
+<summary><b>Every knob</b> (override any single one)</summary>
 
 ```json
 { "preset": "full", "gate": "warn", "recall": 2,
@@ -140,9 +138,15 @@ Override any single knob:
 | `disciplines` | `{ "<skill>": false }` | all on |
 | `packs` / `updateCheck` | `true` · `false` | `true` |
 
-Or just tell your agent *"set pantheon to economy mode"* — it writes the file for you. See [`config.example.json`](config.example.json) for the annotated version.
+See [`config.example.json`](config.example.json) for the annotated version. The update check is a daily, cached, 2-second, fail-silent version ping to GitHub — no telemetry, and `"updateCheck": false` kills it.
+
+</details>
 
 ## The HUD (optional)
+
+<div align="center">
+<img src="assets/hud.svg" alt="pantheon statusline — discipline, model, effort, session time, context fill, lines, cost, hourly and weekly spend, branch, inbox" width="760">
+</div>
 
 Add to `~/.claude/settings.json`:
 
@@ -153,11 +157,10 @@ Add to `~/.claude/settings.json`:
 }
 ```
 
-```
-🏛 · hydra · Fable 5 · ✳max · ⧗2h35m · ▓47% · +420/-95 · $6.80 · ⧖1h $2.10 · wk $18.40 · ⎇ main · 📥3
-```
+Every segment is real data, shown only when it has a value. The **rolling hourly/weekly spend** and **live context %** are things Claude Code doesn't hand a statusline — pantheon derives them itself (a cost-delta ledger, and the true `input + cache` token count from the latest transcript record). `▓` goes green → yellow → red as context fills; over budget, a red `⚠budget` appears.
 
-Every segment is real data, shown only when it has a value:
+<details>
+<summary><b>Segment guide</b> · and how to chain an existing statusline</summary>
 
 | Segment | Meaning | Source |
 |---|---|---|
@@ -171,12 +174,7 @@ Every segment is real data, shown only when it has a value:
 | `⧖1h $2.10` · `wk $18.40` | **rolling hourly / weekly spend** | pantheon's own cost-delta ledger |
 | `⎇ main` · `📥3` | branch · unconsolidated lessons | `.git/HEAD` · learning-inbox |
 
-The **hourly/weekly spend** and **live context %** are things Claude Code doesn't hand a statusline — pantheon derives them: it diffs cumulative session cost over time into an hour/week ledger, and reads the actual `input + cache` token count from the latest transcript record for a true context gauge. `▓` goes green → yellow → red as context fills, and flips to `ctx>200k` past the window.
-
-**Already have a statusline** (from another plugin or your own)? Claude Code allows one `statusLine`, so pantheon won't silently fight it — you choose:
-
-- **Keep yours** — skip the HUD entirely; every other pantheon feature works without it.
-- **Chain both** — point `statusLine` at pantheon with `--chain` and your existing command; your line renders first, pantheon's segment appends:
+**Already have a statusline?** Claude Code allows one `statusLine`, so pantheon won't silently fight it — chain both: your line renders first, pantheon's segment appends. If your command errors, pantheon shows just its own segment — never a blank bar.
 
 ```json
 "statusLine": {
@@ -185,7 +183,7 @@ The **hourly/weekly spend** and **live context %** are things Claude Code doesn'
 }
 ```
 
-If your command errors, pantheon shows just its own segment — never a blank bar.
+</details>
 
 ## The store and the CLI
 
@@ -204,6 +202,22 @@ pantheon export --target cursor|codex   take the disciplines to other agents
 
 (Shim lives at `~/.claude/pantheon/bin/pantheon`; add that dir to `PATH` or call it directly.)
 
+## Composes with your stack — never replaces it
+
+`pantheon` is a **method, not a monolith**. It orchestrates these when present and does the steps by hand when not:
+
+- **[oh-my-claudecode](https://github.com/Yeachan-Heo/oh-my-claudecode)** — the bundled power modes (`sisyphus`, `automedon`, `hekaton`) drive its persistence loops, agents, and Workflow engine when it's installed.
+- **A code map** ([graphify](https://github.com/) or any repo map) — `ariadne` queries it before grepping.
+- **A decisions wiki** (Obsidian, `docs/adr/`) — `ariadne` / `alexandria` read and write it.
+- **Design skills** (`frontend-design`, `shadcn`, …) — `athena` drives whichever you have installed and reviews the output against its craft standard.
+
+With none installed, every skill still works.
+
+## The two ideas underneath
+
+1. **Separate your passes.** Understand ≠ plan ≠ build ≠ verify, and the reviewer is never the author. `daedalus` and `hydra` are the same rigor pointed at opposite problem *shapes* — building vs. diagnosing — which is why they run nearly opposite sequences.
+2. **Match the tool to the shape.** A feature is a *planning* problem. A hard bug is a *diagnosis* problem. A giant task is a *decomposition* problem. Reaching for the wrong shape — a heavy build-pipeline on a one-line bug, a single context on a repo-wide migration — is the most common misroute. pantheon names the fork so you take the right branch.
+
 ## Under the hood
 
 - **Three hooks, stdlib-only, fail-silent.** `on_prompt.py` (UserPromptSubmit): route + recall + clarifier + context guard + budget. `on_stop.py` (Stop): learning capture + receipts + route outcomes + the verification gate. `session-start.py`: config directive, store migration, CLI shim, team-pack import, update check. A broken hook never breaks your session — every failure path exits 0.
@@ -216,6 +230,6 @@ The original 12-feature roadmap **shipped in full** across v0.8 → v1.1 (retrie
 
 ## License
 
-MIT — see [LICENSE](LICENSE). Independent work; the tools it composes with belong to their respective authors, and are credited, not copied.
+MIT — see [LICENSE](LICENSE). Independent work; merged sources belong to their respective authors, and are credited in [`CREDITS.md`](CREDITS.md) with licenses retained in [`LICENSES/`](LICENSES/).
 
 <div align="center"><sub>Built for people who want their agent to work like an engineer, not a slot machine.</sub></div>
