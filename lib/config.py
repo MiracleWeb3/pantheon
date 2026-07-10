@@ -46,7 +46,8 @@ PRESETS = {
                 "clarify": False, "context_guard": 0,  "receipts": False},
 }
 DEFAULT = dict(PRESETS["full"], disciplines={}, custom_routes={}, updateCheck=True,
-               budget={"session": None, "daily": None, "weekly": None, "mode": "warn"})
+               budget={"session": None, "daily": None, "weekly": None, "mode": "warn"},
+               usage={"mode": "auto", "five_hour_tokens": None, "weekly_tokens": None})
 
 
 def _read(path):
@@ -61,7 +62,7 @@ def _read(path):
 def _merge_layer(raw: dict, layer: dict) -> None:
     """Overlay one config source; dict-valued keys union instead of replace."""
     for k, v in layer.items():
-        if k in ("disciplines", "custom_routes", "budget") and isinstance(v, dict):
+        if k in ("disciplines", "custom_routes", "budget", "usage") and isinstance(v, dict):
             base = raw.get(k)
             raw[k] = dict(base if isinstance(base, dict) else {}, **v)
         else:
@@ -135,6 +136,13 @@ def load(cwd: str = "") -> dict:
             b[scope] = float(v) if isinstance(v, (int, float)) and v > 0 else None
         if raw["budget"].get("mode") in ("warn", "ask", "block"):
             b["mode"] = raw["budget"]["mode"]
+    if isinstance(raw.get("usage"), dict):
+        uu = cfg["usage"]
+        if raw["usage"].get("mode") in ("auto", "subscription", "api"):
+            uu["mode"] = raw["usage"]["mode"]
+        for k2 in ("five_hour_tokens", "weekly_tokens"):
+            v = raw["usage"].get(k2, uu.get(k2))
+            uu[k2] = int(v) if isinstance(v, (int, float)) and v > 0 else None
     cfg["preset"] = preset if preset in PRESETS else "custom" if raw else "full"
     cfg["packs"] = raw.get("packs", True) is not False
     return cfg
@@ -147,7 +155,7 @@ def enabled(cfg: dict, skill: str) -> bool:
 
 KNOWN_KEYS = {"_comment", "preset", "routing", "announce", "recall", "gate", "clarify",
               "context_guard", "receipts", "budget", "disciplines", "custom_routes",
-              "updateCheck", "packs"}
+              "updateCheck", "packs", "usage"}
 
 
 def validate(raw: dict):
@@ -165,6 +173,7 @@ def selftest() -> int:
     assert d["routing"] == "on" and d["announce"] is True and d["preset"] == "full"
     assert d["recall"] == 3 and d["gate"] == "block" and d["context_guard"] == 85
     assert d["budget"]["mode"] == "warn" and d["budget"]["weekly"] is None
+    assert d["usage"] == {"mode": "auto", "five_hour_tokens": None, "weekly_tokens": None}
     assert PRESETS["quiet"]["gate"] == "off" and PRESETS["economy"]["gate"] == "warn"
     assert enabled({"disciplines": {"athena": False}}, "athena") is False
     assert enabled({}, "hydra") is True

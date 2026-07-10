@@ -165,7 +165,7 @@ See [`config.example.json`](config.example.json) for the annotated version. The 
 ## The HUD (optional)
 
 <div align="center">
-<img src="assets/hud-line.svg" alt="pantheon statusline — discipline, model, effort, session time, context fill, lines, cost, hourly and weekly spend, branch, inbox" width="760">
+<img src="assets/hud-line-2.svg" alt="pantheon statusline — discipline, model, effort, session time, context fill, subscription 5h and weekly usage, lines, cost, hourly and weekly spend, branch, inbox" width="760">
 </div>
 
 Add to `~/.claude/settings.json`:
@@ -177,7 +177,7 @@ Add to `~/.claude/settings.json`:
 }
 ```
 
-Every segment is real data, shown only when it has a value. The **rolling hourly/weekly spend** and **live context %** are things Claude Code doesn't hand a statusline — pantheon derives them itself (a cost-delta ledger, and the true `input + cache` token count from the latest transcript record). `▓` goes green → yellow → red as context fills; over budget, a red `⚠budget` appears.
+Every segment is real data, shown only when it has a value. **Subscription meters built in:** `⏳5h` and `📅wk` show how much of your Claude plan's 5-hour window and weekly cap you've used — exact server-side percentages when Claude Code sends them (≥2.1, Pro/Max), with a reset countdown appearing near the cap; on older versions pantheon derives the windows itself from your local transcripts (marked `≈`, self-calibrating, ~20ms per render after the first scan). API-key sessions show a `⌁api` tag instead — their real usage is the `$` spend. The **rolling hourly/weekly spend** and fallback **context %** are pantheon's own derivations (a cost-delta ledger + real token counts). `▓` goes green → yellow → red as context fills; over budget, a red `⚠budget` appears.
 
 <details>
 <summary><b>Segment guide</b> · and how to chain an existing statusline</summary>
@@ -188,7 +188,9 @@ Every segment is real data, shown only when it has a value. The **rolling hourly
 | `Fable 5` | model | payload |
 | `✳max` | reasoning effort | parsed from `/effort` in the transcript |
 | `⧗2h35m` | session wall-clock | `cost.total_duration_ms` |
-| `▓47%` | **live context fill** | last turn's real token `usage` (not file size) |
+| `▓47%` | **live context fill** | payload (CC ≥2.1) or last turn's real token `usage` |
+| `⏳5h 42%` | **subscription 5-hour window used** | payload `rate_limits` (exact) or transcript-derived `≈` |
+| `📅wk 63%` | **subscription weekly cap used** | same — `↻47m` reset countdown appears ≥85% |
 | `+420/-95` | lines added / removed | `cost.total_lines_*` |
 | `$6.80` | this session's cost | `cost.total_cost_usd` |
 | `⧖1h $2.10` · `wk $18.40` | **rolling hourly / weekly spend** | pantheon's own cost-delta ledger |

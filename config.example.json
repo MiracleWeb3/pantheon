@@ -35,5 +35,8 @@
   "_packs": "honor a committed pantheon.pack.json (team config + standards + shared lessons)",
   "packs": true,
 
+  "_usage": "HUD subscription meters. Claude Code >=2.1 sends exact 5h/weekly percentages (used automatically); this only tunes the transcript-derived FALLBACK. mode: auto | subscription | api. Pin exact token limits to replace the observed-max calibration (shown with ~).",
+  "usage": { "mode": "auto", "five_hour_tokens": null, "weekly_tokens": null },
+
   "updateCheck": true
 }

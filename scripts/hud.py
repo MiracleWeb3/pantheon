@@ -20,7 +20,7 @@ Chain an existing statusline:  ... hud.py --chain 'your-command'
 
 Fail-silent: a broken statusline is worse than none. Self-check: python3 hud.py --selftest
 """
-import sys, os, json, datetime
+import sys, os, json, time, datetime
 
 DIM, BOLD, RESET = "\033[2m", "\033[1m", "\033[0m"
 CYAN, MAGENTA, YELLOW, GREEN, RED = ("\033[36m", "\033[35m", "\033[33m",
@@ -186,17 +186,83 @@ def usage(session_id, total_cost):
         return None, None, None
 
 
-def budget_flag(session_cost, s24, s7):
-    """'' | 'near' | 'over' against the config budget caps. Uses a file-scoped
-    import so a broken lib/ can never take the statusline down with it."""
+_LIB_CACHE = {}
+_LIMITS_ENABLED = True  # selftest gate: the fallback scans real transcripts
+
+
+def _lib(name):
+    """Load a lib/ module by file path, cached. File-scoped so a broken lib/
+    can never take the statusline down — callers wrap in try/except."""
+    if name in _LIB_CACHE:
+        return _LIB_CACHE[name]
+    import importlib.util
+    libdir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "lib")
+    if libdir not in sys.path:
+        sys.path.insert(0, libdir)  # lib modules import their siblings
+    spec = importlib.util.spec_from_file_location(
+        "pantheon_" + name, os.path.join(libdir, name + ".py"))
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    _LIB_CACHE[name] = mod
+    return mod
+
+
+def usage_window_segments(p):
+    """Subscription meters: ⏳5h and 📅wk used-%. Payload-first — Claude Code
+    ≥2.1 sends exact server-side `rate_limits` for Pro/Max (absent on API
+    keys). Fallback: pantheon's own transcript-derived windows (lib/limits.py,
+    marked ≈ when calibrated). API-key sessions get a dim ⌁api tag — their
+    real usage is the $ spend already shown."""
+    segs = []
+    rl = p.get("rate_limits") or {}
+
+    def native(win, icon, label):
+        d = rl.get(win) or {}
+        u = d.get("used_percentage")
+        if not isinstance(u, (int, float)):
+            return None
+        col = GREEN if u < 60 else YELLOW if u < 85 else RED
+        s = f"{col}{icon}{label} {int(round(u))}%{RESET}"
+        if u >= 85 and isinstance(d.get("resets_at"), (int, float)):
+            mins = max(0, int((d["resets_at"] - time.time()) // 60))
+            s += (f" {DIM}↻{mins // 60}h{mins % 60:02d}m{RESET}" if mins >= 60
+                  else f" {DIM}↻{mins}m{RESET}")
+        return s
+
+    for win, icon, label in (("five_hour", "⏳", "5h"), ("seven_day", "📅", "wk")):
+        s = native(win, icon, label)
+        if s:
+            segs.append(s)
+    if segs:
+        return segs
+    if not _LIMITS_ENABLED:
+        return []
     try:
-        import importlib.util
-        lib = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-                           "lib", "config.py")
-        spec = importlib.util.spec_from_file_location("pantheon_cfg", lib)
-        mod = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(mod)
-        b = mod.load(os.getcwd()).get("budget") or {}
+        cfgu = (_lib("config").load(os.getcwd()).get("usage")) or {}
+        lm = _lib("limits")
+        w = lm.windows(cfgu)
+    except Exception:
+        return []
+    if not w:
+        return []
+    if w["mode"] == "api":
+        return [f"{DIM}⌁api{RESET}"]
+    ap = "≈" if w.get("approx") else ""
+    for pk, tk, icon, label in (("block_pct", "block_tokens", "⏳", "5h"),
+                                ("week_pct", "week_tokens", "📅", "wk")):
+        pv = w.get(pk)
+        if pv is not None:
+            col = GREEN if pv < 60 else YELLOW if pv < 85 else RED
+            segs.append(f"{col}{icon}{label} {pv}%{ap}{RESET}")
+        elif w.get(tk):
+            segs.append(f"{DIM}{icon}{label} {lm.fmt_tokens(w[tk])}{RESET}")
+    return segs
+
+
+def budget_flag(session_cost, s24, s7):
+    """'' | 'near' | 'over' against the config budget caps."""
+    try:
+        b = _lib("config").load(os.getcwd()).get("budget") or {}
     except Exception:
         return ""
     out = ""
@@ -243,12 +309,16 @@ def build_line(p):
     if dur:
         seg.append(f"{DIM}⧗{dur}{RESET}")
 
-    pct = context_pct(p.get("transcript_path", ""))
+    cw = (p.get("context_window") or {}).get("used_percentage")
+    pct = int(round(cw)) if isinstance(cw, (int, float)) else \
+        context_pct(p.get("transcript_path", ""))  # payload-first, derive as fallback
     if p.get("exceeds_200k_tokens"):
         seg.append(f"{RED}▓ctx>200k{RESET}")
     elif pct >= 0:
         col = RED if pct >= 85 else YELLOW if pct >= 60 else GREEN
         seg.append(f"{col}▓{pct}%{RESET}")
+    for s in usage_window_segments(p):
+        seg.append(s)
 
     add, rem = cost.get("total_lines_added"), cost.get("total_lines_removed")
     if add or rem:
@@ -305,9 +375,12 @@ def main():
 
 def selftest():
     # All ledger/cache writes go to a temp dir — the doctor runs this selftest
-    # routinely, and it must never touch the user's real spend history.
-    global PANDIR
+    # routinely, and it must never touch the user's real spend history. The
+    # transcript-derived limits fallback is disabled here (it scans real
+    # transcripts); the payload-first path is what gets asserted.
+    global PANDIR, _LIMITS_ENABLED
     _old_pandir = PANDIR
+    _LIMITS_ENABLED = False
     import tempfile
     PANDIR = tempfile.mkdtemp(prefix="pantheon-hud-")
     p = {"model": {"display_name": "Fable 5"},
@@ -315,8 +388,21 @@ def selftest():
          "session_id": "selftest-sess",
          "cost": {"total_cost_usd": 2.5, "total_duration_ms": 3_725_000,
                   "total_lines_added": 40, "total_lines_removed": 7},
+         "context_window": {"used_percentage": 47},
+         "rate_limits": {"five_hour": {"used_percentage": 42,
+                                       "resets_at": time.time() + 3600},
+                         "seven_day": {"used_percentage": 63}},
          "exceeds_200k_tokens": False}
     line = build_line(p)
+    assert "▓47%" in line            # native context_window wins over derivation
+    assert "5h 42%" in line and "wk 63%" in line  # native subscription meters
+    assert "↻" not in line           # reset countdown only when ≥85%
+    hot = dict(p, rate_limits={"five_hour": {"used_percentage": 92,
+                                             "resets_at": time.time() + 47 * 60}})
+    hline = build_line(hot)
+    assert "5h 92%" in hline and "↻" in hline  # near-cap shows the reset countdown
+    nolimits = build_line(dict(p, rate_limits={}))  # API key / old CC: no crash
+    assert "5h" not in nolimits
     assert "Fable 5" in line and "🏛" in line and "$2.50" in line
     assert "1h02m" in line, line          # 3,725s → 1h02m session time
     assert "+40" in line and "-7" in line

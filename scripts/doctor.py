@@ -21,6 +21,7 @@ import config as cfgmod
 OK, WARN, BAD = "✓", "⚠", "✗"
 
 SELFTEST_MODULES = ["lib/paths.py", "lib/config.py", "lib/store.py", "lib/transcript.py",
+                    "lib/limits.py",
                     "hooks/on_prompt.py", "hooks/on_stop.py", "hooks/session-start.py",
                     "scripts/cli.py", "scripts/dashboard.py", "scripts/hud.py"]
 
