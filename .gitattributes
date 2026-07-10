@@ -1,0 +1,6 @@
+# vendored/merged skill collections and pre-built art assets — keep them out of
+# the Languages bar so it reflects what pantheon itself is written in (Python + Markdown)
+skills/** linguist-vendored
+assets/** linguist-vendored
+LICENSES/** linguist-vendored
+docs/** linguist-documentation

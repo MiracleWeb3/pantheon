@@ -4,7 +4,7 @@
 
 ### One install. Your coding agent stops winging it.
 
-13 mythic disciplines + 3 power tools + 170 merged skills, every one under a pantheon-native name — with memory that recalls itself, receipts for everything it does, and a verification gate that blocks fake "done". For [Claude Code](https://claude.com/claude-code).
+13 mythic disciplines + 3 power tools + 172 merged skills = **188 under pantheon-native names** — with memory that recalls itself, receipts for everything it does, and a verification gate that blocks fake "done". For [Claude Code](https://claude.com/claude-code).
 
 ![version](https://img.shields.io/badge/version-1.2.0-8957e5?style=flat-square) &nbsp;![license](https://img.shields.io/badge/license-MIT-3fb950?style=flat-square) &nbsp;![Claude Code](https://img.shields.io/badge/Claude_Code-plugin-d97757?style=flat-square) &nbsp;![dependencies](https://img.shields.io/badge/dependencies-none-3fb950?style=flat-square) &nbsp;![skills](https://img.shields.io/badge/skills-188-8957e5?style=flat-square) &nbsp;![last commit](https://img.shields.io/github/last-commit/MiracleWeb3/pantheon?style=flat-square&color=d97757&label=last%20commit)
 
@@ -51,23 +51,15 @@ Every move is visible: the router says **why** a discipline fired, recall puts t
 
 ## What makes it different
 
-**🎯 It's automatic — and it learns you.** You don't memorize commands. Type *"this bug keeps coming back"* and the `hydra` discipline takes over — root-cause first, reproduce, fix at the root, seal with a regression test. A prompt-router hook reads intent and fires the match; an explicit call (`/pantheon:hydra`) always wins. And the router is **adaptive**: every fire records whether you actually used it, replaced it, or ignored it — a route you keep ignoring demotes itself to a soft suggestion, with old evidence decaying so it can earn its way back.
+Three mechanics nobody else ships — everything else from the grid above gets its own section below.
 
-**🗣 It announces itself.** When a discipline activates — by your hand or the router's — it opens with one line: *which* power took over, *what* it understood your goal to be, and the *steps* it's about to take. You see the plan **before** any work happens, and can redirect. No silent automation.
+**🗣 Every move is announced.** When a discipline activates — by your hand or the router's — it opens with one line: *which* power took over, *what* it understood your goal to be, and the *steps* it's about to take. You see the plan **before** any work happens, and can redirect. No silent automation — and the router itself is accountable: every fire logs whether you used it, replaced it, or ignored it, and a route you keep ignoring demotes itself to a soft suggestion (30-day decay, so it can earn its way back).
 
 > 🏛 **hydra** — slay it, then cauterize. **Task:** the timestamp bug that reappears after each deploy. **Plan:** reproduce against real data → trace the inbound clock path → fix the shared carry, not the caller → add a regression test that fails on the old code.
 
-**🧠 It remembers — and recalls by itself.** A learning loop captures your corrections the moment they land into a local SQLite store. Then the headline feature: **retrieval-augmented memory** — every prompt is matched against past lessons (keyword overlap × recency × weight) and the relevant ones inject themselves as context. Hit a bug near one you've solved before and the old lesson is already on the table.
+**🧠 Memory with retrieval, not a diary.** A learning loop captures your corrections the moment they land into the local SQLite store; then every new prompt is scored against past lessons — *keyword overlap × recency × weight, with a same-project boost* — and the top matches inject themselves as context. Hit a bug near one you solved last month and the old lesson is already on the table. No `/remember`, no digging, no session-start dump of everything.
 
-**🛡 It blocks fake "done".** A Stop-hook **verification gate** inspects what actually happened in the turn: if code changed and tests are failing, `TODO`/`.skip`/placeholder stubs got introduced, or a non-trivial change shipped with **no verification at all**, the agent is refused permission to stop and told exactly what to fix (twice, max — then it yields; warn-only in `economy`). Other plugins *advise* this. pantheon *enforces* it.
-
-**🧾 It proves itself.** Every discipline files a one-line **receipt** (what it did or caught, tokens spent). `pantheon dashboard` renders the ledger: a per-discipline heatmap, a 7-day spend sparkline, the receipts feed, store health — the plugin's value made visible instead of vibes.
-
-**💸 It won't surprise you on cost.** Set `budget` caps (session / daily / weekly USD): a warning at 80%, then **warn / ask / hard-block** at the cap — and the HUD flags it. When anything misbehaves, `pantheon doctor` checks every moving part and `--fix` repairs what's safe to repair, always backing up first.
-
-**🤝 It spreads through your team.** Commit a `pantheon.pack.json` to a repo and every teammate inherits it on install: config, disabled disciplines, **team standards**, and shared lessons (imported once, deduped). A new hire gets the team's accumulated scar tissue on day one.
-
-**🔨 You can forge your own gods.** `pantheon forge new deploy-ritual --route "deploy .*prod"` scaffolds a custom discipline — announce block, method, verify step, receipt, auto-route — indistinguishable from a built-in. Share it as a single file, or `pantheon export` the disciplines for Cursor (`.mdc` rules) and Codex/OpenCode (`AGENTS.md`).
+**🛡 "Done" is enforced, not asserted.** A Stop-hook **verification gate** inspects what actually happened in the turn: code changed while tests fail, `TODO`/`.skip`/placeholder stubs introduced, or a non-trivial change with **no verification run at all** — the agent is refused permission to stop and told exactly what to fix. Two blocks max, then it yields (no infinite loops); warn-only in `economy`. Other plugins *advise* this discipline. pantheon *enforces* it at the harness level.
 
 <div align="center"><img src="assets/divider.svg" width="220" alt=""></div>
 
@@ -77,7 +69,7 @@ Because they each do *one layer*, and none of them **enforce** anything. Honest 
 
 | capability | **pantheon** | superpowers | oh-my-claudecode | claude-mem |
 |---|:---:|:---:|:---:|:---:|
-| fires the right skill from plain language | ✅ *and learns you* | ❌ | ⚠️ magic keywords | ❌ |
+| a router that fires the right skill — and learns from your outcomes | ✅ | ⚠️ description matching only | ⚠️ magic keywords | ❌ |
 | memory that recalls itself, per-prompt relevance | ✅ | ❌ | ⚠️ manual lookup | ⚠️ session-start dump |
 | "done" gate enforced by a hook (not advice) | ✅ blocks | ⚠️ advisory | ⚠️ advisory | ❌ |
 | receipts + dashboard of what it did & caught | ✅ | ❌ | ⚠️ HUD only | ❌ |
@@ -85,7 +77,7 @@ Because they each do *one layer*, and none of them **enforce** anything. Honest 
 | team packs — repo-inherited config + lessons | ✅ | ❌ | ❌ | ❌ |
 | forge your own discipline, auto-routed | ✅ | ⚠️ authoring guide | ⚠️ skill manager | ❌ |
 | take the disciplines to Cursor / Codex | ✅ export | ❌ | ❌ | ❌ |
-| ships the others' skill sets too | ✅ 188, attributed | — | — | — |
+| ships the others' skill sets too | ✅ 172, attributed | — | — | — |
 
 <sub>⚠️ = partial or manual. Assessment as of July 2026 — if a row went stale, open an issue and it gets fixed. And to be clear: those are excellent projects — pantheon bundles their skills with attribution precisely because they're worth having.</sub>
 
@@ -119,7 +111,7 @@ Plus three power tools in the same style: 📊 **`dashboard`** (the receipts led
 
 pantheon doesn't just *point at* the best open-source plugins — it **vendors them in**, so one install gives you all of it. On top of the 16 core disciplines, it bundles the full skill sets of:
 
-- **[superpowers](https://github.com/anthropics/claude-plugins-official)** (Jesse Vincent, MIT) — brainstorming, systematic-debugging, TDD, plan writing/execution, parallel agents, git worktrees, and more.
+- **[superpowers](https://github.com/obra/superpowers)** (Jesse Vincent, MIT) — brainstorming, systematic-debugging, TDD, plan writing/execution, parallel agents, git worktrees, and more.
 - **[oh-my-claudecode](https://github.com/Yeachan-Heo/oh-my-claudecode)** (Yeachan Heo, MIT) — its full skill catalog, including the big autonomous modes (now `sisyphus`, `automedon`, `hekaton`…).
 - **[ponytail](https://github.com/DietrichGebert/ponytail)** (Dietrich Gebert, MIT) — the lazy-senior-dev discipline set (now the `spartan` family).
 - **[ui-skills](https://www.ui-skills.com/) & design collections** — frontend-design, interface-design, animation, three.js, framework skills.
@@ -231,7 +223,7 @@ pantheon export --target cursor|codex   take the disciplines to other agents
 `pantheon` is a **method, not a monolith**. It orchestrates these when present and does the steps by hand when not:
 
 - **[oh-my-claudecode](https://github.com/Yeachan-Heo/oh-my-claudecode)** — the bundled power modes (`sisyphus`, `automedon`, `hekaton`) drive its persistence loops, agents, and Workflow engine when it's installed.
-- **A code map** ([graphify](https://github.com/) or any repo map) — `ariadne` queries it before grepping.
+- **A code map** (a graphify knowledge graph, or any repo map you keep) — `ariadne` queries it before grepping.
 - **A decisions wiki** (Obsidian, `docs/adr/`) — `ariadne` / `alexandria` read and write it.
 - **Design skills** (`frontend-design`, `shadcn`, …) — `athena` drives whichever you have installed and reviews the output against its craft standard.
 
