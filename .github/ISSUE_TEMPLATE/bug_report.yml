@@ -1,0 +1,26 @@
+name: Bug report
+description: Something broke — routing, gate, recall, HUD, CLI, store
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What did you expect, what did you get instead?
+    validations:
+      required: true
+  - type: textarea
+    id: doctor
+    attributes:
+      label: pantheon doctor output
+      description: Run `~/.claude/pantheon/bin/pantheon doctor` (or `python3 <plugin>/scripts/doctor.py`) and paste the output — it checks every moving part.
+      render: text
+    validations:
+      required: true
+  - type: input
+    id: env
+    attributes:
+      label: Environment
+      placeholder: "OS · Python version · Claude Code version"
+    validations:
+      required: false
