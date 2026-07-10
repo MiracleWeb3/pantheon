@@ -173,7 +173,7 @@ pantheon vendors open-source skills from the projects below, merged into one plu
 - `web-quality-audit`  ⚠️ license unverified — confirm before redistribution
 
 ## superpowers — Jesse Vincent
-<https://github.com/anthropics/claude-plugins-official>  ·  14 skills
+<https://github.com/obra/superpowers>  ·  14 skills
 
 - `brainstorming`
 - `dispatching-parallel-agents`

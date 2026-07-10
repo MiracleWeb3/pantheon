@@ -1,6 +1,6 @@
 ---
 name: oracle
-description: "Consult the real documentation before using an unfamiliar SDK, API, framework, or library — never code it from memory. Use before writing code against something you don't use daily, when the user says 'how do I use X', 'what's the API for', 'which library', 'research this', or when a call keeps failing in a way that smells like a wrong signature. Triggers on 'docs', 'API', 'SDK', 'how do I', 'is there a library', 'latest version'."
+description: "Consult real documentation before using an unfamiliar SDK, API, or library -- never code from memory. Use before writing code you don't use daily, when the user says 'how do I use X', or a call keeps failing like a wrong signature. Triggers: 'docs', 'API', 'SDK', 'latest version'."
 ---
 
 # oracle — consult before you act

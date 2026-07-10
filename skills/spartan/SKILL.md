@@ -1,18 +1,6 @@
 ---
 name: spartan
-description: >
-  Forces the laziest solution that actually works, simplest, shortest, most
-  minimal. Channels a senior dev who has seen everything: question whether the
-  task needs to exist at all (YAGNI), reach for the standard library before
-  custom code, native platform features before dependencies, one line before
-  fifty. Supports intensity levels: lite, full (default), ultra. Use on ANY
-  coding task: writing, adding, refactoring, fixing, reviewing, or designing
-  code, and choosing libraries or dependencies. Also use whenever the user
-  says "spartan", "be lazy", "lazy mode", "simplest solution", "minimal
-  solution", "yagni", "do less", or "shortest path", or complains about
-  over-engineering, bloat, boilerplate, or unnecessary dependencies. Do NOT
-  use for non-coding requests (general knowledge, prose, translation,
-  summaries, recipes).
+description: "The PERSISTENT lazy-dev mode (levels: lite, full, ultra) that stays active every response. Use when the user says \"spartan\", \"be lazy\", \"lazy mode\", or wants standing pressure against over-engineering/bloat. For a one-shot simplification pass, use lethe. Not for non-coding requests."
 argument-hint: "[lite|full|ultra]"
 license: MIT
 ---

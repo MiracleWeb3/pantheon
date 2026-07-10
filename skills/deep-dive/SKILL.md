@@ -7,7 +7,7 @@ triggers:
   - "deep-dive"
   - "trace and interview"
   - "investigate deeply"
-pipeline: [deep-dive, plan, autopilot]
+pipeline: [deep-dive, plan, automedon]
 next-skill: plan
 next-skill-args: --consensus --direct
 handoff: .omc/specs/deep-dive-{slug}.md
@@ -30,7 +30,7 @@ Deep Dive orchestrates a 2-stage pipeline that first investigates WHY something 
 - User already knows the root cause and just needs requirements gathering — use `/deep-interview` directly
 - User has a clear, specific request with file paths and function names — execute directly
 - User wants to trace/investigate but NOT define requirements afterward — use `/trace` directly
-- User already has a PRD or spec — use `/ralph` or `/autopilot` with that plan
+- User already has a PRD or spec — use `/pantheon:sisyphus` or `/pantheon:automedon` with that plan
 - User says "just do it" or "skip the investigation" — respect their intent
 </Do_Not_Use_When>
 
@@ -124,7 +124,7 @@ After confirmation, update state to `current_phase: "trace-executing"`.
 
 ## Phase 3: Trace Execution
 
-Run the trace autonomously using the `oh-my-claudecode:trace` skill's behavioral contract.
+Run the trace autonomously using the `pantheon:trace` skill's behavioral contract.
 
 ### Team Mode Orchestration
 
@@ -218,7 +218,7 @@ After saving:
 
 ### Architecture: Reference-not-Copy
 
-Phase 4 follows the `oh-my-claudecode:deep-interview` SKILL.md Phases 2-4 (Interview Loop, Challenge Agents, Crystallize Spec) as the base behavioral contract. The executor MUST read the deep-interview SKILL.md to understand the full interview protocol. Deep-dive does NOT duplicate the interview protocol — it specifies exactly **3 initialization overrides**:
+Phase 4 follows the `pantheon:deep-interview` SKILL.md Phases 2-4 (Interview Loop, Challenge Agents, Crystallize Spec) as the base behavioral contract. The executor MUST read the deep-interview SKILL.md to understand the full interview protocol. Deep-dive does NOT duplicate the interview protocol — it specifies exactly **3 initialization overrides**:
 
 ### Optional company-context call
 
@@ -307,7 +307,7 @@ Before presenting execution options, run a lightweight workflow pre-flight when 
 
 - **Set up issue/branch/worktree first (Recommended)**
   - Description: "Redirect to the project's setup workflow before any execution skill writes code."
-  - Action: Invoke the known project setup skill or workflow if one is named in guidance; otherwise invoke `Skill("oh-my-claudecode:project-session-manager")` with `spec_path` and the pre-flight findings as context. After setup completes, rerun this Phase 5 pre-flight before showing execution options.
+  - Action: Invoke the known project setup skill or workflow if one is named in guidance; otherwise invoke `Skill("pantheon:project-session-manager")` with `spec_path` and the pre-flight findings as context. After setup completes, rerun this Phase 5 pre-flight before showing execution options.
 - **Proceed to execution options anyway**
   - Description: "Acknowledge the workflow warning and continue to the normal execution menu."
   - Action: Continue to the execution options below, preserving the warning in handoff context.
@@ -323,20 +323,20 @@ If the guidance gate does not apply, or the pre-flight passes, present execution
 
 1. **Ralplan → Autopilot (Recommended)**
    - Description: "3-stage pipeline: consensus-refine this spec with Planner/Architect/Critic, then execute with full autopilot. Maximum quality."
-   - Action: Invoke `Skill("oh-my-claudecode:plan")` with `--consensus --direct` flags and the spec file path (`spec_path` from state) as context. The `--direct` flag skips the omc-plan skill's interview phase (the deep-dive interview already gathered requirements), while `--consensus` triggers the Planner/Architect/Critic loop. When consensus completes and produces a plan in `.omc/plans/`, invoke `Skill("oh-my-claudecode:autopilot")` with the consensus plan as Phase 0+1 output — autopilot skips both Expansion and Planning, starting directly at Phase 2 (Execution).
+   - Action: Invoke `Skill("pantheon:plan")` with `--consensus --direct` flags and the spec file path (`spec_path` from state) as context. The `--direct` flag skips the omc-plan skill's interview phase (the deep-dive interview already gathered requirements), while `--consensus` triggers the Planner/Architect/Critic loop. When consensus completes and produces a plan in `.omc/plans/`, invoke `Skill("pantheon:automedon")` with the consensus plan as Phase 0+1 output — autopilot skips both Expansion and Planning, starting directly at Phase 2 (Execution).
    - Pipeline: `deep-dive spec → omc-plan --consensus --direct → autopilot execution`
 
 2. **Execute with autopilot (skip ralplan)**
    - Description: "Full autonomous pipeline — planning, parallel implementation, QA, validation. Faster but without consensus refinement."
-   - Action: Invoke `Skill("oh-my-claudecode:autopilot")` with the spec file path as context. The spec replaces autopilot's Phase 0 — autopilot starts at Phase 1 (Planning).
+   - Action: Invoke `Skill("pantheon:automedon")` with the spec file path as context. The spec replaces autopilot's Phase 0 — autopilot starts at Phase 1 (Planning).
 
 3. **Execute with ralph**
    - Description: "Persistence loop with architect verification — keeps working until all acceptance criteria pass."
-   - Action: Invoke `Skill("oh-my-claudecode:ralph")` with the spec file path as the task definition.
+   - Action: Invoke `Skill("pantheon:sisyphus")` with the spec file path as the task definition.
 
 4. **Execute with team**
    - Description: "N coordinated parallel agents — fastest execution for large specs."
-   - Action: Invoke `Skill("oh-my-claudecode:team")` with the spec file path as the shared plan.
+   - Action: Invoke `Skill("pantheon:team")` with the spec file path as the shared plan.
 
 5. **Refine further**
    - Description: "Continue interviewing to improve clarity (current: {score}%)."
@@ -362,7 +362,7 @@ Output: spec.md            Output: consensus-plan.md        Output: working code
 
 <Tool_Usage>
 - Use `AskUserQuestion` for lane confirmation (Phase 2) and each interview question (Phase 4)
-- Use `Agent(subagent_type="oh-my-claudecode:explore", model="haiku")` for brownfield codebase exploration (Phase 1)
+- Use `Agent(subagent_type="oh-my-claudecode:explore", model="haiku")` for brownfield codebase exploration (Phase 1) (when the OMC engine is installed; standalone falls back to `pantheon:researcher`, then `general-purpose`)
 - Use Claude built-in team mode for 3 parallel tracer lanes (Phase 3)
 - Use `state_write(mode="deep-interview")` with `state.source = "deep-dive"` for all state persistence
 - Use `state_read(mode="deep-interview")` for resume — check `state.source === "deep-dive"` to distinguish
@@ -512,7 +512,7 @@ Deep-dive's output (`.omc/specs/deep-dive-{slug}.md`) feeds into the standard om
   → Trace (3 parallel lanes) + Interview (Socratic Q&A)
   → Spec: .omc/specs/deep-dive-{slug}.md
 
-  → /omc-plan --consensus --direct (spec as input)
+  → /pantheon:plan --consensus --direct (spec as input)
     → Planner/Architect/Critic consensus
     → Plan: .omc/plans/ralplan-*.md
 

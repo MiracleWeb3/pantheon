@@ -40,12 +40,12 @@ Just include these words naturally in your request:
 
 TEAMS:
 Spawn coordinated agents with shared task lists and real-time messaging:
-- /oh-my-claudecode:team 3:executor "fix all TypeScript errors"
-- /oh-my-claudecode:team 5:debugger "fix build errors in src/"
+- /pantheon:team 3:executor "fix all TypeScript errors"
+- /pantheon:team 5:debugger "fix build errors in src/"
 Teams use Claude Code's implicit agent team (spawn teammates directly with distinct `name` values; no TeamCreate/TeamDelete in Claude Code 2.1.178+).
 
 MCP SERVERS:
-Run /oh-my-claudecode:mcp-setup to add tools like web search, GitHub, etc.
+Run /pantheon:mcp-setup to add tools like web search, GitHub, etc.
 
 HUD STATUSLINE:
 The status bar now shows OMC state. Restart Claude Code to see it.
@@ -65,27 +65,27 @@ That's it! Just use Claude Code normally.
 OMC Setup Complete! (Upgraded from 2.x)
 
 GOOD NEWS: Your existing commands still work!
-- /ralph, /ultrawork, /omc-plan, etc. all still function
+- /pantheon:sisyphus, /pantheon:hekaton, /pantheon:plan, etc. all still function
 
 WHAT'S NEW in 3.0:
 You no longer NEED those commands. Everything is automatic now:
-- Just say "don't stop until done" instead of /ralph
-- Just say "fast" or "parallel" instead of /ultrawork
-- Just say "plan this" instead of /omc-plan
+- Just say "don't stop until done" instead of /pantheon:sisyphus
+- Just say "fast" or "parallel" instead of /pantheon:hekaton
+- Just say "plan this" instead of /pantheon:plan
 - Just say "stop" instead of /cancel
 
 MAGIC KEYWORDS (power-user shortcuts):
 | Keyword | Same as old... | Example |
 |---------|----------------|---------|
-| ralph | /ralph | "ralph: fix the bug" |
-| ralplan | /ralplan | "ralplan this feature" |
-| ulw | /ultrawork | "ulw refactor API" |
-| omc-plan | /omc-plan | "plan the endpoints" |
+| ralph | /pantheon:sisyphus | "ralph: fix the bug" |
+| ralplan | /pantheon:sisyphus-plan | "ralplan this feature" |
+| ulw | /pantheon:hekaton | "ulw refactor API" |
+| omc-plan | /pantheon:plan | "plan the endpoints" |
 | team | (new!) | "/team 3:executor fix errors" |
 
 TEAMS (NEW!):
 Spawn coordinated agents with shared task lists and real-time messaging:
-- /oh-my-claudecode:team 3:executor "fix all TypeScript errors"
+- /pantheon:team 3:executor "fix all TypeScript errors"
 - Uses Claude Code's implicit agent team (spawn teammates directly with distinct `name` values; no TeamCreate/TeamDelete in Claude Code 2.1.178+)
 
 HUD STATUSLINE:

@@ -1,6 +1,6 @@
 ---
 name: tdd
-description: Test-driven development. Use when the user wants to build features or fix bugs test-first, mentions "red-green-refactor", or wants integration tests.
+description: The engine's TDD execution MODE (keyword "tdd") for driving a whole task test-first, including integration tests. For the discipline itself use prometheus; for the methodology reference see test-driven-development.
 ---
 
 # Test-Driven Development

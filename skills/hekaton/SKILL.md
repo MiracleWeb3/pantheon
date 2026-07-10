@@ -8,6 +8,8 @@ level: 4
 
 > *pantheon-native name — this skill ships as `ultrawork` in its source (see CREDITS.md for attribution).*
 
+Engine note: full power needs oh-my-claudecode installed; standalone, agent spawns fall back to the bundled pantheon agents.
+
 <Purpose>
 Ultrawork is a parallel execution engine and execution protocol for independent work. It emphasizes intent grounding, parallel context gathering, dependency-aware task graphs for non-trivial work, and concise evidence-backed execution summaries. It is a component, not a standalone persistence mode -- it provides parallelism and routing guidance, but not persistence, verification loops, or long-lived state management.
 </Purpose>
@@ -68,6 +70,7 @@ Sequential task execution wastes time when tasks are independent. Ultrawork enab
 </Steps>
 
 <Tool_Usage>
+- Every `Task(subagent_type="oh-my-claudecode:executor", ...)` call below (and in the Examples) requires the OMC engine; when the OMC engine is installed it resolves normally, standalone it falls back to `pantheon:worker`, then `general-purpose`.
 - Use `Task(subagent_type="oh-my-claudecode:executor", model="haiku", ...)` for simple changes
 - Use `Task(subagent_type="oh-my-claudecode:executor", model="sonnet", ...)` for standard work
 - Use `Task(subagent_type="oh-my-claudecode:executor", model="opus", ...)` for complex work

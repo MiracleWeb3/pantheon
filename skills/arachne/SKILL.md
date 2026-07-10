@@ -1,6 +1,6 @@
 ---
 name: arachne
-description: "Build and maintain a navigable knowledge graph of a codebase or corpus — nodes, edges, communities — so orientation is a query instead of a blind grep. Use when the user says 'map the codebase', 'build the graph', 'graphify this', 'update the map', when entering a large unfamiliar repo, or after structural changes moved things around. Triggers on 'graph', 'map the code', 'graphify', 'knowledge graph', 'dependency map', 'visualize the codebase'. Builds the map that ariadne reads."
+description: "Build and maintain a navigable knowledge graph of a codebase -- nodes, edges, communities -- so orientation is a query, not a blind grep. Use when the user says 'map the codebase', 'build the graph', 'graphify this'. Triggers: 'graph', 'graphify'. Builds the map ariadne reads."
 ---
 
 # arachne — the weaver

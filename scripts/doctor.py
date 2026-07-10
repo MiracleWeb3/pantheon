@@ -17,13 +17,15 @@ _ROOT = os.path.dirname(_HERE)
 sys.path.insert(0, os.path.join(_ROOT, "lib"))
 import store, paths
 import config as cfgmod
+import transcript as trmod
 
 OK, WARN, BAD = "✓", "⚠", "✗"
 
 SELFTEST_MODULES = ["lib/paths.py", "lib/config.py", "lib/store.py", "lib/transcript.py",
                     "lib/limits.py",
                     "hooks/on_prompt.py", "hooks/on_stop.py", "hooks/session-start.py",
-                    "scripts/cli.py", "scripts/dashboard.py", "scripts/hud.py"]
+                    "scripts/cli.py", "scripts/dashboard.py", "scripts/hud.py",
+                    "scripts/mcp_server.py"]
 
 
 def check_python():
@@ -88,17 +90,32 @@ def check_db(path: str = "", fix: bool = False):
     p = path or paths.db_path()
     if not os.path.isfile(p):
         return OK, "store not created yet (appears on first use)"
+    conn = None
     try:
         conn = store.connect(p)
         ok = conn.execute("PRAGMA quick_check").fetchone()[0]
         c = store.counts(conn)
         ver = store.get_meta(conn, "schema_version")
-        conn.close()
         if ok == "ok":
+            if fix:
+                n = sum(store.prune(conn).values())
+                tail = f", pruned {n} old row(s)" if n else ", nothing to prune"
+            else:
+                last = float(store.get_meta(conn, "last_prune", "0") or 0)
+                tail = f", last prune {int((time.time() - last) / 86400)}d ago" if last else ""
+            conn.close()
+            mb = os.path.getsize(p) / 1e6
             return OK, (f"store ok — schema v{ver}, {c['lessons']} lessons, "
-                        f"{c['receipts']} receipts, {c['routes']} routes")
+                        f"{c['receipts']} receipts, {c['routes']} routes "
+                        f"({mb:.1f} MB{tail})")
+        conn.close()
         detail = ok
     except Exception as e:
+        if conn:
+            try:
+                conn.close()  # else the rename below hits a locked file on Windows
+            except Exception:
+                pass
         detail = str(e)[:80]
     if fix:
         bak = p + ".corrupt-" + time.strftime("%Y%m%d%H%M%S")
@@ -165,7 +182,7 @@ def check_shim(fix: bool = False):
 
 def check_skills(root: str = ""):
     root = root or os.path.join(_ROOT, "skills")
-    names, dups, unnamed = {}, [], 0
+    names, dups, unnamed, desc_bytes = {}, [], 0, 0
     try:
         entries = sorted(os.listdir(root))
     except Exception:
@@ -175,11 +192,14 @@ def check_skills(root: str = ""):
         if not os.path.isfile(p):
             continue
         try:
-            head = "".join(open(p, encoding="utf-8", errors="replace").readlines()[:12])
+            head = open(p, encoding="utf-8", errors="replace").read(4000)
         except Exception:
             unnamed += 1
             continue
         m = re.search(r"^name:\s*[\"']?([\w.-]+)", head, re.M)
+        dm = re.search(r"^description:\s*(.+?)(?=^[\w-]+:|^---)", head, re.M | re.S)
+        if dm:  # Claude Code loads every skill's description into each session
+            desc_bytes += len(dm.group(1))
         if not m:
             unnamed += 1
             continue
@@ -187,12 +207,46 @@ def check_skills(root: str = ""):
         if n in names:
             dups.append(n)
         names[n] = d
+    overhead = f" (≈{desc_bytes / 4 / 1000:.1f}k tokens of listings per session)"
     if dups or unnamed:
         shown = ", ".join(sorted(set(dups))[:8])
         more = "…" if len(set(dups)) > 8 else ""
         return WARN, (f"{len(names)} skills; duplicate names: {shown}{more}"
                       + (f"; {unnamed} without a name" if unnamed else ""))
-    return OK, f"{len(names)} skills, no duplicate names"
+    return OK, f"{len(names)} skills, no duplicate names{overhead}"
+
+
+def check_transcript_format(projects_dir: str = ""):
+    """CC-format-drift tripwire: if the newest real transcripts all yield an
+    empty turn digest, the transcript shape changed and gate / receipts /
+    derived meters are silently blind — surface it instead of dying quiet."""
+    root = projects_dir or os.path.join(os.path.expanduser("~"), ".claude", "projects")
+    cands = []
+    try:
+        for base, _d, fns in os.walk(root):
+            for fn in fns:
+                if fn.endswith(".jsonl"):
+                    p = os.path.join(base, fn)
+                    try:
+                        st = os.stat(p)
+                    except Exception:
+                        continue
+                    if st.st_size >= 4096:
+                        cands.append((st.st_mtime, p))
+    except Exception:
+        pass
+    if not cands:
+        return OK, "no transcripts to check (fresh install)"
+    for _, p in sorted(cands, reverse=True)[:3]:
+        try:
+            t = trmod.scan_turn(p)
+        except Exception:
+            continue
+        if t.get("last_user") or t.get("edits") or t.get("skills") or t.get("out_tokens"):
+            return OK, "transcript format recognized (turn digest parses)"
+    return WARN, ("transcript format UNRECOGNIZED in the newest sessions — Claude Code "
+                  "may have changed its JSONL; the gate/receipts/meters may be blind. "
+                  "Check for a pantheon update.")
 
 
 def check_state_files():
@@ -219,7 +273,7 @@ def run_all(fix: bool = False) -> int:
     print(f"pantheon doctor — v{ver} @ {_ROOT}" + ("  (--fix)" if fix else ""))
     checks = [check_python(), check_hooks(), check_config(), check_db(fix=fix),
               check_ledger(fix=fix), check_shim(fix=fix), check_skills(),
-              check_state_files(), check_selftests()]
+              check_state_files(), check_transcript_format(), check_selftests()]
     bad = warn = 0
     for status, msg in checks:
         print(f" {status} {msg}")
@@ -267,7 +321,18 @@ def selftest() -> int:
     # hooks + python + config on the real tree
     assert check_python()[0] == OK
     assert check_hooks()[0] == OK, check_hooks()
-    print("selftest ok — db corrupt/rebuild, skill dup scan, hooks wiring")
+    # transcript drift tripwire: empty dir OK, valid digest OK, garbage WARNs
+    td = os.path.join(d, "projects", "p1")
+    os.makedirs(td)
+    assert check_transcript_format(os.path.join(d, "projects"))[0] == OK
+    good = json.dumps({"type": "user", "message": {"content": "fix the parser bug"}})
+    open(os.path.join(td, "s.jsonl"), "w").write((good + "\n") * 200)
+    s, msg = check_transcript_format(os.path.join(d, "projects"))
+    assert s == OK and "recognized" in msg, (s, msg)
+    open(os.path.join(td, "s.jsonl"), "w").write('{"totally": "unknown-shape"}\n' * 200)
+    s, msg = check_transcript_format(os.path.join(d, "projects"))
+    assert s == WARN and "UNRECOGNIZED" in msg, (s, msg)
+    print("selftest ok — db corrupt/rebuild, skill dup scan, hooks wiring, drift tripwire")
     return 0
 
 

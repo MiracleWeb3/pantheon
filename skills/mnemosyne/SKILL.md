@@ -1,6 +1,6 @@
 ---
 name: mnemosyne
-description: "Compound what you learn across sessions — capture corrections and preferences the moment they happen, consolidate them into durable memory, and promote what recurs into always-loaded rules. Use when the user corrects you, states a preference, teaches a workflow, or says 'remember this', 'don't forget', 'learn from this'; and when starting a session with a non-empty learning inbox. Triggers on 'remember', 'you keep', 'I told you', 'preference', 'from now on'."
+description: "Compound what you learn across sessions -- capture corrections as they happen, consolidate into memory, promote what recurs into always-loaded rules. Use when the user corrects you, states a preference, or says 'remember this'. Triggers: 'remember', 'you keep', 'from now on'."
 ---
 
 # mnemosyne — the mother of memory

@@ -1,6 +1,6 @@
 ---
 name: argus
-description: "Take on a task too big for one context — a huge input, a sprawling migration, a broad audit, a hard multi-part problem — by decomposing it and fanning out parallel subagents, one per slice, then synthesizing. Use when the user says 'this is huge', 'too big', 'do it across the whole repo', 'rlmit', or an input won't fit in context. Triggers on 'huge', 'massive', 'entire codebase', 'all files', 'migrate everything', 'decompose', 'in parallel'. NOT for a single focused task (just do it)."
+description: "Take on a task too big for one context -- huge input, sprawling migration -- by fanning out parallel subagents, then synthesizing. Use when the user says 'this is huge', 'too big', 'rlmit'. Triggers: 'massive', 'entire codebase', 'in parallel'. NOT for a single focused task."
 ---
 
 # argus — the hundred eyes

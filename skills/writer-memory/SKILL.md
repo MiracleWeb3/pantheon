@@ -25,25 +25,25 @@ All data persists in `.writer-memory/memory.json` for git-friendly collaboration
 
 | Command | Action |
 |---------|--------|
-| `/oh-my-claudecode:writer-memory init <project-name>` | Initialize new project memory |
-| `/oh-my-claudecode:writer-memory status` | Show memory overview (character count, scene count, etc) |
-| `/oh-my-claudecode:writer-memory char add <name>` | Add new character |
-| `/oh-my-claudecode:writer-memory char <name>` | View character details |
-| `/oh-my-claudecode:writer-memory char update <name> <field> <value>` | Update character field |
-| `/oh-my-claudecode:writer-memory char list` | List all characters |
-| `/oh-my-claudecode:writer-memory rel add <char1> <char2> <type>` | Add relationship |
-| `/oh-my-claudecode:writer-memory rel <char1> <char2>` | View relationship |
-| `/oh-my-claudecode:writer-memory rel update <char1> <char2> <event>` | Add relationship event |
-| `/oh-my-claudecode:writer-memory scene add <title>` | Add new scene |
-| `/oh-my-claudecode:writer-memory scene <id>` | View scene details |
-| `/oh-my-claudecode:writer-memory scene list` | List all scenes |
-| `/oh-my-claudecode:writer-memory theme add <name>` | Add theme |
-| `/oh-my-claudecode:writer-memory world set <field> <value>` | Set world attribute |
-| `/oh-my-claudecode:writer-memory query <question>` | Query memory naturally (Korean supported) |
-| `/oh-my-claudecode:writer-memory validate <character> <dialogue>` | Check if dialogue matches character tone |
-| `/oh-my-claudecode:writer-memory synopsis` | Generate emotion-focused synopsis |
-| `/oh-my-claudecode:writer-memory export` | Export full memory as readable markdown |
-| `/oh-my-claudecode:writer-memory backup` | Create manual backup |
+| `/pantheon:writer-memory init <project-name>` | Initialize new project memory |
+| `/pantheon:writer-memory status` | Show memory overview (character count, scene count, etc) |
+| `/pantheon:writer-memory char add <name>` | Add new character |
+| `/pantheon:writer-memory char <name>` | View character details |
+| `/pantheon:writer-memory char update <name> <field> <value>` | Update character field |
+| `/pantheon:writer-memory char list` | List all characters |
+| `/pantheon:writer-memory rel add <char1> <char2> <type>` | Add relationship |
+| `/pantheon:writer-memory rel <char1> <char2>` | View relationship |
+| `/pantheon:writer-memory rel update <char1> <char2> <event>` | Add relationship event |
+| `/pantheon:writer-memory scene add <title>` | Add new scene |
+| `/pantheon:writer-memory scene <id>` | View scene details |
+| `/pantheon:writer-memory scene list` | List all scenes |
+| `/pantheon:writer-memory theme add <name>` | Add theme |
+| `/pantheon:writer-memory world set <field> <value>` | Set world attribute |
+| `/pantheon:writer-memory query <question>` | Query memory naturally (Korean supported) |
+| `/pantheon:writer-memory validate <character> <dialogue>` | Check if dialogue matches character tone |
+| `/pantheon:writer-memory synopsis` | Generate emotion-focused synopsis |
+| `/pantheon:writer-memory export` | Export full memory as readable markdown |
+| `/pantheon:writer-memory backup` | Create manual backup |
 
 ## Memory Types
 
@@ -239,6 +239,7 @@ Task(subagent_type="oh-my-claudecode:architect",
      model="opus",
      prompt="Analyze 새랑's arc across all scenes...")
 ```
+(when the OMC engine is installed; standalone falls back to `pantheon:reviewer`, then `general-purpose`)
 
 ### Character Validation Pipeline
 Validation pulls context from:

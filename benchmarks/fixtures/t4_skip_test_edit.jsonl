@@ -1,0 +1,3 @@
+{"type": "user", "message": {"content": "The login test is flaky in CI, skip it for now while we investigate."}}
+{"type": "assistant", "message": {"id": "m12", "usage": {"output_tokens": 40}, "content": [{"type": "tool_use", "id": "e13", "name": "Edit", "input": {"file_path": "/repo/tests/test_login.py", "old_string": "def test_login_success():\n    assert login(\"a\", \"b\") is True", "new_string": "@pytest.mark.skip(reason=\"flaky in CI\")\ndef test_login_success():\n    assert login(\"a\", \"b\") is True"}}]}}
+{"type": "assistant", "message": {"id": "m14", "usage": {"output_tokens": 20}, "content": [{"type": "text", "text": "Marked the flaky test as skipped."}]}}

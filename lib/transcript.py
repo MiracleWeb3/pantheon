@@ -181,6 +181,7 @@ def scan_turn(path: str) -> dict:
                         old = "\n".join(e.get("old_string", "") for e in eds)
                     edits.append({"file": inp.get("file_path") or inp.get("notebook_path", ""),
                                   "added": new.count("\n") + 1 if new else 0,
+                                  "removed": old.count("\n") + 1 if old else 0,
                                   "new": new, "old": old})
                 elif name == "Bash":
                     bash[p.get("id")] = {"command": inp.get("command", ""), "failed": False,
@@ -298,6 +299,7 @@ def selftest() -> int:
     assert t["last_user"].startswith("fix the parser")
     assert t["out_tokens"] == 50, t["out_tokens"]          # old turn's 99 excluded
     assert t["edits"] and t["edits"][0]["file"] == "/x/app.py"
+    assert t["edits"][0]["removed"] == 1  # old_string "a=1" is one replaced line
     assert t["tests"] == [{"command": "pytest -q tests/", "failed": True}]
     assert not t["verified"]  # the only check FAILED — that is not verification
     assert t["skills"] == ["pantheon:hydra"]

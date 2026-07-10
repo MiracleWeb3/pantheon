@@ -1,6 +1,6 @@
 ---
 name: wiki
-description: LLM Wiki — persistent markdown knowledge base that compounds across sessions (Karpathy model)
+description: The engine's wiki IMPLEMENTATION (Karpathy LLM-wiki model) that alexandria drives when available: persistent markdown knowledge base that compounds across sessions. Use directly for wiki add/query/lint operations.
 triggers: ["wiki", "wiki this", "wiki add", "wiki lint", "wiki query"]
 ---
 

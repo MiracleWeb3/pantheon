@@ -1,6 +1,6 @@
 ---
 name: athena
-description: "Design and build interfaces with real craft — visual hierarchy, spacing, typography, restraint, states, motion with purpose, accessibility. Use when building or improving any UI: a component, page, landing, dashboard, or when the user says 'design the UI', 'make it look good', 'this looks generic/AI', 'improve the UX', 'polish it'. Triggers on 'UI', 'design', 'component', 'landing page', 'looks bad', 'make it beautiful', 'UX', 'frontend', 'styling'. NOT for backend or non-visual work."
+description: "Design and build interfaces with real craft -- hierarchy, spacing, typography, motion — driving whichever bundled design guides fit (impeccable, interface-design, frontend-design…). Use when building/improving UI, or the user says 'design the UI', 'make it look good', 'this looks generic/AI'. NOT for backend or non-visual work."
 ---
 
 # athena — interface craft

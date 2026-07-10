@@ -159,8 +159,10 @@ KNOWN_KEYS = {"_comment", "preset", "routing", "announce", "recall", "gate", "cl
 
 
 def validate(raw: dict):
-    """Return a list of warnings for a raw config dict (used by doctor)."""
-    warns = [f"unknown key: {k!r}" for k in raw if k not in KNOWN_KEYS]
+    """Return a list of warnings for a raw config dict (used by doctor).
+    Keys starting with '_' are comments (config.example.json uses them)."""
+    warns = [f"unknown key: {k!r}" for k in raw
+             if k not in KNOWN_KEYS and not k.startswith("_")]
     if "preset" in raw and raw["preset"] not in PRESETS:
         warns.append(f"unknown preset: {raw['preset']!r} (full/economy/quiet)")
     if raw.get("gate") not in (None, "block", "warn", "off"):
@@ -184,6 +186,7 @@ def selftest() -> int:
     assert raw["disciplines"] == {"a": False, "b": False}
     assert raw["budget"] == {"weekly": 20, "mode": "block"}
     assert validate({"nonsense": 1}) and not validate({"preset": "full"})
+    assert not validate({"_routing": "comment text", "_anything": 1})  # _-keys are comments
     # team pack: found walking up, sits between global and project, opt-out works
     import tempfile
     top = tempfile.mkdtemp(prefix="pantheon-pack-")

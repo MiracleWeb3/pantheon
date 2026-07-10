@@ -1,6 +1,6 @@
 ---
 name: graphify
-description: "Use for any question about a codebase, its architecture, file relationships, or project content — especially when graphify-out/ exists, where the question should be treated as a graphify query first. Turns any input (code, docs, papers, images, videos) into a persistent knowledge graph with god nodes, community detection, and query/path/explain tools."
+description: "The graph ENGINE arachne drives: turns any input (code, docs, papers, media) into a persistent knowledge graph with god nodes, communities, and query/path/explain tools. Use for questions about a codebase or its structure — and when graphify-out/ exists, query it before grepping."
 ---
 
 # /graphify

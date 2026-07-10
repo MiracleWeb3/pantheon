@@ -1,6 +1,6 @@
 ---
 name: ariadne
-description: "Get your bearings before touching unfamiliar code, and record what you learned after. Use before any non-trivial change, review, or debugging in a codebase you don't fully hold in your head — and whenever daedalus or hydra calls for orientation. Triggers on 'orient', 'where is', 'how does this work', 'understand the codebase', 'get up to speed'. Reads the map and past decisions first; grepping blind is the anti-pattern."
+description: "Get your bearings before touching unfamiliar code, and record what you learned after. Use before any non-trivial change or debugging in code you don't fully hold in your head, or for daedalus/hydra. Triggers: 'orient', 'where is', 'get up to speed'. Grepping blind is the anti-pattern."
 ---
 
 # ariadne — the thread through the labyrinth

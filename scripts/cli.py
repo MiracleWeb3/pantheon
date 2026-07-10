@@ -278,8 +278,11 @@ def cmd_pack(a):
             return 2
         cfg = cfgmod.load(os.getcwd())
         conn = store.connect()
+        # auto-captured lessons are raw user sentences (may hold secrets/paths);
+        # they stay private unless explicitly shared
+        where = "" if a.include_captured else "WHERE source != 'auto' "
         top = conn.execute(
-            "SELECT text,tags,keys,weight FROM lessons "
+            "SELECT text,tags,keys,weight FROM lessons " + where +
             "ORDER BY weight*(uses+1) DESC, ts DESC LIMIT 20").fetchall()
         conn.close()
         pack = {"pantheon_pack": 1,
@@ -292,6 +295,9 @@ def cmd_pack(a):
         json.dump(pack, open(p, "w", encoding="utf-8"), indent=2, ensure_ascii=False)
         print(f"wrote {p} — {len(pack['lessons'])} shared lesson(s). Fill in "
               "\"standards\", commit it, and every teammate inherits this on install.")
+        if not a.include_captured:
+            print("(auto-captured lessons excluded — pass --include-captured to "
+                  "share them; review for secrets first)")
         return 0
     path, pk = cfgmod.find_pack(os.getcwd())
     if not pk:
@@ -433,6 +439,8 @@ def build_parser():
     pk = sub.add_parser("pack", help="team pack in this repo")
     pk.add_argument("action", choices=["init", "status"])
     pk.add_argument("--force", action="store_true")
+    pk.add_argument("--include-captured", action="store_true",
+                    help="also share auto-captured lessons (review for secrets first)")
     pk.set_defaults(fn=cmd_pack)
 
     ex = sub.add_parser("export", help="package disciplines for other agents")
@@ -472,7 +480,9 @@ def selftest() -> int:
     a = ap.parse_args(["export", "--target", "cursor"])
     assert a.fn is cmd_export and not a.full
     a = ap.parse_args(["pack", "init"])
-    assert a.fn is cmd_pack
+    assert a.fn is cmd_pack and not a.include_captured
+    a = ap.parse_args(["pack", "init", "--include-captured"])
+    assert a.include_captured
     assert _age(time.time() - 30) == "0m" and _age(time.time() - 90000) == "1d"
     s1, s7 = _spend()
     assert s1 >= 0 and s7 >= s1

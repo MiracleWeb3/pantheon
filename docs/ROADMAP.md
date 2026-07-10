@@ -1,6 +1,10 @@
-# pantheon roadmap — v0.7 → v1.1
+# pantheon roadmap — v0.7 → v1.1 (original design record)
 
 > **Status: ALL 12 FEATURES SHIPPED** (v0.8 → v1.1, July 2026). Kept as the design record — what each feature does and why they layer in this order.
+>
+> **Since then** (see [CHANGELOG.md](../CHANGELOG.md)): v1.2 renamed the flagship merged sets · v1.2.1 hardened the gate · v1.3 added subscription HUD meters · **v1.4 was the adversarial-audit release** — four audit agents, every critical/high finding closed: pack-injection hardening, fail-open gate, BM25 recall, atomic state, store retention, working route demotion, bundled `agents/`, a stdlib MCP server, and a reproducible gate benchmark.
+>
+> **Next:** an adjudicating gate mode (`gate: "adjudicate"` — on a blocked stop, re-run the safe detected test command and report real pass/fail instead of only refusing) · a live headless-CC A/B benchmark on top of the replay one · vendored-skill staleness checks against upstream releases.
 
 The 12 features that make pantheon the only agent plugin worth keeping. Phased by moat-per-effort and dependency. Design decision: **max power** — a local SQLite store backs memory, receipts, metrics, and routing feedback, so features compound on one substrate instead of a dozen JSON files.
 

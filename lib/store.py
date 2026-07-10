@@ -16,7 +16,7 @@ normally so the selftest and CLI see real errors.
 
 Self-check:  python3 store.py --selftest
 """
-import os, re, time, sqlite3
+import os, re, time, math, sqlite3
 
 import paths
 
@@ -54,17 +54,27 @@ def connect(path: str = "") -> sqlite3.Connection:
     d = os.path.dirname(p)
     if d:
         os.makedirs(d, exist_ok=True)
-    conn = sqlite3.connect(p, timeout=0.6)
-    conn.row_factory = sqlite3.Row
-    conn.execute("PRAGMA journal_mode=WAL")
-    conn.execute("PRAGMA busy_timeout=600")
-    _migrate(conn)
-    return conn
+    conn = sqlite3.connect(p, timeout=3.0)
+    try:
+        conn.row_factory = sqlite3.Row
+        conn.execute("PRAGMA journal_mode=WAL")
+        conn.execute("PRAGMA busy_timeout=3000")  # concurrent sessions: wait, don't drop writes
+        _migrate(conn)
+        return conn
+    except Exception:
+        conn.close()  # Windows can't rename/delete a file with a handle still open on it
+        raise
 
 
 def _migrate(conn) -> None:
+    try:
+        row = conn.execute("SELECT value FROM meta WHERE key='schema_version'").fetchone()
+        if row and int(row[0]) == SCHEMA_VERSION:
+            return  # fast path — connect() runs on every prompt; no DDL, no write txn
+        cur = int(row[0]) if row else 0
+    except Exception:
+        cur = 0
     conn.execute("CREATE TABLE IF NOT EXISTS meta(key TEXT PRIMARY KEY, value TEXT)")
-    cur = int(get_meta(conn, "schema_version", "0"))
     for v in sorted(MIGRATIONS):
         if v > cur:
             for ddl in MIGRATIONS[v]:
@@ -123,26 +133,45 @@ def add_lesson(conn, text: str, tags: str = "", keys: str = "", weight: float = 
 
 
 def recall(conn, text: str, keys: str = "", limit: int = 3):
-    """Top past lessons relevant to `text`: keyword overlap × recency × weight,
-    with a boost when the lesson was captured in the same project. Empty list
-    when nothing clears the relevance bar — silence is a feature."""
+    """Top past lessons relevant to `text`, BM25-ranked (IDF-weighted, length-
+    normalized — a rare shared term like 'kubeconfig' outweighs three shared
+    'deploy's, and a keyword-stuffed lesson stops winning on breadth), then
+    shaped by recency × weight × same-project boost. Empty list when nothing
+    clears the relevance bar — silence is a feature. Pure stdlib, two passes
+    over the recent-800 window (collect docs, then score)."""
     want = keywords(text)
     if len(want) < 2 or limit <= 0:
         return []
     now = time.time()
-    scored = []
-    for r in conn.execute("SELECT * FROM lessons ORDER BY ts DESC LIMIT 800"):
-        kw = set((r["kw"] or "").split())
-        ov = len(want & kw)
+    rows = [(r, set((r["kw"] or "").split()))
+            for r in conn.execute("SELECT * FROM lessons ORDER BY ts DESC LIMIT 800")]
+    if not rows:
+        return []
+    n_docs = len(rows)
+    avgdl = sum(len(kw) for _, kw in rows) / n_docs or 1.0
+    df = {t: sum(1 for _, kw in rows if t in kw) for t in want}
+    idf = {t: math.log((n_docs - df[t] + 0.5) / (df[t] + 0.5) + 1.0)
+           for t in want if df[t]}
+    K1, B = 1.5, 0.75  # term freq is 1 (kw is a set), so BM25 reduces to
+    scored = []        # Σ idf(t) · (K1+1)/(1 + K1·lennorm)
+    for r, kw in rows:
+        hit = want & kw
+        ov = len(hit)
         if not ov:
             continue
         # exact token match — 'web' must not claim lessons from 'website'
         same_project = bool(keys) and keys in re.split(r"[,\s]+", r["keys"] or "")
         if ov < 2 and not same_project:
             continue
+        if (r["source"] or "") == "pack" and not same_project:
+            continue  # pack lessons never leave the repo that shipped them
+        if (r["source"] or "") == "auto" and ov < 2:
+            continue  # auto-captured text needs 2+ shared keywords to resurface
+        lennorm = 1.0 - B + B * (len(kw) / avgdl)
+        bm25 = sum(idf.get(t, 0.0) * (K1 + 1) / (1 + K1 * lennorm) for t in hit)
         age_days = max(0.0, (now - r["ts"]) / 86400)
         recency = 0.5 ** (age_days / 45.0)
-        score = ov * (0.4 + 0.6 * recency) * (r["weight"] or 1.0) * (1.5 if same_project else 1.0)
+        score = bm25 * (0.4 + 0.6 * recency) * (r["weight"] or 1.0) * (1.5 if same_project else 1.0)
         scored.append((score, r))
     scored.sort(key=lambda x: -x[0])
     top = [r for s, r in scored[:limit] if s >= 1.2]
@@ -188,13 +217,17 @@ def set_route_outcome(conn, rowid: int, outcome: str) -> None:
     conn.commit()
 
 
-def route_stats(conn, halflife_days: float = 30.0) -> dict:
+def route_stats(conn, halflife_days: float = 30.0, only: tuple = None) -> dict:
     """Decayed per-(cluster,skill) counters. Old evidence fades — a route the
-    user stopped overriding months ago gets a clean slate."""
+    user stopped overriding months ago gets a clean slate. `only=(cluster,
+    skill)` narrows the scan for the per-prompt hot path."""
     now = time.time()
     out = {}
-    for r in conn.execute("SELECT ts,cluster,skill,outcome FROM routes WHERE ts > ?",
-                          (now - 90 * 86400,)):
+    q, args = "SELECT ts,cluster,skill,outcome FROM routes WHERE ts > ?", [now - 90 * 86400]
+    if only:
+        q += " AND cluster=? AND skill=?"
+        args += [only[0], only[1]]
+    for r in conn.execute(q, args):
         w = 0.5 ** ((now - r["ts"]) / 86400.0 / halflife_days)
         d = out.setdefault((r["cluster"], r["skill"]),
                            {"fires": 0.0, "resolved": 0.0, "accepts": 0.0})
@@ -203,6 +236,37 @@ def route_stats(conn, halflife_days: float = 30.0) -> dict:
             d["resolved"] += w
             if r["outcome"] == "accepted":
                 d["accepts"] += w
+    return out
+
+
+# ── retention ────────────────────────────────────────────────────────────────
+RETENTION_DAYS = {"routes": 90, "metrics": 90, "receipts": 180, "lessons_auto": 90}
+
+
+def prune(conn, now: float = 0) -> dict:
+    """Retention sweep so the store never grows forever: old routes/metrics/
+    receipts out; auto-captured lessons that were never recalled aged out.
+    Manual and pack lessons are kept — they were deliberate. Returns per-table
+    delete counts; VACUUMs only after a meaningful shrink."""
+    now = now or time.time()
+    out = {
+        "routes": conn.execute("DELETE FROM routes WHERE ts<?",
+                               (now - RETENTION_DAYS["routes"] * 86400,)).rowcount,
+        "metrics": conn.execute("DELETE FROM metrics WHERE ts<?",
+                                (now - RETENTION_DAYS["metrics"] * 86400,)).rowcount,
+        "receipts": conn.execute("DELETE FROM receipts WHERE ts<?",
+                                 (now - RETENTION_DAYS["receipts"] * 86400,)).rowcount,
+        "lessons": conn.execute(
+            "DELETE FROM lessons WHERE source='auto' AND uses=0 AND ts<?",
+            (now - RETENTION_DAYS["lessons_auto"] * 86400,)).rowcount,
+    }
+    conn.commit()
+    set_meta(conn, "last_prune", str(int(now)))
+    if sum(out.values()) >= 500:
+        try:
+            conn.execute("VACUUM")
+        except Exception:
+            pass
     return out
 
 
@@ -255,9 +319,44 @@ def selftest() -> int:
     st = route_stats(conn)
     d = st[("hydra", "hydra")]
     assert d["fires"] > 1.9 and d["accepts"] > 0.9 and d["resolved"] < d["fires"]
+    assert route_stats(conn, only=("hydra", "hydra"))[("hydra", "hydra")]["fires"] > 1.9
+    assert route_stats(conn, only=("nope", "nope")) == {}
     add_metric(conn, "gate_block", 1, "tests failed")
     c = counts(conn)
     assert c["lessons"] == 2 and c["receipts"] == 1 and c["routes"] == 2 and c["metrics"] == 1
+    # pack lessons are quarantined to the project that shipped them
+    add_lesson(conn, "pack lesson: the deploy pipeline requires manual approval gate",
+               keys="packproj", source="pack")
+    assert recall(conn, "how does the deploy pipeline approval work?", keys="otherproj") == []
+    hits = recall(conn, "how does the deploy pipeline approval work?", keys="packproj")
+    assert hits and hits[0]["source"] == "pack"
+    # BM25: a rare shared term beats common ones — six lessons share 'deploy',
+    # only one also carries 'kubeconfig'; a query with both must rank it first
+    for i in range(5):
+        add_lesson(conn, f"deploy note number {i}: remember the deploy checklist step {i}",
+                   keys="bmproj")
+    add_lesson(conn, "deploy tip: the kubeconfig context must be set before rollout",
+               keys="bmproj")
+    bm_hits = recall(conn, "deploy fails — is the kubeconfig context wrong?", keys="bmproj")
+    assert bm_hits and "kubeconfig" in bm_hits[0]["text"], bm_hits
+    # auto-captured lessons need >=2 shared keywords even in their own project
+    add_lesson(conn, "auto captured: you keep forgetting pm2 reload for deploys",
+               keys="parserx", source="auto")
+    assert all(h["source"] != "auto"
+               for h in recall(conn, "the deploys tonight look fine honestly", keys="parserx"))
+    assert any(h["source"] == "auto"
+               for h in recall(conn, "why is pm2 reload for deploys broken?", keys="parserx"))
+    # prune: stale operational rows and never-recalled auto lessons go;
+    # deliberate (manual/pack) lessons stay
+    stale = time.time() - 200 * 86400
+    conn.execute("UPDATE routes SET ts=?", (stale,))
+    conn.execute("INSERT INTO lessons(ts,text,source) VALUES(?,?,'auto')",
+                 (stale, "stale auto lesson that nobody ever recalled once"))
+    conn.commit()
+    pr = prune(conn)
+    assert pr["routes"] == 2 and pr["lessons"] == 1, pr
+    assert get_meta(conn, "last_prune")
+    assert conn.execute("SELECT COUNT(*) FROM lessons WHERE source='manual'").fetchone()[0] == 8
     conn.close(); conn2.close()
     print("selftest ok — schema v%s, recall + receipts + routes + metrics" % SCHEMA_VERSION)
     return 0

@@ -10,6 +10,8 @@ level: 3
 
 # UltraQA Skill
 
+Engine note: full power needs oh-my-claudecode installed; standalone, agent spawns fall back to the bundled pantheon agents.
+
 [ULTRAQA ACTIVATED - AUTONOMOUS QA CYCLING]
 
 ## Overview
@@ -28,11 +30,11 @@ Parse the goal from arguments. Supported formats:
 
 | Invocation                                     | Goal Type | What to Check                    |
 | ---------------------------------------------- | --------- | -------------------------------- |
-| `/oh-my-claudecode:ultraqa --tests`            | tests     | All test suites pass             |
-| `/oh-my-claudecode:ultraqa --build`            | build     | Build succeeds with exit 0       |
-| `/oh-my-claudecode:ultraqa --lint`             | lint      | No lint errors                   |
-| `/oh-my-claudecode:ultraqa --typecheck`        | typecheck | No TypeScript errors             |
-| `/oh-my-claudecode:ultraqa --custom "pattern"` | custom    | Custom success pattern in output |
+| `/pantheon:hekaton-qa --tests`            | tests     | All test suites pass             |
+| `/pantheon:hekaton-qa --build`            | build     | Build succeeds with exit 0       |
+| `/pantheon:hekaton-qa --lint`             | lint      | No lint errors                   |
+| `/pantheon:hekaton-qa --typecheck`        | typecheck | No TypeScript errors             |
+| `/pantheon:hekaton-qa --custom "pattern"` | custom    | Custom success pattern in output |
 
 If no structured goal provided, interpret the argument as a custom goal.
 
@@ -53,6 +55,7 @@ If no structured goal provided, interpret the argument as a custom goal.
      Service: [how to start]
      Test cases: [specific scenarios to verify]")
      ```
+     (when the OMC engine is installed; standalone falls back to `general-purpose`)
 
 2. **CHECK RESULT**: Did the goal pass?
    - **YES** → Exit with success message
@@ -66,6 +69,7 @@ If no structured goal provided, interpret the argument as a custom goal.
    Output: [test/build output]
    Provide root cause and specific fix recommendations.")
    ```
+   (when the OMC engine is installed; standalone falls back to `pantheon:reviewer`, then `general-purpose`)
 
 4. **FIX ISSUES**: Apply architect's recommendations
 
@@ -75,6 +79,7 @@ If no structured goal provided, interpret the argument as a custom goal.
    Files: [affected files]
    Apply the fix precisely as recommended.")
    ```
+   (when the OMC engine is installed; standalone falls back to `pantheon:worker`, then `general-purpose`)
 
 5. **REPEAT**: Go back to step 1
 
@@ -120,7 +125,7 @@ Track state in `.omc/ultraqa-state.json`:
 
 ## Cancellation
 
-User can cancel with `/oh-my-claudecode:cancel` which clears the state file.
+User can cancel with `/pantheon:cancel` which clears the state file.
 
 ## Important Rules
 

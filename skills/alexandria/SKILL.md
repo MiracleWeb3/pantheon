@@ -1,6 +1,6 @@
 ---
 name: alexandria
-description: "Maintain a persistent project knowledge base — curated prose pages on architecture, domain, decisions, and incidents that compound across sessions (the Karpathy 'LLM wiki' model). Use when documenting how something works, when the user says 'write this to the wiki', 'document this', 'what do we know about X', or when a hard-won understanding should outlive the session. Triggers on 'wiki', 'document', 'write it down', 'knowledge base', 'how does our X work', 'ADR', 'decision record'. Distinct from mnemosyne (atomic facts) and arachne (the code graph)."
+description: "Maintain a persistent project knowledge base -- prose on architecture, decisions, incidents that compound across sessions. Use when documenting how something works, or the user says 'write this to the wiki'. Triggers: 'wiki', 'ADR'. Distinct from mnemosyne (facts) and arachne (the code graph)."
 ---
 
 # alexandria — the great library

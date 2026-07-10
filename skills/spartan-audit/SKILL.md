@@ -1,12 +1,6 @@
 ---
 name: spartan-audit
-description: >
-  Whole-repo audit for over-engineering. Like spartan-review, but scans the
-  entire codebase instead of a diff: a ranked list of what to delete, simplify,
-  or replace with stdlib/native equivalents. Use when the user says "audit this
-  codebase", "audit for over-engineering", "what can I delete from this repo",
-  "find bloat", "spartan-audit", or "/spartan-audit". One-shot report, does
-  not apply fixes.
+description: "Whole-repo audit for over-engineering. Like spartan-review, but scans the entire codebase: ranked findings to delete or replace with stdlib/native equivalents. Use when the user says \"audit this codebase\", \"find bloat\", or \"/spartan-audit\". One-shot report; applies nothing."
 ---
 
 

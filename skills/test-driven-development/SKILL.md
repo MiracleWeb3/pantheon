@@ -1,6 +1,6 @@
 ---
 name: test-driven-development
-description: Use when implementing any feature or bugfix, before writing implementation code
+description: The full RED→GREEN→REFACTOR methodology reference that prometheus applies — consult when implementing any feature or bugfix test-first and you need the detailed rules (one failing test, minimal pass, no test deletion).
 ---
 
 # Test-Driven Development (TDD)

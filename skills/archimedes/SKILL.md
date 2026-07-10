@@ -24,20 +24,20 @@ Research is a multi-stage workflow that decomposes complex research goals into p
 ## Usage Examples
 
 ```
-/oh-my-claudecode:sciomc <goal>                    # Standard research with user checkpoints
-/oh-my-claudecode:sciomc AUTO: <goal>              # Fully autonomous until complete
-/oh-my-claudecode:sciomc status                    # Check current research session status
-/oh-my-claudecode:sciomc resume                    # Resume interrupted research session
-/oh-my-claudecode:sciomc list                      # List all research sessions
-/oh-my-claudecode:sciomc report <session-id>       # Generate report for session
+/pantheon:archimedes <goal>                    # Standard research with user checkpoints
+/pantheon:archimedes AUTO: <goal>              # Fully autonomous until complete
+/pantheon:archimedes status                    # Check current research session status
+/pantheon:archimedes resume                    # Resume interrupted research session
+/pantheon:archimedes list                      # List all research sessions
+/pantheon:archimedes report <session-id>       # Generate report for session
 ```
 
 ### Quick Examples
 
 ```
-/oh-my-claudecode:sciomc What are the performance characteristics of different sorting algorithms?
-/oh-my-claudecode:sciomc AUTO: Analyze authentication patterns in this codebase
-/oh-my-claudecode:sciomc How does the error handling work across the API layer?
+/pantheon:archimedes What are the performance characteristics of different sorting algorithms?
+/pantheon:archimedes AUTO: Analyze authentication patterns in this codebase
+/pantheon:archimedes How does the error handling work across the API layer?
 ```
 
 ## Research Protocol
@@ -62,6 +62,8 @@ When given a research goal, decompose into 3-7 independent stages:
 ```
 
 ### Parallel Scientist Invocation
+
+Every `Task(subagent_type="oh-my-claudecode:scientist", ...)` call below (and later in this file) requires the OMC engine; when the OMC engine is installed it resolves normally, standalone it falls back to `pantheon:researcher`, then `general-purpose`.
 
 Fire independent stages in parallel via Task tool:
 
@@ -149,12 +151,12 @@ Pending stages: {{PENDING_STAGES}}
 1. **Max Iterations:** 10 (configurable)
 2. **Continue until:** Promise tag emitted OR max iterations
 3. **State tracking:** Persist after each stage completion
-4. **Cancellation:** `/oh-my-claudecode:cancel` or "stop", "cancel"
+4. **Cancellation:** `/pantheon:cancel` or "stop", "cancel"
 
 ### AUTO Mode Example
 
 ```
-/oh-my-claudecode:sciomc AUTO: Comprehensive security analysis of the authentication system
+/pantheon:archimedes AUTO: Comprehensive security analysis of the authentication system
 
 [Decomposition]
 - Stage 1 (LOW): Enumerate auth-related files
@@ -284,12 +286,12 @@ Batch 2: Stages 6-7 (parallel)
 
 | Command | Action |
 |---------|--------|
-| `/oh-my-claudecode:sciomc status` | Show current session progress |
-| `/oh-my-claudecode:sciomc resume` | Resume most recent interrupted session |
-| `/oh-my-claudecode:sciomc resume <session-id>` | Resume specific session |
-| `/oh-my-claudecode:sciomc list` | List all sessions with status |
-| `/oh-my-claudecode:sciomc report <session-id>` | Generate/regenerate report |
-| `/oh-my-claudecode:sciomc cancel` | Cancel current session (preserves state) |
+| `/pantheon:archimedes status` | Show current session progress |
+| `/pantheon:archimedes resume` | Resume most recent interrupted session |
+| `/pantheon:archimedes resume <session-id>` | Resume specific session |
+| `/pantheon:archimedes list` | List all sessions with status |
+| `/pantheon:archimedes report <session-id>` | Generate/regenerate report |
+| `/pantheon:archimedes cancel` | Cancel current session (preserves state) |
 
 ## Tag Extraction
 
@@ -484,7 +486,7 @@ Optional settings in `.claude/settings.json`:
 ## Cancellation
 
 ```
-/oh-my-claudecode:cancel
+/pantheon:cancel
 ```
 
 Or say: "stop research", "cancel research", "abort"

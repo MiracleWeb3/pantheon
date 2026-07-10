@@ -1,6 +1,6 @@
 ---
 name: hydra
-description: "Fix a genuinely difficult bug — diagnose the root cause first, then cauterize it with a regression test so it can't grow back. Use when the user says 'this bug is nasty', 'can't figure out why', a bug resists the obvious fix, or a regression keeps returning. Triggers on 'bug', 'broken', 'failing', 'regression', 'why does this happen', 'flaky'. NOT for building features (use daedalus) or trivial fixes (edit directly)."
+description: "Fix a genuinely difficult bug -- diagnose the root cause, then seal it with a test. Use when the user says 'this bug is nasty', 'can't figure out why', or it resists the obvious fix. Triggers: 'bug', 'regression', 'flaky'. NOT for building features (use daedalus) or trivial fixes."
 ---
 
 # hydra — slay it, then cauterize

@@ -1,6 +1,6 @@
 ---
 name: systematic-debugging
-description: Use when encountering any bug, test failure, or unexpected behavior, before proposing fixes
+description: The four-phase root-cause METHOD (reproduce → isolate → understand → fix) hydra applies. Consult before proposing any fix for a bug, test failure, or unexpected behavior.
 ---
 
 # Systematic Debugging

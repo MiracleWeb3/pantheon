@@ -1,12 +1,6 @@
 ---
 name: compact-landing
-description: >-
-  Apply a compact tactile UI style system for narrow product pages, package demos,
-  developer-tool landing pages, documentation intros, and polished micro-SaaS pages.
-  Use when an interface should feel precise, quiet, dense, and premium: centered
-  compact layouts, tiny monospace metadata, neutral-white surfaces, width-stable
-  animated labels, hairline separators, small tactile controls, subtle depth,
-  restrained CSS motion, and a simple but distinct composition per page.
+description: "Apply a compact tactile UI style system for narrow product pages, package demos, developer-tool landing pages, and micro-SaaS pages. Use when an interface should feel precise, dense, premium: centered layouts, monospace metadata, hairline separators, tactile controls."
 ---
 
 # Compact Landing

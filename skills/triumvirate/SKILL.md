@@ -108,11 +108,11 @@ If both unavailable:
 ## Invocation
 
 ```bash
-/oh-my-claudecode:ccg <task description>
+/pantheon:triumvirate <task description>
 ```
 
 Example:
 
 ```bash
-/oh-my-claudecode:ccg Review this PR - architecture/security via Codex and UX/readability via Antigravity
+/pantheon:triumvirate Review this PR - architecture/security via Codex and UX/readability via Antigravity
 ```

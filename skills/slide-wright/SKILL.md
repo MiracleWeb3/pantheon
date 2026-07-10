@@ -1,6 +1,6 @@
 ---
 name: slide-wright
-description: Create beautiful, animated web presentations from a topic, rough notes, or an outline, and edit decks afterward — adding, removing, or revising slides. Generates a custom theme and a short two-slide preview, then builds the full deck only once the user confirms the direction; edits to an existing deck skip that flow and apply in place. Use when the user wants to make slides, a presentation, a talk deck, a pitch deck, or to add/remove/change a slide in one that already exists.
+description: Create animated web presentations from a topic, rough notes, or an outline, and edit decks afterward. Generates a theme and a two-slide preview, then builds the deck once confirmed; edits to an existing deck apply in place. Use for slides, a presentation, or a talk/pitch deck.
 ---
 
 # slide-wright

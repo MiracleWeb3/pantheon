@@ -6,7 +6,7 @@ level: 7
 
 # Learner Skill
 
-> Deprecated compatibility alias: use `/oh-my-claudecode:skillify` for new skill extraction workflows. This file remains for internal implementation/history and compatibility.
+> Deprecated compatibility alias: use `/pantheon:forge-session` for new skill extraction workflows. This file remains for internal implementation/history and compatibility.
 
 This is a Level 7 (self-improving) skill. It has two distinct sections:
 - **Expertise**: Domain knowledge about what makes a good skill. Updated automatically as patterns are discovered.
@@ -164,5 +164,5 @@ If code helps, show it - but as illustration of the principle, not copy-paste ma
 
 ## Related Commands
 
-- /oh-my-claudecode:note - Save quick notes that survive compaction (less formal than skills)
-- /oh-my-claudecode:ralph - Start a development loop with learning capture
+- /pantheon:note - Save quick notes that survive compaction (less formal than skills)
+- /pantheon:sisyphus - Start a development loop with learning capture

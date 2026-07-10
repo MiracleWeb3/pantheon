@@ -8,16 +8,16 @@ level: 4
 
 # Team Skill
 
-Spawn N coordinated agents working on a shared task list using Claude Code's implicit agent team. Claude Code 2.1.178+ removed native `TeamCreate`/`TeamDelete`; with `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`, each session has one implicit team and teammates are spawned directly with the Agent/Task tool using distinct `name` values. This skill still preserves OMC's legacy tmux/CLI worker orchestration where documented (`omc team` / `/omc-teams`).
+Spawn N coordinated agents working on a shared task list using Claude Code's implicit agent team. Claude Code 2.1.178+ removed native `TeamCreate`/`TeamDelete`; with `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`, each session has one implicit team and teammates are spawned directly with the Agent/Task tool using distinct `name` values. This skill still preserves OMC's legacy tmux/CLI worker orchestration where documented (`omc team` / `/pantheon:engine-teams`).
 
 The `swarm` compatibility alias was removed in #1131.
 
 ## Usage
 
 ```
-/oh-my-claudecode:team N:agent-type "task description"
-/oh-my-claudecode:team "task description"
-/oh-my-claudecode:team ralph "task description"
+/pantheon:team N:agent-type "task description"
+/pantheon:team "task description"
+/pantheon:team ralph "task description"
 ```
 
 ### Parameters
@@ -192,7 +192,7 @@ The lead writes handoffs to `.omc/handoffs/<stage-name>.md`.
 ### Resume and Cancel Semantics
 
 - **Resume:** restart from the last non-terminal stage using staged state + live task status. Read `.omc/handoffs/` to recover stage transition context.
-- **Cancel:** `/oh-my-claudecode:cancel` requests teammate shutdown, waits for responses (best effort), marks phase `cancelled` with `active=false`, captures cancellation metadata, then deletes team resources and clears/preserves Team state per policy. Handoff files in `.omc/handoffs/` are preserved for potential resume.
+- **Cancel:** `/pantheon:cancel` requests teammate shutdown, waits for responses (best effort), marks phase `cancelled` with `active=false`, captures cancellation metadata, then deletes team resources and clears/preserves Team state per policy. Handoff files in `.omc/handoffs/` are preserved for potential resume.
 - Terminal states are `complete`, `failed`, and `cancelled`.
 
 ## Windows psmux tmux-compatible gate
@@ -336,6 +336,7 @@ Spawn N teammates directly using the Agent/Task tool with distinct `name` values
   "prompt": "<worker-preamble + assigned tasks>"
 }
 ```
+(when the OMC engine is installed; standalone falls back to `pantheon:worker`, then `general-purpose`)
 
 **Response:**
 
@@ -566,7 +567,7 @@ Claude Code 2.1.178+ has no `TeamDelete`. Clear OMC team state and local task bo
 
 **Step 5: Orphan scan for OMC tmux/CLI workers only**
 
-For legacy OMC tmux/CLI worker runs (`omc team` / `/omc-teams`), check for worker processes that survived cleanup:
+For legacy OMC tmux/CLI worker runs (`omc team` / `/pantheon:engine-teams`), check for worker processes that survived cleanup:
 
 ```bash
 node "${CLAUDE_PLUGIN_ROOT}/scripts/cleanup-orphans.mjs" --team-name fix-ts-errors
@@ -645,7 +646,7 @@ The lead runs #1 (Codex security analysis), then #2 and #3 in parallel (Codex re
 
 For large ambiguous tasks, run analysis before team creation:
 
-1. Spawn `Task(subagent_type="oh-my-claudecode:planner", ...)` with task description + codebase context
+1. Spawn `Task(subagent_type="oh-my-claudecode:planner", ...)` with task description + codebase context (when the OMC engine is installed; standalone falls back to `pantheon:researcher`, then `general-purpose`)
 2. Use the analysis to produce better task decomposition
 3. Create team and tasks with enriched context
 
@@ -751,7 +752,7 @@ When the user invokes `/team ralph`, says "team ralph", or combines both keyword
 
 Team+Ralph activates when:
 
-1. User invokes `/team ralph "task"` or `/oh-my-claudecode:team ralph "task"`
+1. User invokes `/team ralph "task"` or `/pantheon:team ralph "task"`
 2. Keyword detector finds both `team` and `ralph` in the prompt
 3. Hook detects `MAGIC KEYWORD: RALPH` alongside team context
 
@@ -779,7 +780,7 @@ state_write(mode="ralph", active=true, iteration=1, max_iterations=10, current_p
 1. Ralph outer loop starts (iteration 1)
 2. Team pipeline runs: `team-plan -> team-prd -> team-exec -> team-verify`
 3. If `team-verify` passes: Ralph runs architect verification (STANDARD tier minimum)
-4. If architect approves: both modes complete, run `/oh-my-claudecode:cancel`
+4. If architect approves: both modes complete, run `/pantheon:cancel`
 5. If `team-verify` fails OR architect rejects: team enters `team-fix`, then loops back to `team-exec -> team-verify`
 6. If fix loop exceeds `max_fix_loops`: Ralph increments iteration and retries the full pipeline
 7. If Ralph exceeds `max_iterations`: terminal `failed` state
@@ -826,7 +827,7 @@ This prevents duplicate worker spawns and allows graceful recovery from lead fai
 
 ## Cancellation
 
-The `/oh-my-claudecode:cancel` skill handles team cleanup:
+The `/pantheon:cancel` skill handles team cleanup:
 
 1. Read team state via `state_read(mode="team")` to get `team_name` and `linked_ralph`
 2. Request shutdown from all active named teammates through the active team surface
@@ -975,7 +976,7 @@ On successful completion:
    state_clear(mode="ralph")
    ```
 2. For legacy OMC tmux/CLI workers, run the documented `omc team shutdown` / cleanup path.
-3. Or run `/oh-my-claudecode:cancel` which handles OMC state cleanup automatically.
+3. Or run `/pantheon:cancel` which handles OMC state cleanup automatically.
 
 **IMPORTANT:** Clear OMC team state only AFTER all teammates have been shut down or timed out.
 

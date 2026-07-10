@@ -13,7 +13,7 @@ Use this built-in reference when you need detailed OMC catalog information that 
 
 ## Agent Catalog
 
-Prefix: `oh-my-claudecode:`. See `agents/*.md` for full prompts.
+Prefix: `oh-my-claudecode:`. See `agents/*.md` for full prompts. This full catalog requires the OMC engine to be installed; standalone, pantheon ships four bundled agents instead — `pantheon:reviewer`, `pantheon:worker`, `pantheon:researcher`, `pantheon:scout` — and skills fall back to those (or `general-purpose`) when spawning any agent below.
 
 - `explore` (haiku) — fast codebase search and mapping
 - `analyst` (opus) — requirements clarity and hidden constraints
@@ -70,33 +70,33 @@ Prefix: `oh-my-claudecode:`. See `agents/*.md` for full prompts.
 
 ## Skills Registry
 
-Invoke built-in workflows via `/oh-my-claudecode:<name>`.
+Invoke built-in workflows via `/pantheon:<name>` (or `/oh-my-claudecode:<name>` when the OMC engine is installed).
 
 ### Workflow skills
-- `autopilot` — full autonomous execution from idea to working code
-- `ralph` — persistence loop until completion with verification
-- `ultrawork` — high-throughput parallel execution
+- `automedon` — full autonomous execution from idea to working code
+- `sisyphus` — persistence loop until completion with verification
+- `hekaton` — high-throughput parallel execution
 - `visual-verdict` — structured visual QA verdicts
 - `team` — coordinated team orchestration
-- `ccg` — Codex + Gemini + Claude synthesis lane
-- `ultraqa` — QA cycle: test, verify, fix, repeat
-- `omc-plan` — planning workflow and `/plan`-safe alias
-- `ralplan` — consensus planning workflow
-- `sciomc` — science/research workflow
+- `triumvirate` — Codex + Gemini + Claude synthesis lane
+- `hekaton-qa` — QA cycle: test, verify, fix, repeat
+- `plan` — planning workflow and `/plan`-safe alias
+- `sisyphus-plan` — consensus planning workflow
+- `archimedes` — science/research workflow
 - `external-context` — external docs/research workflow
-- `deepinit` — hierarchical AGENTS.md generation
+- `atlas-init` — hierarchical AGENTS.md generation
 - `deep-interview` — Socratic ambiguity-gated requirements workflow
 - `ai-slop-cleaner` — regression-safe cleanup workflow
 
 ### Utility skills
-- `ask`, `cancel`, `note`, `skillify`, `learner` (deprecated alias), `omc-setup`, `mcp-setup`, `hud`, `omc-doctor`, `trace`, `release`, `project-session-manager`, `skill`, `writer-memory`, `configure-notifications`
+- `ask`, `cancel`, `note`, `forge-session`, `learner` (deprecated alias), `engine-install`, `mcp-setup`, `engine-hud`, `engine-doctor`, `trace`, `release`, `project-session-manager`, `skill`, `writer-memory`, `configure-notifications`
 
 ### Keyword triggers kept compact in CLAUDE.md
-- `"autopilot"→autopilot`
-- `"ralph"→ralph`
-- `"ulw"→ultrawork`
-- `"ccg"→ccg`
-- `"ralplan"→ralplan`
+- `"autopilot"→automedon`
+- `"ralph"→sisyphus`
+- `"ulw"→hekaton`
+- `"ccg"→triumvirate`
+- `"ralplan"→sisyphus-plan`
 - `"deep interview"→deep-interview`
 - `"deslop" / "anti-slop"→ai-slop-cleaner`
 - `"deep-analyze"→analysis mode`

@@ -5,10 +5,25 @@ on:
     branches: [main]
   pull_request:
 
+env:
+  PYTHONUTF8: "1"
+
 jobs:
   doctor:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python-version: ["3.9", "3.13"]
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: pantheon doctor --selftest
+        run: python scripts/doctor.py --selftest
       - name: pantheon doctor — runs every module selftest + install checks
-        run: python3 scripts/doctor.py
+        run: python scripts/doctor.py
+      - name: gate benchmark — 10 planted fake-dones caught, 10 clean turns pass
+        run: python benchmarks/bench_gate.py

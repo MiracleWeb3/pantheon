@@ -4,9 +4,9 @@
 
 ### One install. Your coding agent stops winging it.
 
-**16 disciplines** (13 mythic + 3 power tools) **+ 172 merged skills = 188**, all under pantheon-native names — with memory that recalls itself, receipts for everything it does, and a verification gate that blocks fake "done". For [Claude Code](https://claude.com/claude-code).
+**16 disciplines** (13 mythic + 3 power tools) **+ 172 merged skills = 188** — with memory that recalls itself, receipts for everything it does, and a verification gate that blocks fake "done" *and benchmarks itself proving it*. For [Claude Code](https://claude.com/claude-code).
 
-![version](https://img.shields.io/badge/version-1.2.0-8957e5?style=flat-square) &nbsp;![license](https://img.shields.io/badge/license-MIT-3fb950?style=flat-square) &nbsp;![Claude Code](https://img.shields.io/badge/Claude_Code-plugin-d97757?style=flat-square) &nbsp;![dependencies](https://img.shields.io/badge/dependencies-none-3fb950?style=flat-square) &nbsp;![skills](https://img.shields.io/badge/skills-188-8957e5?style=flat-square) &nbsp;[![selftests](https://img.shields.io/github/actions/workflow/status/MiracleWeb3/pantheon/selftest.yml?style=flat-square&label=selftests)](https://github.com/MiracleWeb3/pantheon/actions/workflows/selftest.yml) &nbsp;![last commit](https://img.shields.io/github/last-commit/MiracleWeb3/pantheon?style=flat-square&color=d97757&label=last%20commit)
+![version](https://img.shields.io/badge/version-1.4.0-8957e5?style=flat-square) &nbsp;![license](https://img.shields.io/badge/license-MIT-3fb950?style=flat-square) &nbsp;![Claude Code](https://img.shields.io/badge/Claude_Code-plugin-d97757?style=flat-square) &nbsp;![dependencies](https://img.shields.io/badge/dependencies-none-3fb950?style=flat-square) &nbsp;![skills](https://img.shields.io/badge/skills-188-8957e5?style=flat-square) &nbsp;[![selftests](https://img.shields.io/github/actions/workflow/status/MiracleWeb3/pantheon/selftest.yml?style=flat-square&label=selftests)](https://github.com/MiracleWeb3/pantheon/actions/workflows/selftest.yml) &nbsp;![last commit](https://img.shields.io/github/last-commit/MiracleWeb3/pantheon?style=flat-square&color=d97757&label=last%20commit)
 
 **[See it work](#what-it-feels-like) · [The disciplines](#the-pantheon) · [Config](#configuration) · [The HUD](#the-hud-optional) · [CLI](#the-store-and-the-cli) · [Credits](CREDITS.md)**
 
@@ -61,7 +61,7 @@ Three mechanics nobody else ships — everything else from the grid above gets i
 
 **🧠 Memory with retrieval, not a diary.** Corrections are captured as they land; every new prompt is scored against them (*keyword overlap × recency × weight*, same-project boost) and the top lessons inject themselves. No `/remember`, no digging, no session-start dump.
 
-**🛡 "Done" is enforced, not asserted.** The Stop hook inspects the actual turn — failing tests on changed code, introduced `TODO`/`.skip` stubs, unverified non-trivial diffs — and refuses the stop with an exact fix list (two blocks max, then it yields). Others *advise* this. pantheon *enforces* it.
+**🛡 "Done" is enforced, not asserted.** The Stop hook inspects the actual turn — failing tests on changed code, introduced `TODO`/`.skip` stubs, unverified non-trivial diffs — and refuses the stop with an exact fix list. Hard evidence (failing checks, stubs) blocks twice; the softer no-verification nudge blocks once; then it always yields — and it fails *open* if its own state can't persist, so it can never wedge a session. Others *advise* this. pantheon *enforces* it — and [measures itself](BENCHMARKS.md).
 
 <div align="center"><img src="assets/divider.svg" width="220" alt=""></div>
 
@@ -77,6 +77,8 @@ Because they each do *one layer*, and none of them **enforce** anything. Honest 
 | receipts + dashboard of what it did & caught | ✅ | ❌ | ⚠️ HUD only | ❌ |
 | hourly/weekly spend + budget caps | ✅ warn·ask·block | ❌ | ⚠️ display only | ❌ |
 | team packs — repo-inherited config + lessons | ✅ | ❌ | ❌ | ❌ |
+| lesson memory reachable by *subagents* (MCP tools) | ✅ 4 stdlib tools | ❌ | ⚠️ session search only | ⚠️ summaries |
+| proof — a reproducible benchmark of the enforcement, in CI | ✅ [10/10, 0 FP](BENCHMARKS.md) | ❌ | ❌ | ❌ |
 | forge your own discipline, auto-routed | ✅ | ⚠️ authoring guide | ⚠️ skill manager | ❌ |
 | take the disciplines to Cursor / Codex | ✅ export | ❌ | ❌ | ❌ |
 | ships the others' skill sets too | ✅ 172, attributed | — | — | — |
@@ -118,7 +120,7 @@ pantheon doesn't just *point at* the best open-source plugins — it **vendors t
 - **[ponytail](https://github.com/DietrichGebert/ponytail)** (Dietrich Gebert, MIT) — the lazy-senior-dev discipline set (now the `spartan` family).
 - **[ui-skills](https://www.ui-skills.com/) & design collections** — frontend-design, interface-design, animation, three.js, framework skills.
 
-Every vendored skill keeps its original license (see [`LICENSES/`](LICENSES/)) and is attributed in [`CREDITS.md`](CREDITS.md). All rights remain with the original authors. And every one of them now carries a **pantheon-native name** — `spartan` for the lazy-dev discipline set, `sisyphus` / `automedon` / `hekaton` / `pythia` for the engine power modes, plain subject names for the guides — no borrowed branding; the full old→new map lives in [`CREDITS.md`](CREDITS.md). Don't want the bulk? `economy`/`quiet` config and per-skill `disciplines` toggles keep it lean.
+Every merged source is attributed per-skill in [`CREDITS.md`](CREDITS.md), and the license texts for superpowers, oh-my-claudecode, and ponytail are retained in [`LICENSES/`](LICENSES/). The guide collection (112 skills) ships with attribution while individual licenses are still being verified — those entries are flagged in CREDITS.md, and any author who wants a skill removed or re-credited gets it, fast, via an issue. All rights remain with the original authors. The flagship sets carry **pantheon-native names** — `spartan` for the lazy-dev discipline set, `sisyphus` / `automedon` / `hekaton` / `pythia` for the engine power modes (old→new map in CREDITS.md) — while guides keep their plain subject names (`vue`, `shadcn`, …). Don't want the bulk? `economy`/`quiet` config and per-skill `disciplines` toggles keep it lean.
 
 <div align="center"><img src="assets/divider.svg" width="220" alt=""></div>
 
@@ -132,7 +134,7 @@ pantheon runs full-strength out of the box. Drop a `config.json` at `~/.claude/p
 | `economy` | suggest | hidden | 1 lesson | warn | saving tokens |
 | `quiet` | off | hidden | off | off | full manual control |
 
-**What the automation actually costs, measured from the injected strings:** a prompt that matches nothing gets **0 tokens** injected — silence is the default. When something fires: a route hint ≈ **110 tokens** (economy's one-line nudge ≈ 25), each recalled lesson ≈ **60–95**, the clarifier ≈ 100, the context-guard nudge ≈ 110 (once per session). Nothing is added session-wide on the default config — the session-start hook prints nothing unless your config is non-default.
+**What the automation actually costs, measured from the injected strings:** a prompt that matches nothing gets **0 tokens** injected — silence is the default. When something fires: a route hint ≈ **110 tokens** (economy's one-line nudge ≈ 25), each recalled lesson ≈ **60–95**, the clarifier ≈ 100, the context-guard nudge ≈ 110 (once per session). Session-wide fixed cost: one ~40-token skills-discovery nudge at session start (what makes 188 skills actually get *considered*; off in `quiet`). And the cost no plugin can hide: Claude Code itself loads every installed skill's name+description — `pantheon doctor` measures pantheon's real figure on your install, and v1.4 put the fattest descriptions on a diet.
 
 <details>
 <summary><b>Every knob</b> (override any single one)</summary>
@@ -156,6 +158,7 @@ pantheon runs full-strength out of the box. Drop a `config.json` at `~/.claude/p
 | `budget` | `{session, daily, weekly}` USD caps + `mode: warn·ask·block` | no caps |
 | `custom_routes` | `{ "<regex>": "<skill>" }` — beat the built-ins | `{}` |
 | `disciplines` | `{ "<skill>": false }` | all on |
+| `usage` | `{mode: auto·subscription·api, five_hour_tokens, weekly_tokens}` — pin exact plan limits for the `≈` HUD meters | `auto` |
 | `packs` / `updateCheck` | `true` · `false` | `true` |
 
 See [`config.example.json`](config.example.json) for the annotated version. The update check is a daily, cached, 2-second, fail-silent version ping to GitHub — no telemetry, and `"updateCheck": false` kills it.
@@ -177,7 +180,7 @@ Add to `~/.claude/settings.json`:
 }
 ```
 
-Every segment is real data, shown only when it has a value. **Subscription meters built in:** `⏳5h` and `📅wk` show how much of your Claude plan's 5-hour window and weekly cap you've used — exact server-side percentages when Claude Code sends them (≥2.1, Pro/Max), with a reset countdown appearing near the cap; on older versions pantheon derives the windows itself from your local transcripts (marked `≈`, self-calibrating, ~20ms per render after the first scan). API-key sessions show a `⌁api` tag instead — their real usage is the `$` spend. The **rolling hourly/weekly spend** and fallback **context %** are pantheon's own derivations (a cost-delta ledger + real token counts). `▓` goes green → yellow → red as context fills; over budget, a red `⚠budget` appears.
+Every segment is real data, shown only when it has a value. **Subscription meters built in:** `⏳5h` and `📅wk` show how much of your Claude plan's 5-hour window and weekly cap you've used — exact server-side percentages when Claude Code sends them (≥2.1, Pro/Max), with a reset countdown appearing near the cap; on older versions pantheon derives the windows itself from your local transcripts (marked `≈`, self-calibrating, incremental byte-offset reads with the discovery walk memoized — ~10–15ms of work per render on top of Python's own startup). API-key sessions show a `⌁api` tag instead — their real usage is the `$` spend. The **rolling hourly/weekly spend** and fallback **context %** are pantheon's own derivations (a cost-delta ledger + real token counts). `▓` goes green → yellow → red as context fills; over budget, a red `⚠budget` appears.
 
 <details>
 <summary><b>Segment guide</b> · and how to chain an existing statusline</summary>
@@ -251,8 +254,11 @@ With none installed, every skill still works.
 ## Under the hood
 
 - **Three hooks, stdlib-only, fail-silent — audit them in 30 seconds:** [`hooks/on_prompt.py`](hooks/on_prompt.py) (UserPromptSubmit: route + recall + clarifier + context guard + budget), [`hooks/on_stop.py`](hooks/on_stop.py) (Stop: learning capture + receipts + route outcomes + the verification gate), [`hooks/session-start.py`](hooks/session-start.py) (config directive, store migration, CLI shim, team-pack import, update check). No network calls except the opt-out daily version check; a broken hook never breaks your session — every failure path exits 0.
-- **Zero dependencies.** No npm, no pip, no build step. Skills are Markdown; hooks, CLI, dashboard, and HUD are plain Python 3 (`sqlite3`/`curses` from the stdlib).
-- **Everything ships a self-check.** All 11 modules run `--selftest`; `pantheon doctor` runs the whole suite plus install checks in one command.
+- **Zero dependencies.** No npm, no pip, no build step. Skills are Markdown; hooks, CLI, dashboard, HUD, and the MCP server are plain Python 3 (`sqlite3`/`curses` from the stdlib). CI runs the full suite on Linux, macOS, and Windows (Python 3.9 and 3.13); the hooks invoke `python3`, which Windows needs on PATH (the Microsoft Store Python provides `python3.exe`).
+- **Memory your subagents can reach.** A ~200-line stdlib MCP server exposes `pantheon_recall` / `pantheon_lesson_add` / `pantheon_receipt_add` / `pantheon_stats`, so a dispatched subagent can ask "what do we know about X?" instead of starting blind. Recall itself is BM25-ranked (IDF-weighted, length-normalized) — rare shared terms outweigh common ones.
+- **Four bundled agents, model-tiered.** `reviewer` (opus, read-only), `worker` (sonnet), `researcher` (sonnet, read-only), `scout` (haiku) — the disciplines dispatch to these when the oh-my-claudecode engine isn't installed, so decompose/review work is cost-tiered out of the box.
+- **It measures itself.** [`BENCHMARKS.md`](BENCHMARKS.md): 20 replayed transcript fixtures through the real gate pipeline — 10/10 planted fake-dones caught, 0/10 false positives — re-run on every CI push.
+- **Everything ships a self-check.** Every module runs `--selftest`; `pantheon doctor` runs the whole suite plus install checks in one command — including a transcript-format tripwire that catches a Claude Code format change before it silently blinds the gate.
 
 <details>
 <summary><b>How it's wired</b></summary>
@@ -279,7 +285,7 @@ graph LR
 <details>
 <summary><b>The gate blocked me and I disagree.</b></summary>
 
-Say so in your reply — after two blocks it always yields, by design. To soften it permanently: `"gate": "warn"` (message only) or `"gate": "off"` in your config.
+Say so in your reply — it always yields, by design: after one block for a missing-verification nudge, after two for hard failures. To soften it permanently: `"gate": "warn"` (message only) or `"gate": "off"` in your config.
 
 </details>
 

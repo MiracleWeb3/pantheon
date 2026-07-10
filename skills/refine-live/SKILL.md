@@ -1,6 +1,6 @@
 ---
 name: refine-live
-description: In-chat fallback for the Timeline Inspector Refine agent. Use when the user runs `/refine live`, asks to "refine live", "go live", or answer refine jobs — but ONLY when no persistent agent is wired (no `npx transitions-refine live`). Prefer `npx transitions-refine live` for run-and-forget (relay spawns agent per click, no idle credit burn). This skill long-polls the relay, posts suggestions, handles scan/apply jobs.
+description: In-chat fallback for the Timeline Inspector Refine agent. Use when the user runs `/refine live` or asks to "refine live"/"go live" -- but ONLY when no persistent agent is wired. Prefer `npx transitions-refine live` for run-and-forget; this polls the relay and posts suggestions.
 ---
 
 # Refine Live

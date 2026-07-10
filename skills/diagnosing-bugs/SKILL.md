@@ -1,6 +1,6 @@
 ---
 name: diagnosing-bugs
-description: Diagnosis loop for hard bugs and performance regressions. Use when the user says "diagnose"/"debug this", or reports something broken/throwing/failing/slow.
+description: The engine's diagnosis LOOP for hard bugs and performance regressions (hypotheses → probes → evidence), driven by hydra. Use directly when the user says "diagnose" or wants the loop without the full hydra discipline.
 ---
 
 # Diagnosing Bugs

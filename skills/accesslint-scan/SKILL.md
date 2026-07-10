@@ -1,6 +1,6 @@
 ---
 name: accesslint-scan
-description: "Audit a live page for accessibility issues and locate each violation precisely — pass a URL, a config target name (e.g. `accesslint:scan dev`), or nothing to use the default target from accesslint.config.json. Ensures a debuggable Chrome, runs the @accesslint/core engine via CDP, and returns a worklist of live-DOM WCAG violations grounded to each violation's DOM selector and source file:line. Locates; doesn't edit — output drives fixes by Claude. Use it for \"is this page accessible\", or to verify a UI change. For diffing against uncommitted changes or a branch, use the `diff` skill."
+description: "Audit a live page for accessibility issues, by URL, config target, or the config's default. Returns live-DOM WCAG violations with DOM selector and file:line. Locates; doesn't edit. Use for \"is this page accessible\" or to verify a UI change. For uncommitted changes, use `diff` instead."
 argument-hint: "[target|url]"
 allowed-tools: Bash, Read, Glob, Grep, Skill, Task
 ---

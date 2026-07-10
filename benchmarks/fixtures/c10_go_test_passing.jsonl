@@ -1,0 +1,4 @@
+{"type": "user", "message": {"content": "Fix the goroutine leak in the worker pool."}}
+{"type": "assistant", "message": {"id": "m76", "usage": {"output_tokens": 40}, "content": [{"type": "tool_use", "id": "e77", "name": "Edit", "input": {"file_path": "/repo/src/worker.go", "old_string": "func (p *Pool) Start() {\n\tfor i := 0; i < p.n; i++ {\n\t\tgo p.worker()\n\t}\n}", "new_string": "func (p *Pool) Start() {\n\tp.wg.Add(p.n)\n\tfor i := 0; i < p.n; i++ {\n\t\tgo p.worker()\n\t}\n}"}}]}}
+{"type": "assistant", "message": {"id": "m79", "usage": {"output_tokens": 20}, "content": [{"type": "tool_use", "id": "b78", "name": "Bash", "input": {"command": "go test ./..."}}]}}
+{"type": "user", "message": {"content": [{"type": "tool_result", "tool_use_id": "b78", "is_error": false, "content": [{"type": "text", "text": "ok  \tworkerpool\t0.014s"}]}]}}

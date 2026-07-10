@@ -12,15 +12,15 @@ Fetch external documentation, references, and context for a query. Decomposes in
 ## Usage
 
 ```
-/oh-my-claudecode:external-context <topic or question>
+/pantheon:external-context <topic or question>
 ```
 
 ### Examples
 
 ```
-/oh-my-claudecode:external-context What are the best practices for JWT token rotation in Node.js?
-/oh-my-claudecode:external-context Compare Prisma vs Drizzle ORM for PostgreSQL
-/oh-my-claudecode:external-context Latest React Server Components patterns and conventions
+/pantheon:external-context What are the best practices for JWT token rotation in Node.js?
+/pantheon:external-context Compare Prisma vs Drizzle ORM for PostgreSQL
+/pantheon:external-context Latest React Server Components patterns and conventions
 ```
 
 ## Protocol
@@ -51,6 +51,7 @@ Task(subagent_type="oh-my-claudecode:document-specialist", model="sonnet", promp
 
 Task(subagent_type="oh-my-claudecode:document-specialist", model="sonnet", prompt="Search for: <facet 2 description>. Use WebSearch and WebFetch to find official documentation and examples. Cite all sources with URLs.")
 ```
+(when the OMC engine is installed; standalone falls back to `pantheon:researcher`, then `general-purpose`)
 
 Maximum 5 parallel document-specialist agents.
 

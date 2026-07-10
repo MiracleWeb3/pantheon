@@ -12,17 +12,17 @@ level: 4
 
 Spawn N CLI worker processes in tmux panes to execute tasks in parallel. Supports `claude`, `codex`, `gemini`, `antigravity`, `grok`, and `cursor` agent types. Cursor workers are executor-style only.
 
-`/omc-teams` is a legacy compatibility skill for the CLI-first runtime: use `omc team ...` commands (not deprecated MCP runtime tools).
+`/pantheon:engine-teams` is a legacy compatibility skill for the CLI-first runtime: use `omc team ...` commands (not deprecated MCP runtime tools).
 
 ## Usage
 
 ```bash
-/oh-my-claudecode:omc-teams N:claude "task description"
-/oh-my-claudecode:omc-teams N:codex "task description"
-/oh-my-claudecode:omc-teams N:gemini "task description"
-/oh-my-claudecode:omc-teams N:antigravity "task description"
-/oh-my-claudecode:omc-teams N:grok "task description"
-/oh-my-claudecode:omc-teams N:cursor "implementation task description"
+/pantheon:engine-teams N:claude "task description"
+/pantheon:engine-teams N:codex "task description"
+/pantheon:engine-teams N:gemini "task description"
+/pantheon:engine-teams N:antigravity "task description"
+/pantheon:engine-teams N:grok "task description"
+/pantheon:engine-teams N:cursor "implementation task description"
 ```
 
 ### Parameters
@@ -34,12 +34,12 @@ Spawn N CLI worker processes in tmux panes to execute tasks in parallel. Support
 ### Examples
 
 ```bash
-/omc-teams 2:claude "implement auth module with tests"
-/omc-teams 2:codex "review the auth module for security issues"
-/omc-teams 3:gemini "redesign UI components for accessibility"
-/omc-teams 3:antigravity "redesign UI components for accessibility"
-/omc-teams 1:grok "prototype an implementation approach"
-/omc-teams 1:cursor "apply the implementation plan"
+/pantheon:engine-teams 2:claude "implement auth module with tests"
+/pantheon:engine-teams 2:codex "review the auth module for security issues"
+/pantheon:engine-teams 3:gemini "redesign UI components for accessibility"
+/pantheon:engine-teams 3:antigravity "redesign UI components for accessibility"
+/pantheon:engine-teams 1:grok "prototype an implementation approach"
+/pantheon:engine-teams 1:cursor "apply the implementation plan"
 ```
 
 ## Requirements
@@ -83,10 +83,10 @@ Extract:
 
 Validate before decomposing or running anything:
 
-- Reject unsupported agent types up front. `/omc-teams` only supports **`claude`**, **`codex`**, **`gemini`**, **`antigravity`**, **`grok`**, and **`cursor`**.
+- Reject unsupported agent types up front. `/pantheon:engine-teams` only supports **`claude`**, **`codex`**, **`gemini`**, **`antigravity`**, **`grok`**, and **`cursor`**.
 - Treat Cursor workers as executor-style only. Accept `N:cursor` and `N:cursor:executor`; reject or reframe reviewer, critic, security-reviewer, verdict, or final-approval work onto native Claude/OMC reviewer agents.
-- If the user asks for an unsupported type such as `expert`, explain that `/omc-teams` launches external CLI workers only.
-- For native Claude Code team agents/roles, direct them to **`/oh-my-claudecode:team`** instead.
+- If the user asks for an unsupported type such as `expert`, explain that `/pantheon:engine-teams` launches external CLI workers only.
+- For native Claude Code team agents/roles, direct them to **`/pantheon:team`** instead.
 
 ### Phase 2: Decompose task
 
@@ -109,7 +109,7 @@ working directory before launch:
 - Do not anchor the launch cwd to only the repo containing `.omc/plans/...` when
   target repos are siblings; that strands `codex`, `claude`, `gemini`, `antigravity`, `grok`, and `cursor` workers in
   the plan repo instead of the implementation workspace.
-- If no safe shared workspace root can be identified, do not launch `/omc-teams`.
+- If no safe shared workspace root can be identified, do not launch `/pantheon:engine-teams`.
   Report the single-cwd constraint and ask for, or derive from evidence, the intended
   workspace root.
 
@@ -188,7 +188,7 @@ If encountered, switch to `omc team ...` CLI commands.
 | ---------------------------- | ----------------------------------- | ----------------------------------------------------------------------------------- |
 | `not inside tmux`            | Requested in-place pane topology from a non-tmux surface | Start tmux and rerun, or let `omc team` use its detached-session fallback           |
 | `cmux surface detected`      | Running inside cmux without `$TMUX` | Use the normal `omc team ...` flow; OMC will create native cmux worker splits      |
-| `Unsupported agent type`     | Requested agent is not claude/codex/gemini/antigravity/grok/cursor | Use `claude`, `codex`, `gemini`, `antigravity`, `grok`, or `cursor`; for native Claude Code agents use `/oh-my-claudecode:team` |
+| `Unsupported agent type`     | Requested agent is not claude/codex/gemini/antigravity/grok/cursor | Use `claude`, `codex`, `gemini`, `antigravity`, `grok`, or `cursor`; for native Claude Code agents use `/pantheon:team` |
 | `codex: command not found`   | Codex CLI not installed             | `npm install -g @openai/codex`                                                      |
 | `gemini: command not found`  | Gemini CLI not installed            | `npm install -g @google/gemini-cli` (enterprise/API-key tier)                       |
 | `agy: command not found`     | Antigravity CLI not installed       | Install per the [official instructions](https://antigravity.google)                |
@@ -197,7 +197,7 @@ If encountered, switch to `omc team ...` CLI commands.
 
 ## Relationship to `/team`
 
-| Aspect       | `/team`                                                       | `/omc-teams`                                         |
+| Aspect       | `/team`                                                       | `/pantheon:engine-teams`                                         |
 | ------------ | ------------------------------------------------------------- | ---------------------------------------------------- |
 | Worker type  | Claude Code implicit agent-team teammates                     | claude / codex / gemini / antigravity CLI processes in tmux        |
 | Invocation   | Agent/Task spawn with distinct `name` values; no TeamCreate/TeamDelete in Claude Code 2.1.178+ | `omc team [N:agent]` + `status` + `shutdown` + `api` |

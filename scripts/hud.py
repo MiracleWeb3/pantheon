@@ -20,14 +20,30 @@ Chain an existing statusline:  ... hud.py --chain 'your-command'
 
 Fail-silent: a broken statusline is worse than none. Self-check: python3 hud.py --selftest
 """
-import sys, os, json, time, datetime
+import sys, os, json, time, datetime, tempfile
 
 DIM, BOLD, RESET = "\033[2m", "\033[1m", "\033[0m"
 CYAN, MAGENTA, YELLOW, GREEN, RED = ("\033[36m", "\033[35m", "\033[33m",
                                      "\033[32m", "\033[31m")
 CTX_WINDOW = 200_000          # tokens; the mainline context budget
-BYTES_PER_TOKEN = 3.7         # rough transcript-bytes → tokens
 PANDIR = os.path.join(os.path.expanduser("~"), ".claude", "pantheon")
+
+
+def _atomic_json(path, obj):
+    """tmp+replace: concurrent statusline renders must never corrupt state.
+    (Local copy — the HUD stays runnable even when lib/ is broken.)"""
+    tmp = None
+    try:
+        fd, tmp = tempfile.mkstemp(prefix=".pantheon-tmp-", dir=os.path.dirname(path))
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
+            json.dump(obj, f)
+        os.replace(tmp, path)
+    except Exception:
+        try:
+            if tmp:
+                os.unlink(tmp)
+        except Exception:
+            pass
 
 
 # ── real-data helpers ────────────────────────────────────────────────────────
@@ -130,7 +146,7 @@ def effort(transcript_path, session_id):
         rec["offset"] = size
         cache[key] = rec
         os.makedirs(PANDIR, exist_ok=True)
-        json.dump(cache, open(cache_p, "w", encoding="utf-8"))
+        _atomic_json(cache_p, cache)
     except Exception:
         pass
     return rec.get("effort", "")
@@ -150,25 +166,38 @@ def usage(session_id, total_cost):
             state = json.load(open(state_p, encoding="utf-8"))
         except Exception:
             pass
-        prev = state.get(session_id, 0.0)
+        rec = state.get(session_id)
+        prev = float(rec.get("c", 0.0) if isinstance(rec, dict) else rec or 0.0)
         delta = total_cost - prev if total_cost >= prev else total_cost
         now = datetime.datetime.now()
         if delta > 1e-9:
             with open(ev_p, "a", encoding="utf-8") as f:
                 f.write(json.dumps({"t": now.isoformat(), "d": round(delta, 6)}) + "\n")
-            state[session_id] = total_cost
-            json.dump(state, open(state_p, "w", encoding="utf-8"))
+            # re-read + merge so another session's fresher baseline isn't
+            # clobbered by our stale copy; atomic write so a killed render
+            # can't corrupt the file (corrupt = every baseline lost = every
+            # session re-counted). Entries carry a timestamp and age out.
+            try:
+                state = json.load(open(state_p, encoding="utf-8"))
+            except Exception:
+                state = {}
+            state[session_id] = {"c": total_cost, "t": now.timestamp()}
+            cutoff = now.timestamp() - 14 * 86400
+            state = {k: v for k, v in state.items()
+                     if not isinstance(v, dict) or v.get("t", 0) >= cutoff}
+            _atomic_json(state_p, state)
         h1 = now - datetime.timedelta(hours=1)
         d1 = now - datetime.timedelta(days=1)
         d7 = now - datetime.timedelta(days=7)
         s1 = s24 = s7 = 0.0
-        keep = []
+        keep, dead = [], 0
         try:
             for ln in open(ev_p, encoding="utf-8"):
                 try:
                     e = json.loads(ln)
                     t = datetime.datetime.fromisoformat(e["t"])
                 except Exception:
+                    dead += 1
                     continue
                 if t >= d7:
                     keep.append(ln)
@@ -177,8 +206,16 @@ def usage(session_id, total_cost):
                         s24 += e["d"]
                     if t >= h1:
                         s1 += e["d"]
-            if len(keep) > 5000:  # prune the log opportunistically
-                open(ev_p, "w", encoding="utf-8").writelines(keep)
+                else:
+                    dead += 1
+            if dead > 1000:
+                # prune only when it meaningfully shrinks; atomic replace.
+                # ponytail: an append racing the replace can lose one sub-cent
+                # event — a lock isn't worth a statusline
+                fd, tmp = tempfile.mkstemp(prefix=".pantheon-tmp-", dir=PANDIR)
+                with os.fdopen(fd, "w", encoding="utf-8") as f:
+                    f.writelines(keep)
+                os.replace(tmp, ev_p)
         except Exception:
             pass
         return s1, s24, s7
@@ -412,6 +449,11 @@ def selftest():
     s1, s24, s7 = usage("selftest-sess", 2.5)  # first call: full 2.5 is the delta
     assert s1 is not None and s7 >= 2.5 and s24 >= 2.5, (s1, s24, s7)
     s1b, _, _ = usage("selftest-sess", 2.5)    # no change → no new delta
+    _, _, s7c = usage("selftest-sess", 3.0)    # only the 0.5 increment lands
+    assert 2.9 < s7c < 3.1, s7c
+    st = json.load(open(os.path.join(PANDIR, "usage-state.json"), encoding="utf-8"))
+    assert isinstance(st["selftest-sess"], dict) and st["selftest-sess"]["c"] == 3.0
+    assert not [f for f in os.listdir(PANDIR) if f.startswith(".pantheon-tmp-")]
     assert budget_flag(0.0, 0.0, 0.0) == ""    # zero spend never flags
     assert chained_line("{}", "echo X") == "X" and chained_line("{}", "exit 1") == ""
     PANDIR = _old_pandir

@@ -54,7 +54,7 @@ ROUTES = [
     ("athena", r"\b(design (the|this|a|my)? ?(ui|ux|page|component|screen|interface|layout)|"
                r"(build|make|create) (a |the |this )?(ui|component|page|landing|dashboard|screen|form|modal)|"
                r"looks? (bad|generic|off|ugly|boring|like ai)|make it (look )?(good|better|beautiful|pretty|nicer)|"
-               r"(improve|polish) the (ui|ux|design|look|styling)|frontend design|the design)\b"),
+               r"(improve|polish) the (ui|ux|design|look|styling)|frontend design)\b"),
     ("daedalus", r"\b(build (this|it|me)? ?(right|properly)|do (this|it) properly|"
                  r"once and for all|production[- ]quality|"
                  r"(implement|build|create|add) (the |a |an )?[a-z0-9_-]+ (feature|system|module|integration)|"
@@ -72,7 +72,7 @@ ROUTES = [
     ("mnemosyne", r"\b(remember (this|that)|don'?t forget|from now on|"
                   r"always do|never do|my preference|learn from this)\b"),
     ("lethe", r"\b(simplest|minimal(ist)?|yagni|over[- ]?engineer(ed|ing)?|"
-              r"too (complex|complicated|much)|keep it simple|do less|bloat(ed)?)\b"),
+              r"too (complex|complicated)|keep it simple|do less|bloat(ed)?)\b"),
     ("arachne", r"\b(map (the|this|our)? ?(code ?base|repo|project|dependencies)|"
                 r"build (the|a)? ?(graph|dependency map)|graphify|knowledge graph|"
                 r"visuali[sz]e (the )?(code ?base|repo|dependencies)|dependency (map|graph))\b"),
@@ -96,8 +96,10 @@ def detect(prompt: str, custom: dict = None):
         return None, False, None  # explicit invocation or slash command — stay silent
     persist = bool(PERSISTENCE.search(prompt))
     for pattern, skill in (custom or {}).items():
-        try:
-            if re.search(pattern, prompt, re.IGNORECASE):
+        if len(pattern) > 200:
+            continue  # ponytail: length cap + truncated haystack beats a regex
+        try:      # complexity analyzer; kills catastrophic-backtracking stalls
+            if re.search(pattern, prompt[:2000], re.IGNORECASE):
                 return skill, persist, "custom:" + skill
         except re.error:
             continue
@@ -107,15 +109,14 @@ def detect(prompt: str, custom: dict = None):
     return None, persist, None
 
 
-def remember(skill: str, cwd: str, rowid, session: str) -> None:
-    """Record the last route for the HUD and for outcome resolution on Stop."""
+def remember(skill: str) -> None:
+    """Record the last route — display data for the HUD/dashboard only
+    (outcome resolution reads the store, not this file)."""
     try:
         d = os.path.join(os.path.expanduser("~"), ".claude", "pantheon")
-        os.makedirs(d, exist_ok=True)
-        with open(os.path.join(d, "last-route.json"), "w", encoding="utf-8") as f:
-            json.dump({"skill": skill, "at": datetime.datetime.now().isoformat(),
-                       "cwd": cwd, "rowid": rowid, "session": session,
-                       "resolved": False}, f)
+        _paths.write_json_atomic(
+            os.path.join(d, "last-route.json"),
+            {"skill": skill, "at": datetime.datetime.now().isoformat()})
     except Exception:
         pass
 
@@ -129,21 +130,21 @@ def route_lines(prompt, cfg, cwd, session):
         return [], None
     if _config and not _config.enabled(cfg, skill):
         return [], None
-    rowid, demoted = None, False
+    demoted = False
     try:
         if _store:
             conn = _store.connect()
-            st = _store.route_stats(conn).get((cluster, skill))
+            st = _store.route_stats(conn, only=(cluster, skill)).get((cluster, skill))
             # adaptive routing: ≥5 resolved fires and <30% accepted → this
             # route annoys more than it helps; soften it to a suggestion.
             if st and st["resolved"] >= 5 and st["accepts"] / st["resolved"] < 0.30:
                 demoted = True
-            rowid = _store.log_route(conn, cluster, skill, session,
-                                     _paths.project_name(cwd) if _paths else "")
+            _store.log_route(conn, cluster, skill, session,
+                             _paths.project_name(cwd) if _paths else "")
             conn.close()
     except Exception:
         pass
-    remember(skill, cwd, rowid, session)
+    remember(skill)
     ns = f"pantheon:{skill}" if not cluster.startswith("custom:") else skill
     if cfg.get("routing") == "suggest" or demoted:
         # economy / demoted: a soft one-line nudge, not an instruction
@@ -245,8 +246,7 @@ def context_lines(transcript_path, session, cfg):
         st[session] = fired + [level]
         if len(st) > 40:  # keep the state file small across many sessions
             st = {session: fired + [level]}
-        os.makedirs(os.path.dirname(_guard_state_path()), exist_ok=True)
-        json.dump(st, open(_guard_state_path(), "w", encoding="utf-8"))
+        _paths.write_json_atomic(_guard_state_path(), st)
     except Exception:
         pass
     urgency = ("very nearly full — checkpoint NOW, before answering"
@@ -292,7 +292,8 @@ def _session_cost(session):
         st = json.load(open(os.path.join(os.path.expanduser("~"), ".claude",
                                          "pantheon", "usage-state.json"),
                             encoding="utf-8"))
-        return float(st.get(session, 0.0))
+        v = st.get(session, 0.0)
+        return float(v.get("c", 0.0) if isinstance(v, dict) else v)
     except Exception:
         return 0.0
 
@@ -310,8 +311,7 @@ def _fired_before(session, key):
         st[session] = fired + [key]
         if len(st) > 40:
             st = {session: fired + [key]}
-        os.makedirs(os.path.dirname(_BUDGET_STATE), exist_ok=True)
-        json.dump(st, open(_BUDGET_STATE, "w", encoding="utf-8"))
+        _paths.write_json_atomic(_BUDGET_STATE, st)
     except Exception:
         pass
     return False
@@ -428,10 +428,17 @@ def selftest() -> int:
     assert detect("what's the weather like")[0] is None
     assert detect("use pantheon:hydra on this")[0] is None
     assert detect("/pantheon:daedalus build the parser")[0] is None
+    # tightened routes: former false fires stay silent, true fires still hit
+    assert detect("the design doc says to use postgres here")[0] is None
+    assert detect("this api call costs too much money")[0] is None
+    assert detect("this feels too complicated somehow")[0] == "lethe"
     # Custom routes win over built-ins; bad regexes are skipped safely.
     got, _, cluster = detect("deploy this to fly for me",
                              {"deploy .* fly": "my-deploy", "([bad": "x"})
     assert got == "my-deploy" and cluster == "custom:my-deploy"
+    # oversized custom pattern is skipped, a sane sibling still matches
+    got, _, _ = detect("deploy the thing please", {"x" * 300: "nope", "deploy": "ok-skill"})
+    assert got == "ok-skill"
     # Persistence flag rides along with a route.
     s, p, _ = detect("fix this bug and keep going until it's done")
     assert s == "hydra" and p

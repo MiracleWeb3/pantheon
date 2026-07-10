@@ -20,16 +20,16 @@ Note: All `~/.claude/...` paths in this guide respect `CLAUDE_CONFIG_DIR` when t
 
 | Command | Description |
 |---------|-------------|
-| `/oh-my-claudecode:hud` | Show current HUD status (auto-setup if needed) |
-| `/oh-my-claudecode:hud setup` | Install/repair HUD statusline |
-| `/oh-my-claudecode:hud minimal` | Switch to minimal display |
-| `/oh-my-claudecode:hud focused` | Switch to focused display (default) |
-| `/oh-my-claudecode:hud full` | Switch to full display |
-| `/oh-my-claudecode:hud status` | Show detailed HUD status |
+| `/pantheon:engine-hud` | Show current HUD status (auto-setup if needed) |
+| `/pantheon:engine-hud setup` | Install/repair HUD statusline |
+| `/pantheon:engine-hud minimal` | Switch to minimal display |
+| `/pantheon:engine-hud focused` | Switch to focused display (default) |
+| `/pantheon:engine-hud full` | Switch to full display |
+| `/pantheon:engine-hud status` | Show detailed HUD status |
 
 ## Auto-Setup
 
-When you run `/oh-my-claudecode:hud` or `/oh-my-claudecode:hud setup`, the system will automatically:
+When you run `/pantheon:engine-hud` or `/pantheon:engine-hud setup`, the system will automatically:
 1. Check if `~/.claude/hud/omc-hud.mjs` exists
 2. Check if `statusLine` is configured in `~/.claude/settings.json`
 3. If missing, create the HUD wrapper script and configure settings
@@ -237,11 +237,11 @@ When `safeMode` is `true` (default), the HUD strips ANSI codes and uses ASCII-on
 ## Troubleshooting
 
 If the HUD is not showing:
-1. Run `/oh-my-claudecode:hud setup` to auto-install and configure
+1. Run `/pantheon:engine-hud setup` to auto-install and configure
 2. Restart Claude Code after setup completes
-3. If still not working, run `/oh-my-claudecode:omc-doctor` for full diagnostics
+3. If still not working, run `/pantheon:engine-doctor` for full diagnostics
 
-**Legacy string format migration:** Older OMC versions wrote `statusLine` as a plain string (e.g., `"~/.claude/hud/omc-hud.mjs"`). Modern Claude Code (v2.1+) requires an object format. Running the installer or `/oh-my-claudecode:hud setup` will auto-migrate legacy strings to the correct object format:
+**Legacy string format migration:** Older OMC versions wrote `statusLine` as a plain string (e.g., `"~/.claude/hud/omc-hud.mjs"`). Modern Claude Code (v2.1+) requires an object format. Running the installer or `/pantheon:engine-hud setup` will auto-migrate legacy strings to the correct object format:
 ```json
 {
   "statusLine": {

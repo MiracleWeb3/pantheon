@@ -1,6 +1,6 @@
 ---
 name: lethe
-description: "Reach for the simplest solution that actually works — YAGNI, standard library before custom code, native platform features before dependencies, one line before fifty, deletion before addition. Use when writing, refactoring, reviewing, or choosing libraries, and when the user says 'simplest', 'minimal', 'do less', 'yagni', 'lazy', or complains about over-engineering, bloat, or boilerplate. NOT for non-coding requests."
+description: "The one-shot simplification discipline: YAGNI, stdlib before custom code, native before dependency, deletion over addition. Use when writing/refactoring/choosing libraries, or the user says 'simplest', 'minimal', 'yagni'. For a PERSISTENT lazy mode with levels, use spartan. NOT for non-coding requests."
 ---
 
 # lethe — the river of forgetting

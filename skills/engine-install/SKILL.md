@@ -40,11 +40,11 @@ When user runs with `--help`, display this and stop:
 OMC Setup - Configure oh-my-claudecode
 
 USAGE:
-  /oh-my-claudecode:omc-setup           Run initial setup wizard (or update if already configured)
-  /oh-my-claudecode:omc-setup --local   Configure local project (.claude/CLAUDE.md)
-  /oh-my-claudecode:omc-setup --global  Configure global settings (~/.claude/CLAUDE.md)
-  /oh-my-claudecode:omc-setup --force   Force full setup wizard even if already configured
-  /oh-my-claudecode:omc-setup --help    Show this help
+  /pantheon:engine-install           Run initial setup wizard (or update if already configured)
+  /pantheon:engine-install --local   Configure local project (.claude/CLAUDE.md)
+  /pantheon:engine-install --global  Configure global settings (~/.claude/CLAUDE.md)
+  /pantheon:engine-install --force   Force full setup wizard even if already configured
+  /pantheon:engine-install --help    Show this help
 
 MODES:
   Initial Setup (no flags)
@@ -77,10 +77,10 @@ MODES:
     - Use when you want to reconfigure preferences
 
 EXAMPLES:
-  /oh-my-claudecode:omc-setup           # First time setup (or update CLAUDE.md if configured)
-  /oh-my-claudecode:omc-setup --local   # Update this project
-  /oh-my-claudecode:omc-setup --global  # Update all projects
-  /oh-my-claudecode:omc-setup --force   # Re-run full setup wizard
+  /pantheon:engine-install           # First time setup (or update CLAUDE.md if configured)
+  /pantheon:engine-install --local   # Update this project
+  /pantheon:engine-install --global  # Update all projects
+  /pantheon:engine-install --force   # Re-run full setup wizard
 
 For more info: https://github.com/Yeachan-Heo/oh-my-claudecode
 ```
@@ -175,19 +175,19 @@ bash "${OMC_SETUP_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/setup-progress.sh"
 ## Phase Execution
 
 ### For `--local` or `--global` flags:
-Read the file at `${OMC_SETUP_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/skills/omc-setup/phases/01-install-claude-md.md` and follow its instructions.
+Read the file at `${OMC_SETUP_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/skills/engine-install/phases/01-install-claude-md.md` and follow its instructions.
 (The phase file handles early exit for flag mode.)
 
 ### For full setup (default or --force):
 Execute phases sequentially. For each phase, read the corresponding file and follow its instructions:
 
-1. **Phase 1 - Install CLAUDE.md**: Read `${OMC_SETUP_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/skills/omc-setup/phases/01-install-claude-md.md` and follow its instructions.
+1. **Phase 1 - Install CLAUDE.md**: Read `${OMC_SETUP_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/skills/engine-install/phases/01-install-claude-md.md` and follow its instructions.
 
-2. **Phase 2 - Environment Configuration**: Read `${OMC_SETUP_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/skills/omc-setup/phases/02-configure.md` and follow its instructions. Phase 2 must delegate HUD/statusLine setup to the `hud` skill; do not generate or patch `statusLine` paths inline here.
+2. **Phase 2 - Environment Configuration**: Read `${OMC_SETUP_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/skills/engine-install/phases/02-configure.md` and follow its instructions. Phase 2 must delegate HUD/statusLine setup to the `hud` skill; do not generate or patch `statusLine` paths inline here.
 
-3. **Phase 3 - Integration Setup**: Read `${OMC_SETUP_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/skills/omc-setup/phases/03-integrations.md` and follow its instructions.
+3. **Phase 3 - Integration Setup**: Read `${OMC_SETUP_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/skills/engine-install/phases/03-integrations.md` and follow its instructions.
 
-4. **Phase 4 - Completion**: Read `${OMC_SETUP_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/skills/omc-setup/phases/04-welcome.md` and follow its instructions.
+4. **Phase 4 - Completion**: Read `${OMC_SETUP_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/skills/engine-install/phases/04-welcome.md` and follow its instructions.
 
 ## Graceful Interrupt Handling
 
@@ -197,11 +197,11 @@ Execute phases sequentially. For each phase, read the corresponding file and fol
 
 After installing oh-my-claudecode updates (via npm or plugin update):
 
-**Automatic**: Just run `/oh-my-claudecode:omc-setup` - it will detect you've already configured and offer a quick "Update CLAUDE.md only" option that skips the full wizard.
+**Automatic**: Just run `/pantheon:engine-install` - it will detect you've already configured and offer a quick "Update CLAUDE.md only" option that skips the full wizard.
 
 **Manual options**:
-- `/oh-my-claudecode:omc-setup --local` to update project config only
-- `/oh-my-claudecode:omc-setup --global` to update global config only
-- `/oh-my-claudecode:omc-setup --force` to re-run the full wizard (reconfigure preferences)
+- `/pantheon:engine-install --local` to update project config only
+- `/pantheon:engine-install --global` to update global config only
+- `/pantheon:engine-install --force` to re-run the full wizard (reconfigure preferences)
 
 This ensures you have the newest features and agent configurations without the token cost of repeating the full setup.

@@ -52,7 +52,7 @@ def _load_cache() -> dict:
 
 def _save_cache(c: dict) -> None:
     try:
-        json.dump(c, open(_cache_path(), "w", encoding="utf-8"))
+        paths.write_json_atomic(_cache_path(), c)
     except Exception:
         pass
 
@@ -95,17 +95,32 @@ def _ingest_line(line: str, buckets: dict, seen_ids: set) -> None:
         buckets[k] = buckets.get(k, 0) + tokens
 
 
+def _transcript_files(c: dict, now: float) -> list:
+    """All transcript paths, with the os.walk memoized for 120s — the walk
+    scales with total project count and ran on every statusline render.
+    ponytail: a brand-new session's file shows up ≤2min late on the fallback
+    meter; known files are still stat'ed fresh every render."""
+    if now - float(c.get("walk_at") or 0) < 120 and isinstance(c.get("walk_files"), list):
+        return c["walk_files"]
+    files = []
+    try:
+        for base, _dirs, fns in os.walk(PROJECTS_DIR):
+            for fn in fns:
+                if fn.endswith(".jsonl"):
+                    files.append(os.path.join(base, fn))
+    except Exception:
+        pass
+    c["walk_at"], c["walk_files"] = now, files
+    return files
+
+
 def scan(now: float = 0.0) -> dict:
     """Update the bucket cache from transcripts (incremental) and return it."""
     now = now or time.time()
     c = _load_cache()
     fresh_after = now - KEEP_HOURS * 3600
     try:
-        for base, _dirs, files in os.walk(PROJECTS_DIR):
-            for fn in files:
-                if not fn.endswith(".jsonl"):
-                    continue
-                p = os.path.join(base, fn)
+        for p in _transcript_files(c, now):
                 try:
                     st = os.stat(p)
                 except Exception:

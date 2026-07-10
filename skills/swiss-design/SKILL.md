@@ -1,6 +1,6 @@
 ---
 name: swiss-design
-description: Apply a Swiss International Style design system using Tailwind CSS. Use when asked to style a webpage, clean up a UI, apply a design system, make something look great, or when the user references Swiss design, grotesque fonts, Helvetica, grid systems, modernist typography, or 1960s/1950s design aesthetics. Implements IBM Plex Sans typography, stone color palette, opacity-based hierarchy, generous whitespace, and structured grid layouts.
+description: Apply a Swiss International Style design system using Tailwind CSS. Use when styling a webpage or the user references Swiss design, grotesque fonts, Helvetica, grid systems, or 1950s/60s modernist typography. Implements IBM Plex Sans and a stone, grid-based system.
 license: MIT
 metadata:
   author: zeke

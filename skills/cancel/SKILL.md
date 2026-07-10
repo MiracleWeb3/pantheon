@@ -1,7 +1,7 @@
 ---
 name: cancel
 aliases: [cancel-ralph]
-description: Cancel any active OMC mode (autopilot, ralph, ultrawork, ultraqa, swarm, ultrapilot, pipeline, team)
+description: Cancel any active OMC mode (autopilot, ralph, ultrawork, ultraqa, pipeline, team)
 argument-hint: "[--force|--all]"
 level: 2
 ---
@@ -23,8 +23,6 @@ Automatically detects which mode is active and cancels it:
 - **Ralph**: Stops persistence loop, clears linked ultrawork if applicable
 - **Ultrawork**: Stops parallel execution (standalone or linked)
 - **UltraQA**: Stops QA cycling workflow
-- **Swarm**: Stops coordinated agent swarm, releases claimed tasks
-- **Ultrapilot**: Stops parallel autopilot workers
 - **Pipeline**: Stops sequential agent pipeline
 - **Team**: Requests shutdown from all teammates through the active team/conversation surface, waits for responses/timeouts, clears OMC team state, clears linked ralph if present. Claude Code 2.1.178+ has no TeamDelete.
 - **Team+Ralph (linked)**: Cancels team first (graceful shutdown), then clears ralph state. Cancelling ralph when linked also cancels team first.
@@ -32,7 +30,7 @@ Automatically detects which mode is active and cancels it:
 ## Usage
 
 ```
-/oh-my-claudecode:cancel
+/pantheon:cancel
 ```
 
 Or say: "cancelomc", "stopomc"
@@ -102,7 +100,7 @@ fi
 
 ## Auto-Detection
 
-`/oh-my-claudecode:cancel` follows the session-aware state contract:
+`/pantheon:cancel` follows the session-aware state contract:
 - By default the command inspects the current session via `state_list_active` and `state_get_status`, navigating `.omc/state/sessions/{sessionId}/…` to discover which mode is active.
 - When a session id is provided or already known, that session-scoped path is authoritative. Legacy files in `.omc/state/*.json` are consulted only as a compatibility fallback if the session id is missing or empty.
 - Swarm is a shared SQLite/marker mode (`.omc/state/swarm.db` / `.omc/state/swarm-active.marker`) and is not session-scoped.
@@ -113,24 +111,22 @@ Active modes are still cancelled in dependency order:
 2. Ralph (cleans its linked ultrawork or )
 3. Ultrawork (standalone)
 4. UltraQA (standalone)
-5. Swarm (standalone)
-6. Ultrapilot (standalone)
-7. Pipeline (standalone)
-8. Team (Claude Code native)
-9. OMC Teams (tmux CLI workers)
-10. Plan Consensus (standalone)
-11. Self-Improve (standalone — clear state, clean orphaned worktrees, preserve iteration_state for resume, set status: "user_stopped" in the resolved `<self-improve-root>/state/agent-settings.json`; new runs use `.omc/self-improve/topics/<topic-slug>/`, with flat `.omc/self-improve/` retained only for legacy single-track resumes)
+5. Pipeline (standalone)
+6. Team (Claude Code native)
+7. OMC Teams (tmux CLI workers)
+8. Plan Consensus (standalone)
+9. Self-Improve (standalone — clear state, clean orphaned worktrees, preserve iteration_state for resume, set status: "user_stopped" in the resolved `<self-improve-root>/state/agent-settings.json`; new runs use `.omc/self-improve/topics/<topic-slug>/`, with flat `.omc/self-improve/` retained only for legacy single-track resumes)
 
 ## Force Clear All
 
 Use `--force` or `--all` when you need to erase every session plus legacy artifacts, e.g., to reset the workspace entirely.
 
 ```
-/oh-my-claudecode:cancel --force
+/pantheon:cancel --force
 ```
 
 ```
-/oh-my-claudecode:cancel --all
+/pantheon:cancel --all
 ```
 
 Steps under the hood:
@@ -188,7 +184,7 @@ fi
 The skill now relies on the session-aware state contract rather than hard-coded file paths:
 1. Call `state_list_active` to enumerate `.omc/state/sessions/{sessionId}/…` and discover every active session.
 2. For each session id, call `state_get_status` to learn which mode is running (`autopilot`, `ralph`, `ultrawork`, etc.) and whether dependent modes exist.
-3. If a `session_id` was supplied to `/oh-my-claudecode:cancel`, skip legacy fallback entirely and operate solely within that session path; otherwise, consult legacy files in `.omc/state/*.json` only if the state tools report no active session. Swarm remains a shared SQLite/marker mode outside session scoping.
+3. If a `session_id` was supplied to `/pantheon:cancel`, skip legacy fallback entirely and operate solely within that session path; otherwise, consult legacy files in `.omc/state/*.json` only if the state tools report no active session. Swarm remains a shared SQLite/marker mode outside session scoping.
 4. Any cancellation logic in this doc mirrors the dependency order discovered via state tools (autopilot → ralph → …).
 
 ### 3A. Force Mode (if --force or --all)
@@ -234,7 +230,7 @@ After graceful pass:
   2. Check for linked ralph: state_read(mode="ralph") — if linked_team is true:
      a. Clear ralph state: state_clear(mode="ralph")
      b. Clear linked ultrawork if present: state_clear(mode="ultrawork")
-  3. Run OMC tmux/CLI orphan scan only for legacy `omc team` / `/omc-teams` workers (see below)
+  3. Run OMC tmux/CLI orphan scan only for legacy `omc team` / `/pantheon:engine-teams` workers (see below)
   4. Emit structured cancel report
 ```
 
@@ -331,8 +327,6 @@ Mode-specific subsections below describe what extra cleanup each handler perform
 | Ralph | "Ralph cancelled. Persistent mode deactivated." |
 | Ultrawork | "Ultrawork cancelled. Parallel execution mode deactivated." |
 | UltraQA | "UltraQA cancelled. QA cycling workflow stopped." |
-| Swarm | "Swarm cancelled. Coordinated agents stopped." |
-| Ultrapilot | "Ultrapilot cancelled. Parallel autopilot workers stopped." |
 | Pipeline | "Pipeline cancelled. Sequential agent chain stopped." |
 | Team | "Team cancelled. Teammates shut down and cleaned up." |
 | Plan Consensus | "Plan Consensus cancelled. Planning session ended." |
@@ -343,12 +337,10 @@ Mode-specific subsections below describe what extra cleanup each handler perform
 
 | Mode | State Preserved | Resume Command |
 |------|-----------------|----------------|
-| Autopilot | Yes (phase, files, spec, plan, verdicts) | `/oh-my-claudecode:autopilot` |
+| Autopilot | Yes (phase, files, spec, plan, verdicts) | `/pantheon:automedon` |
 | Ralph | No | N/A |
 | Ultrawork | No | N/A |
 | UltraQA | No | N/A |
-| Swarm | No | N/A |
-| Ultrapilot | No | N/A |
 | Pipeline | No | N/A |
 | Plan Consensus | Yes (plan file path preserved) | N/A |
 

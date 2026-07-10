@@ -10,7 +10,30 @@ Everything under ~/.claude/pantheon/ :
 stdlib only, fail-soft: path helpers never raise.
 Self-check: python3 paths.py --selftest
 """
-import os
+import os, json, tempfile
+
+
+def write_json_atomic(path: str, obj) -> bool:
+    """tmp + os.replace so a killed hook or concurrent writer can never leave a
+    half-written state file (a corrupt file reads as {} and silently resets
+    counters — worse than a lost update). True when persisted."""
+    tmp = None
+    try:
+        d = os.path.dirname(path) or "."
+        os.makedirs(d, exist_ok=True)
+        fd, tmp = tempfile.mkstemp(prefix=".pantheon-tmp-", dir=d)
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
+            json.dump(obj, f)
+        os.replace(tmp, path)
+        return True
+    except Exception:
+        try:
+            if tmp:
+                os.unlink(tmp)
+        except Exception:
+            pass
+        return False
+
 
 def state_dir() -> str:
     d = os.path.join(os.path.expanduser("~"), ".claude", "pantheon")
@@ -62,6 +85,14 @@ def selftest() -> int:
     root = plugin_root()
     assert os.path.isdir(root), root
     assert project_name("/a/b/parserx") == "parserx" and project_name("") == ""
+    import tempfile
+    d = tempfile.mkdtemp(prefix="pantheon-paths-")
+    p = os.path.join(d, "s.json")
+    assert write_json_atomic(p, {"a": 1}) and json.load(open(p, encoding="utf-8"))["a"] == 1
+    assert not [f for f in os.listdir(d) if f.startswith(".pantheon-tmp-")]  # no litter
+    plain = os.path.join(d, "plainfile")
+    open(plain, "w").write("x")
+    assert write_json_atomic(os.path.join(plain, "sub", "s.json"), {}) is False
     print("selftest ok —", state_dir())
     return 0
 
