@@ -3,8 +3,12 @@
 
 Resolves configuration from, in order of precedence:
   1. <project>/.pantheon/config.json   (project-local, wins)
-  2. ~/.claude/pantheon/config.json     (user-global)
-  3. built-in defaults (preset "full")
+  2. pantheon.pack.json                 (team pack, found walking up from cwd)
+  3. ~/.claude/pantheon/config.json     (user-global)
+  4. built-in defaults (preset "full")
+
+A team pack is a committed file that carries preset/overrides/disciplines,
+team standards, and shared lessons — set "packs": false to opt out of it.
 
 A `preset` expands to a set of flags; explicit flags override the preset.
 Everything is best-effort: a missing or malformed file falls back to defaults,
@@ -64,13 +68,42 @@ def _merge_layer(raw: dict, layer: dict) -> None:
             raw[k] = v
 
 
+def find_pack(cwd: str):
+    """Walk up from cwd for a pantheon.pack.json. Returns (path, dict) or ('', {})."""
+    d = cwd or ""
+    for _ in range(12):
+        if not d or not os.path.isdir(d):
+            break
+        p = os.path.join(d, "pantheon.pack.json")
+        if os.path.isfile(p):
+            pk = _read(p)
+            return (p, pk) if pk.get("pantheon_pack") else ("", {})
+        nd = os.path.dirname(d)
+        if nd == d:
+            break
+        d = nd
+    return "", {}
+
+
 def load(cwd: str = "") -> dict:
     """Return the fully-resolved config dict."""
     raw = {}
     home = os.path.join(os.path.expanduser("~"), ".claude", "pantheon", "config.json")
-    _merge_layer(raw, _read(home))
-    if cwd:
-        _merge_layer(raw, _read(os.path.join(cwd, ".pantheon", "config.json")))  # project wins
+    g = _read(home)
+    proj = _read(os.path.join(cwd, ".pantheon", "config.json")) if cwd else {}
+    _merge_layer(raw, g)
+    if cwd and proj.get("packs", g.get("packs", True)) is not False:
+        _, pk = find_pack(cwd)
+        if pk:
+            layer = {}
+            if pk.get("preset") in PRESETS:
+                layer["preset"] = pk["preset"]
+            if isinstance(pk.get("overrides"), dict):
+                layer.update(pk["overrides"])
+            if isinstance(pk.get("disciplines"), dict):
+                layer["disciplines"] = pk["disciplines"]
+            _merge_layer(raw, layer)  # pack sits between global and project
+    _merge_layer(raw, proj)  # project wins
 
     cfg = json.loads(json.dumps(DEFAULT))  # deep copy (budget is nested)
     preset = raw.get("preset")
@@ -141,7 +174,30 @@ def selftest() -> int:
     assert raw["disciplines"] == {"a": False, "b": False}
     assert raw["budget"] == {"weekly": 20, "mode": "block"}
     assert validate({"nonsense": 1}) and not validate({"preset": "full"})
-    print("selftest ok — presets:", ", ".join(PRESETS))
+    # team pack: found walking up, sits between global and project, opt-out works
+    import tempfile
+    top = tempfile.mkdtemp(prefix="pantheon-pack-")
+    sub = os.path.join(top, "a", "b")
+    os.makedirs(sub)
+    json.dump({"pantheon_pack": 1, "preset": "economy",
+               "overrides": {"gate": "warn"}, "disciplines": {"athena": False}},
+              open(os.path.join(top, "pantheon.pack.json"), "w"))
+    path, pk = find_pack(sub)
+    assert path.endswith("pantheon.pack.json") and pk["preset"] == "economy"
+    cfg = load(sub)
+    assert cfg["preset"] == "economy" and cfg["gate"] == "warn"
+    assert cfg["disciplines"] == {"athena": False}
+    os.makedirs(os.path.join(sub, ".pantheon"))
+    json.dump({"gate": "block", "packs": True},
+              open(os.path.join(sub, ".pantheon", "config.json"), "w"))
+    assert load(sub)["gate"] == "block"  # project overrides the pack
+    json.dump({"packs": False}, open(os.path.join(sub, ".pantheon", "config.json"), "w"))
+    out = load(sub)
+    # pack fully ignored: gate back to the default, economy preset gone
+    # (preset reads "custom" because a config file exists — that's correct)
+    assert out["gate"] == "block" and out["routing"] == "on" and out["preset"] == "custom"
+    assert find_pack("/nonexistent") == ("", {})
+    print("selftest ok — presets:", ", ".join(PRESETS), "+ team packs")
     return 0
 
 

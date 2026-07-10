@@ -2,7 +2,7 @@
 """pantheon SessionStart hook — config directive, store migration, CLI shim,
 update check.
 
-Four quiet jobs at session start:
+Five quiet jobs at session start:
   1. CONFIG DIRECTIVE — inject one short line when config is non-default
      (economy/quiet/custom); completely silent on default "full" (0 tokens).
   2. STORE — open the SQLite store so schema migrations run before anything
@@ -10,7 +10,9 @@ Four quiet jobs at session start:
   3. SHIM — (re)write ~/.claude/pantheon/bin/pantheon pointing at the
      currently-installed plugin root, so skills and the user always have a
      stable `pantheon` command no matter where the plugin version lives.
-  4. UPDATE CHECK — daily, 2s timeout, fail-silent, cacheable, opt-out.
+  4. TEAM PACK — when the repo carries a pantheon.pack.json: import its shared
+     lessons into the store (once per content hash) and inject its standards.
+  5. UPDATE CHECK — daily, 2s timeout, fail-silent, cacheable, opt-out.
 
 Fail-silent. Self-check: python3 session-start.py --selftest
 """
@@ -87,6 +89,42 @@ def write_shim(root: str = "", shim_path: str = "") -> bool:
         return False
 
 
+def import_pack(cwd: str, conn=None) -> str:
+    """Merge a team pack's lessons into the store (once per content hash) and
+    return its standards as a context line ('' when none)."""
+    if not _config or not _store:
+        return ""
+    path, pk = _config.find_pack(cwd)
+    if not pk:
+        return ""
+    import hashlib
+    h = hashlib.md5(json.dumps(pk, sort_keys=True).encode()).hexdigest()[:10]
+    own = conn is None
+    if own:
+        conn = _store.connect()
+    try:
+        done = _store.get_meta(conn, "packs_imported", "")
+        if h not in done.split(","):
+            for l in pk.get("lessons", [])[:100]:
+                if isinstance(l, dict) and l.get("text"):
+                    try:
+                        w = float(l.get("weight", 1.1))
+                    except Exception:
+                        w = 1.1
+                    _store.add_lesson(conn, str(l["text"]), tags=str(l.get("tags", "")),
+                                      keys=str(l.get("keys", "")), weight=w, source="pack")
+            _store.set_meta(conn, "packs_imported", (done + "," + h).strip(","))
+    finally:
+        if own:
+            conn.close()
+    std = str(pk.get("standards") or "").strip()
+    if std:
+        name = pk.get("name") or os.path.basename(os.path.dirname(path))
+        return (f"[PANTHEON PACK · {name}] Team standards — follow them this "
+                f"session: {std[:1500]}")
+    return ""
+
+
 RAW_MANIFEST = "https://raw.githubusercontent.com/MiracleWeb3/pantheon/main/.claude-plugin/plugin.json"
 CHECK_EVERY_HOURS = 24
 
@@ -161,6 +199,12 @@ def main() -> int:
     line = directive(cfg)
     if line:
         print(line)
+    try:
+        pack_line = import_pack(cwd)
+        if pack_line:
+            print(pack_line)
+    except Exception:
+        pass
     upd = check_update(cfg)
     if upd:
         print(upd)
@@ -187,6 +231,22 @@ def selftest() -> int:
     assert f'"{root}/scripts/cli.py"' in open(p, encoding="utf-8").read()
     assert write_shim(root, p)  # unchanged content path
     assert not write_shim("/nonexistent-root", p)
+    # team pack: lessons import once per hash, standards line comes back
+    if _store and _config:
+        import tempfile
+        d = tempfile.mkdtemp(prefix="pantheon-ss-pack-")
+        json.dump({"pantheon_pack": 1, "name": "acme",
+                   "standards": "prefer stdlib; tests before merge",
+                   "lessons": [{"text": "the staging db resets nightly, never rely on its rows"}]},
+                  open(os.path.join(d, "pantheon.pack.json"), "w"))
+        conn = _store.connect(os.path.join(d, "t.db"))
+        line1 = import_pack(d, conn)
+        assert "acme" in line1 and "stdlib" in line1
+        assert conn.execute("SELECT COUNT(*) FROM lessons WHERE source='pack'").fetchone()[0] == 1
+        import_pack(d, conn)  # same hash → no duplicate import
+        assert conn.execute("SELECT COUNT(*) FROM lessons").fetchone()[0] == 1
+        conn.close()
+        assert import_pack("/nonexistent") == ""
     # update check: version compare + disabled + no-plugin-root all safe
     assert _newer("0.8.0", "0.7.0") and not _newer("0.5.0", "0.5.0") and not _newer("x", "0.5.0")
     assert check_update({"updateCheck": False}) == ""

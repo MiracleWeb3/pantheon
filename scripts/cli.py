@@ -14,11 +14,16 @@ Commands:
     recall "some prompt"                   debug what auto-recall would surface
     stats                                  counts, top disciplines, spend
     dashboard [--plain]                    the TUI (scripts/dashboard.py)
+    doctor [--fix]                         diagnose + repair the install
+    forge new NAME [--route REGEX] ...     scaffold a custom discipline
+    forge export NAME / forge import FILE  share disciplines as single files
+    pack init / pack status                team pack: config+lessons in the repo
+    export --target cursor|codex|generic   package disciplines for other agents
     version
 
 stdlib only. Self-check: python3 cli.py --selftest
 """
-import sys, os, json, time, argparse, datetime, subprocess
+import sys, os, re, json, time, argparse, datetime, subprocess
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
 _ROOT = os.path.dirname(_HERE)
@@ -166,6 +171,204 @@ def cmd_doctor(a):
     return subprocess.call(args)
 
 
+# ── forge: author + share custom disciplines ─────────────────────────────────
+FORGE_TEMPLATE = """---
+name: {name}
+description: "{desc} Use when: {when}."
+---
+
+# {name} — {epithet}
+
+<Why this discipline exists: the failure mode it prevents, in one paragraph.>
+
+## Announce yourself — first (skipped in economy/quiet mode)
+
+> 🏛 **{name}** — {epithet}. **Task:** <the user's goal, one line>. **Plan:** <your 2–4 concrete steps for THIS task>.
+
+## The method
+
+1. <step — what to do first and why>
+2. <step>
+3. <verify — how do you PROVE it worked, not just believe it?>
+
+## Receipt — file your footprint (skipped in quiet mode)
+
+`~/.claude/pantheon/bin/pantheon receipt add --skill {name} --note "<outcome, one line>"` — skip silently if the command is missing.
+
+<!-- forged with `pantheon forge` -->
+"""
+
+
+def _skill_dirs(name):
+    """Search order for an existing skill by name."""
+    return [os.path.join(os.path.expanduser("~"), ".claude", "skills", name),
+            os.path.join(os.getcwd(), ".claude", "skills", name),
+            os.path.join(_ROOT, "skills", name)]
+
+
+def cmd_forge(a):
+    if a.action == "new":
+        name = re.sub(r"[^a-z0-9-]", "-", a.name_or_file.lower()).strip("-")
+        if not name:
+            print("forge: give the discipline a name ([a-z0-9-])")
+            return 2
+        base = (os.path.join(os.getcwd(), ".claude", "skills") if a.project
+                else os.path.join(os.path.expanduser("~"), ".claude", "skills"))
+        dest = os.path.join(base, name, "SKILL.md")
+        if os.path.isfile(dest) and not a.force:
+            print(f"forge: {dest} exists (--force to overwrite)")
+            return 2
+        os.makedirs(os.path.dirname(dest), exist_ok=True)
+        with open(dest, "w", encoding="utf-8") as f:
+            f.write(FORGE_TEMPLATE.format(name=name, desc=a.desc, when=a.when,
+                                          epithet=a.epithet))
+        print(f"forged {dest}")
+        if a.route:
+            cfg_p = os.path.join(paths.state_dir(), "config.json")
+            try:
+                raw = json.load(open(cfg_p, encoding="utf-8"))
+            except Exception:
+                raw = {}
+            raw.setdefault("custom_routes", {})[a.route] = name
+            json.dump(raw, open(cfg_p, "w", encoding="utf-8"), indent=2)
+            print(f"route added: /{a.route}/ → {name} (custom routes beat built-ins)")
+        print("next: fill in the <placeholders> in the scaffold, then restart "
+              "Claude Code (or /skills) to load it")
+        return 0
+    if a.action == "export":
+        for d in _skill_dirs(a.name_or_file):
+            p = os.path.join(d, "SKILL.md")
+            if os.path.isfile(p):
+                out = a.out or f"{a.name_or_file}.pantheon-skill.md"
+                body = open(p, encoding="utf-8").read()
+                with open(out, "w", encoding="utf-8") as f:
+                    f.write(f"<!-- pantheon skill export · from {p} -->\n" + body)
+                print(f"exported → {out} (import with: pantheon forge import {out})")
+                return 0
+        print(f"forge: no skill named {a.name_or_file!r} found")
+        return 2
+    # import
+    src = a.name_or_file
+    if not os.path.isfile(src):
+        print(f"forge: file not found: {src}")
+        return 2
+    body = open(src, encoding="utf-8").read()
+    m = re.search(r"^name:\s*[\"']?([\w-]+)", body, re.M)
+    if not m:
+        print("forge: no `name:` in the file's frontmatter — not a skill export")
+        return 2
+    name = m.group(1)
+    dest = os.path.join(os.path.expanduser("~"), ".claude", "skills", name, "SKILL.md")
+    if os.path.isfile(dest) and not a.force:
+        print(f"forge: {dest} exists (--force to overwrite)")
+        return 2
+    os.makedirs(os.path.dirname(dest), exist_ok=True)
+    open(dest, "w", encoding="utf-8").write(body)
+    print(f"imported {name} → {dest} (restart Claude Code to load it)")
+    return 0
+
+
+# ── team packs ───────────────────────────────────────────────────────────────
+def cmd_pack(a):
+    p = os.path.join(os.getcwd(), "pantheon.pack.json")
+    if a.action == "init":
+        if os.path.isfile(p) and not a.force:
+            print("pack: pantheon.pack.json exists (--force to regenerate)")
+            return 2
+        cfg = cfgmod.load(os.getcwd())
+        conn = store.connect()
+        top = conn.execute(
+            "SELECT text,tags,keys,weight FROM lessons "
+            "ORDER BY weight*(uses+1) DESC, ts DESC LIMIT 20").fetchall()
+        conn.close()
+        pack = {"pantheon_pack": 1,
+                "name": os.path.basename(os.getcwd()),
+                "preset": cfg["preset"] if cfg["preset"] in ("full", "economy", "quiet") else "full",
+                "overrides": {"gate": cfg["gate"], "recall": cfg["recall"]},
+                "disciplines": cfg["disciplines"],
+                "standards": "",
+                "lessons": [dict(r) for r in top]}
+        json.dump(pack, open(p, "w", encoding="utf-8"), indent=2, ensure_ascii=False)
+        print(f"wrote {p} — {len(pack['lessons'])} shared lesson(s). Fill in "
+              "\"standards\", commit it, and every teammate inherits this on install.")
+        return 0
+    path, pk = cfgmod.find_pack(os.getcwd())
+    if not pk:
+        print("no pantheon.pack.json found from here upward")
+        return 0
+    conn = store.connect()
+    import hashlib
+    h = hashlib.md5(json.dumps(pk, sort_keys=True).encode()).hexdigest()[:10]
+    imported = h in store.get_meta(conn, "packs_imported", "").split(",")
+    conn.close()
+    print(f"pack: {pk.get('name', '?')} @ {path}")
+    print(f"  preset {pk.get('preset', '-')} · {len(pk.get('lessons', []))} lesson(s) · "
+          f"standards {'yes' if pk.get('standards') else 'no'} · "
+          f"imported {'yes' if imported else 'not yet (next session start)'}")
+    return 0
+
+
+# ── cross-agent export ───────────────────────────────────────────────────────
+CORE_SKILLS = ["ariadne", "oracle", "daedalus", "prometheus", "hydra", "argus",
+               "themis", "charon", "lethe", "mnemosyne", "athena", "alexandria",
+               "arachne", "dashboard", "doctor", "forge"]
+
+
+def _split_frontmatter(body):
+    """(description, body-without-frontmatter)."""
+    desc = ""
+    m = re.match(r"^---\n(.*?)\n---\n", body, re.S)
+    if not m:
+        return desc, body
+    fm = m.group(1)
+    dm = re.search(r"^description:\s*[\"']?(.+?)[\"']?\s*$", fm, re.M)
+    if dm:
+        desc = dm.group(1)
+    return desc, body[m.end():]
+
+
+def cmd_export(a):
+    targets = ["generic", "cursor", "codex"] if a.target == "all" else [a.target]
+    names = CORE_SKILLS if not a.full else sorted(
+        d for d in os.listdir(os.path.join(_ROOT, "skills"))
+        if os.path.isfile(os.path.join(_ROOT, "skills", d, "SKILL.md")))
+    out_root = a.out or os.path.join(os.getcwd(), "pantheon-export")
+    skills = []
+    for n in names:
+        p = os.path.join(_ROOT, "skills", n, "SKILL.md")
+        if os.path.isfile(p):
+            skills.append((n, open(p, encoding="utf-8").read()))
+    for t in targets:
+        if t == "generic":
+            d = os.path.join(out_root, "generic")
+            os.makedirs(d, exist_ok=True)
+            for n, body in skills:
+                open(os.path.join(d, f"{n}.md"), "w", encoding="utf-8").write(body)
+        elif t == "cursor":
+            d = os.path.join(out_root, "cursor", ".cursor", "rules")
+            os.makedirs(d, exist_ok=True)
+            for n, body in skills:
+                desc, rest = _split_frontmatter(body)
+                mdc = (f"---\ndescription: {desc[:300]}\nglobs:\nalwaysApply: false\n---\n"
+                       + rest)
+                open(os.path.join(d, f"pantheon-{n}.mdc"), "w", encoding="utf-8").write(mdc)
+        elif t == "codex":
+            d = os.path.join(out_root, "codex")
+            os.makedirs(d, exist_ok=True)
+            parts = ["# pantheon disciplines (exported for Codex/OpenCode-style agents)",
+                     "", "Invoke by asking for a discipline by name. Sections below are "
+                     "the full playbooks.", ""]
+            for n, body in skills:
+                _, rest = _split_frontmatter(body)
+                parts += [f"\n\n---\n\n{rest.strip()}"]
+            open(os.path.join(d, "AGENTS-pantheon.md"), "w", encoding="utf-8").write(
+                "\n".join(parts))
+    print(f"exported {len(skills)} skill(s) → {out_root} ({', '.join(targets)})")
+    print("honest note: the DISCIPLINES port everywhere (they're markdown); the "
+          "automation (router, recall, gate, receipts, HUD) is Claude Code-only.")
+    return 0
+
+
 def cmd_version(a):
     try:
         with open(os.path.join(_ROOT, ".claude-plugin", "plugin.json"),
@@ -213,6 +416,32 @@ def build_parser():
     dr.add_argument("--fix", action="store_true")
     dr.set_defaults(fn=cmd_doctor)
 
+    f = sub.add_parser("forge", help="scaffold / share custom disciplines")
+    f.add_argument("action", choices=["new", "export", "import"])
+    f.add_argument("name_or_file")
+    f.add_argument("--desc", default="A custom discipline.")
+    f.add_argument("--when", default="the user asks for it")
+    f.add_argument("--epithet", default="a discipline of your own")
+    f.add_argument("--route", default="", help="regex that auto-routes to it")
+    f.add_argument("--project", action="store_true",
+                   help="scaffold into ./.claude/skills instead of ~/.claude/skills")
+    f.add_argument("--out", default="")
+    f.add_argument("--force", action="store_true")
+    f.set_defaults(fn=cmd_forge)
+
+    pk = sub.add_parser("pack", help="team pack in this repo")
+    pk.add_argument("action", choices=["init", "status"])
+    pk.add_argument("--force", action="store_true")
+    pk.set_defaults(fn=cmd_pack)
+
+    ex = sub.add_parser("export", help="package disciplines for other agents")
+    ex.add_argument("--target", choices=["generic", "cursor", "codex", "all"],
+                    default="all")
+    ex.add_argument("--out", default="")
+    ex.add_argument("--full", action="store_true",
+                    help="export ALL bundled skills, not just the core 16")
+    ex.set_defaults(fn=cmd_export)
+
     v = sub.add_parser("version")
     v.set_defaults(fn=cmd_version)
     return ap
@@ -237,10 +466,23 @@ def selftest() -> int:
     assert a.fn is cmd_dashboard and a.plain
     a = ap.parse_args(["doctor", "--fix"])
     assert a.fn is cmd_doctor and a.fix
+    a = ap.parse_args(["forge", "new", "deploy-ritual", "--route", "deploy to prod"])
+    assert a.fn is cmd_forge and a.route == "deploy to prod"
+    a = ap.parse_args(["export", "--target", "cursor"])
+    assert a.fn is cmd_export and not a.full
+    a = ap.parse_args(["pack", "init"])
+    assert a.fn is cmd_pack
     assert _age(time.time() - 30) == "0m" and _age(time.time() - 90000) == "1d"
     s1, s7 = _spend()
     assert s1 >= 0 and s7 >= s1
-    print("selftest ok — parser wiring, age fmt, spend reader")
+    # frontmatter splitter feeds the cursor/codex exports
+    desc, rest = _split_frontmatter('---\nname: x\ndescription: "does x"\n---\n# body\n')
+    assert desc == "does x" and rest.startswith("# body")
+    assert _split_frontmatter("no frontmatter")[1] == "no frontmatter"
+    # forge template renders with a receipt line and announce block
+    t = FORGE_TEMPLATE.format(name="zz", desc="d", when="w", epithet="e")
+    assert "name: zz" in t and "receipt add --skill zz" in t and "🏛 **zz**" in t
+    print("selftest ok — parser wiring, age fmt, spend reader, forge/export helpers")
     return 0
 
 

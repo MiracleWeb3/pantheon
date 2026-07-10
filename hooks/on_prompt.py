@@ -41,6 +41,9 @@ ROUTES = [
     ("doctor", r"\b(pantheon (doctor|is broken|isn'?t working|not working|acting up)|"
                r"fix pantheon|(diagnose|repair) (the )?plugin|"
                r"plugin (is )?(broken|not working))\b"),
+    ("forge", r"\b((create|make|forge|scaffold) (a |my )?(new |custom )?(skill|discipline)|"
+              r"new (custom )?discipline|custom discipline|"
+              r"(share|import) (a |my |this )?(skill|discipline))\b"),
     ("hydra", r"\b(nasty bug|hard bug|difficult bug|bug (keeps|is back|returns|again)|"
               r"regression|flaky|keeps? (failing|breaking|happening)|"
               r"can'?t (figure|work) out (why|what)|no idea why|"
@@ -413,6 +416,7 @@ def selftest() -> int:
         "document this decision in the wiki": "alexandria",
         "show me the pantheon dashboard": "dashboard",
         "pantheon isn't working, routing went silent": "doctor",
+        "let's forge a new skill for our deploy ritual": "forge",
     }
     for prompt, want in cases.items():
         got, _, cluster = detect(prompt)
@@ -466,7 +470,7 @@ def selftest() -> int:
     assert lines and "84%" in lines[0]
     assert budget_output("hello again friend", cfgw, "s2") == ([], None)
     _ledger_sums, _session_cost = keep
-    print("selftest ok — 15 routes, 4 silences, custom routes, persistence, "
+    print("selftest ok — 16 routes, 4 silences, custom routes, persistence, "
           "recall gates, clarifier, context guard, budget modes")
     return 0
 
