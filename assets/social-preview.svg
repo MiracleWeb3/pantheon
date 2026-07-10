@@ -1,0 +1,54 @@
+<svg width="1280" height="640" viewBox="0 0 1280 640" xmlns="http://www.w3.org/2000/svg">
+  <!-- repo social preview card (1280x640) — screenshot to PNG for GitHub settings -->
+  <defs>
+    <linearGradient id="wg" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#7c3aed"/>
+      <stop offset="0.55" stop-color="#a78bfa"/>
+      <stop offset="1" stop-color="#60a5fa"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.32" cy="0.42" r="0.75">
+      <stop offset="0" stop-color="#1c1440"/>
+      <stop offset="1" stop-color="#0d1117"/>
+    </radialGradient>
+    <pattern id="me" width="16" height="10" patternUnits="userSpaceOnUse">
+      <path d="M0 8 H12 V2 H2 V5 H8 V8 H16" stroke="#8b949e" stroke-width="1.4" fill="none" opacity="0.4"/>
+    </pattern>
+    <filter id="soft" x="-20%" y="-40%" width="140%" height="180%"><feGaussianBlur stdDeviation="10"/></filter>
+  </defs>
+
+  <rect width="1280" height="640" fill="url(#glow)"/>
+  <rect x="80" y="44" width="1120" height="10" fill="url(#me)"/>
+  <rect x="80" y="586" width="1120" height="10" fill="url(#me)"/>
+
+  <g stroke="#98a2b3" stroke-width="5" stroke-linecap="round">
+    <path d="M170 246 L320 176 L470 246"/>
+    <path d="M150 264 L490 264"/>
+    <path d="M186 288 L186 384"/>
+    <path d="M253 288 L253 384"/>
+    <path d="M320 288 L320 384"/>
+    <path d="M387 288 L387 384"/>
+    <path d="M454 288 L454 384"/>
+    <path d="M162 402 L478 402"/>
+    <path d="M142 422 L498 422"/>
+  </g>
+  <path d="M170 246 L320 176 L470 246" stroke="url(#wg)" stroke-width="6" stroke-linecap="round"/>
+
+  <text x="560" y="290" font-family="Georgia, 'Times New Roman', serif" font-size="92"
+        letter-spacing="20" fill="url(#wg)" filter="url(#soft)" opacity="0.55">PANTHEON</text>
+  <text x="560" y="290" font-family="Georgia, 'Times New Roman', serif" font-size="92"
+        letter-spacing="20" fill="url(#wg)">PANTHEON</text>
+  <text x="565" y="336" font-family="ui-monospace,'SF Mono',Menlo,Consolas,monospace" font-size="24"
+        letter-spacing="7" fill="#8b949e">DISCIPLINES FOR CODING AGENTS</text>
+
+  <text x="565" y="400" font-family="ui-monospace,'SF Mono',Menlo,Consolas,monospace" font-size="22">
+    <tspan fill="#3fb950">routes itself</tspan><tspan fill="#484f58"> · </tspan><tspan fill="#a78bfa">recalls itself</tspan><tspan fill="#484f58"> · </tspan><tspan fill="#f85149">blocks fake "done"</tspan>
+  </text>
+  <text x="565" y="438" font-family="ui-monospace,'SF Mono',Menlo,Consolas,monospace" font-size="22">
+    <tspan fill="#e3b341">receipts</tspan><tspan fill="#484f58"> · </tspan><tspan fill="#79c0ff">budgets</tspan><tspan fill="#484f58"> · </tspan><tspan fill="#e6edf3">team packs</tspan><tspan fill="#484f58"> · </tspan><tspan fill="#8b949e">188 skills</tspan>
+  </text>
+
+  <rect x="550" y="482" width="660" height="64" rx="14" fill="#161b22" stroke="#30363d" stroke-width="2"/>
+  <text x="578" y="522" font-family="ui-monospace,'SF Mono',Menlo,Consolas,monospace" font-size="24">
+    <tspan fill="#8b949e">$</tspan><tspan fill="#79c0ff"> claude plugin install pantheon@pantheon</tspan>
+  </text>
+</svg>

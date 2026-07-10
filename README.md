@@ -1,12 +1,12 @@
 <div align="center">
 
-<img src="assets/banner.svg" alt="pantheon — disciplines for coding agents" width="660">
+<img src="assets/hero.svg" alt="pantheon — disciplines for coding agents" width="700">
 
 ### One install. Your coding agent stops winging it.
 
 13 mythic disciplines + 3 power tools + 170 merged skills, every one under a pantheon-native name — with memory that recalls itself, receipts for everything it does, and a verification gate that blocks fake "done". For [Claude Code](https://claude.com/claude-code).
 
-![version](https://img.shields.io/badge/version-1.2.0-8957e5?style=flat-square) &nbsp;![license](https://img.shields.io/badge/license-MIT-3fb950?style=flat-square) &nbsp;![Claude Code](https://img.shields.io/badge/Claude_Code-plugin-d97757?style=flat-square) &nbsp;![dependencies](https://img.shields.io/badge/dependencies-none-3fb950?style=flat-square) &nbsp;![skills](https://img.shields.io/badge/skills-188-8957e5?style=flat-square)
+![version](https://img.shields.io/badge/version-1.2.0-8957e5?style=flat-square) &nbsp;![license](https://img.shields.io/badge/license-MIT-3fb950?style=flat-square) &nbsp;![Claude Code](https://img.shields.io/badge/Claude_Code-plugin-d97757?style=flat-square) &nbsp;![dependencies](https://img.shields.io/badge/dependencies-none-3fb950?style=flat-square) &nbsp;![skills](https://img.shields.io/badge/skills-188-8957e5?style=flat-square) &nbsp;![last commit](https://img.shields.io/github/last-commit/MiracleWeb3/pantheon?style=flat-square&color=d97757&label=last%20commit)
 
 **[See it work](#what-it-feels-like) · [The disciplines](#the-pantheon) · [Config](#configuration) · [The HUD](#the-hud-optional) · [CLI](#the-store-and-the-cli) · [Credits](CREDITS.md)**
 
@@ -25,7 +25,7 @@ claude plugin install pantheon@pantheon
 ## What it feels like
 
 <div align="center">
-<img src="assets/demo.svg" alt="pantheon in action — auto-route, recall, announce, verification gate, receipt" width="760">
+<img src="assets/demo-live.svg" alt="pantheon in action — auto-route, recall, announce, verification gate, receipt" width="760">
 </div>
 
 Every move is visible: the router says **why** a discipline fired, recall puts the **relevant past lesson** on the table, the discipline announces **what it's about to do**, the gate refuses a **"done" that isn't**, and the receipt records **what actually happened**.
@@ -69,6 +69,28 @@ Every move is visible: the router says **why** a discipline fired, recall puts t
 
 **🔨 You can forge your own gods.** `pantheon forge new deploy-ritual --route "deploy .*prod"` scaffolds a custom discipline — announce block, method, verify step, receipt, auto-route — indistinguishable from a built-in. Share it as a single file, or `pantheon export` the disciplines for Cursor (`.mdc` rules) and Codex/OpenCode (`AGENTS.md`).
 
+<div align="center"><img src="assets/divider.svg" width="220" alt=""></div>
+
+## Why not just superpowers, OMC, or claude-mem?
+
+Because they each do *one layer*, and none of them **enforce** anything. Honest snapshot:
+
+| capability | **pantheon** | superpowers | oh-my-claudecode | claude-mem |
+|---|:---:|:---:|:---:|:---:|
+| fires the right skill from plain language | ✅ *and learns you* | ❌ | ⚠️ magic keywords | ❌ |
+| memory that recalls itself, per-prompt relevance | ✅ | ❌ | ⚠️ manual lookup | ⚠️ session-start dump |
+| "done" gate enforced by a hook (not advice) | ✅ blocks | ⚠️ advisory | ⚠️ advisory | ❌ |
+| receipts + dashboard of what it did & caught | ✅ | ❌ | ⚠️ HUD only | ❌ |
+| hourly/weekly spend + budget caps | ✅ warn·ask·block | ❌ | ⚠️ display only | ❌ |
+| team packs — repo-inherited config + lessons | ✅ | ❌ | ❌ | ❌ |
+| forge your own discipline, auto-routed | ✅ | ⚠️ authoring guide | ⚠️ skill manager | ❌ |
+| take the disciplines to Cursor / Codex | ✅ export | ❌ | ❌ | ❌ |
+| ships the others' skill sets too | ✅ 188, attributed | — | — | — |
+
+<sub>⚠️ = partial or manual. Assessment as of July 2026 — if a row went stale, open an issue and it gets fixed. And to be clear: those are excellent projects — pantheon bundles their skills with attribution precisely because they're worth having.</sub>
+
+<div align="center"><img src="assets/divider.svg" width="220" alt=""></div>
+
 ## The pantheon
 
 Mythical names, plain-English triggers. Read top-to-bottom and it *is* the lifecycle of a change.
@@ -103,6 +125,8 @@ pantheon doesn't just *point at* the best open-source plugins — it **vendors t
 - **[ui-skills](https://www.ui-skills.com/) & design collections** — frontend-design, interface-design, animation, three.js, framework skills.
 
 Every vendored skill keeps its original license (see [`LICENSES/`](LICENSES/)) and is attributed in [`CREDITS.md`](CREDITS.md). All rights remain with the original authors. And every one of them now carries a **pantheon-native name** — `spartan` for the lazy-dev discipline set, `sisyphus` / `automedon` / `hekaton` / `pythia` for the engine power modes, plain subject names for the guides — no borrowed branding; the full old→new map lives in [`CREDITS.md`](CREDITS.md). Don't want the bulk? `economy`/`quiet` config and per-skill `disciplines` toggles keep it lean.
+
+<div align="center"><img src="assets/divider.svg" width="220" alt=""></div>
 
 ## Configuration
 
@@ -224,6 +248,58 @@ With none installed, every skill still works.
 - **Zero dependencies.** No npm, no pip, no build step. Skills are Markdown; hooks, CLI, dashboard, and HUD are plain Python 3 (`sqlite3`/`curses` from the stdlib).
 - **Everything ships a self-check.** All 11 modules run `--selftest`; `pantheon doctor` runs the whole suite plus install checks in one command.
 
+<details>
+<summary><b>How it's wired</b></summary>
+
+```mermaid
+graph LR
+  U([your prompt]) --> P["on_prompt<br/>budget · route · recall · clarify · context guard"]
+  P --> W[the agent works]
+  W --> S["on_stop<br/>capture · receipts · route outcome · gate"]
+  S -- "gate: tests failing / stubs / unverified" --> W
+  S -- clean --> R([reply lands])
+  P <--> DB[("pantheon.db")]
+  S --> DB
+  DB --> V["HUD · dashboard · doctor"]
+```
+
+</details>
+
+## Questions people ask
+
+> [!NOTE]
+> **Local-first by construction.** Lessons, receipts, and the spend ledger live in `~/.claude/pantheon/` and never leave your machine. The only network call is an optional once-daily version check (2s timeout, `"updateCheck": false` kills it). No telemetry, ever.
+
+<details>
+<summary><b>The gate blocked me and I disagree.</b></summary>
+
+Say so in your reply — after two blocks it always yields, by design. To soften it permanently: `"gate": "warn"` (message only) or `"gate": "off"` in your config.
+
+</details>
+
+<details>
+<summary><b>I already have superpowers / OMC / ponytail installed. Conflict?</b></summary>
+
+No — everything is namespaced (`pantheon:…` vs theirs). Better: pantheon *drives* the oh-my-claudecode engine (its agents and persistence loops) through `sisyphus` / `automedon` / `hekaton` when it's present, and works standalone when it's not.
+
+</details>
+
+<details>
+<summary><b>Too many tokens?</b></summary>
+
+`"preset": "economy"` — no announce prose, soft routing, 1-lesson recall, warn-only gate. Or just tell the agent *"set pantheon to economy mode"*. `quiet` turns every automatic behavior off.
+
+</details>
+
+<details>
+<summary><b>Uninstall cleanly?</b></summary>
+
+`claude plugin uninstall pantheon@pantheon` — then `rm -rf ~/.claude/pantheon` if you also want the local store (lessons, ledger, receipts) gone. Nothing else is touched.
+
+</details>
+
+<div align="center"><img src="assets/divider.svg" width="220" alt=""></div>
+
 ## Roadmap
 
 The original 12-feature roadmap **shipped in full** across v0.8 → v1.1 (retrieval-augmented memory, receipts, dashboard, blocking gate, adaptive routing, intent clarifier, context guard, budget caps, doctor, team packs, forge, cross-agent export) — [docs/ROADMAP.md](docs/ROADMAP.md) documents what each feature does and how they layer. Next up is sharpening from real use: file issues at [MiracleWeb3/pantheon](https://github.com/MiracleWeb3/pantheon/issues).
@@ -232,4 +308,11 @@ The original 12-feature roadmap **shipped in full** across v0.8 → v1.1 (retrie
 
 MIT — see [LICENSE](LICENSE). Independent work; merged sources belong to their respective authors, and are credited in [`CREDITS.md`](CREDITS.md) with licenses retained in [`LICENSES/`](LICENSES/).
 
-<div align="center"><sub>Built for people who want their agent to work like an engineer, not a slot machine.</sub></div>
+<div align="center">
+
+<img src="assets/divider.svg" width="220" alt="">
+
+<sub><b>Built for people who want their agent to work like an engineer, not a slot machine.</b><br>
+If the gate ever catches a fake "done" for you — <a href="https://github.com/MiracleWeb3/pantheon/stargazers">⭐ star it</a> so others find it.</sub>
+
+</div>
