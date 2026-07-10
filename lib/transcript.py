@@ -38,10 +38,20 @@ STUB_PATTERNS = [
     (re.compile(r"NotImplementedError|not implemented", re.I), "unimplemented stub"),
 ]
 
-# commands that merely mention a test tool without running one
+# command segments that merely mention a test tool without running one
 NOT_A_TEST_RE = re.compile(
     r"^\s*(which|command -v|type|grep|rg|cat|echo|find|ls|man|head|tail|"
     r"pip3? install|pipx|npm i(nstall)?|pnpm (add|i)|yarn add|apt(-get)?|brew)\b")
+
+
+def _cmd_segments(cmd: str):
+    """Split a shell command on && ; | so `pip install x && pytest -q` is judged
+    per segment — the installer prefix must not hide (or fake) the test run."""
+    return [s.strip() for s in re.split(r"&&|\|\||;|\|", cmd or "") if s.strip()]
+
+
+def _runs_matching(cmd: str, rx) -> bool:
+    return any(rx.search(s) for s in _cmd_segments(cmd) if not NOT_A_TEST_RE.search(s))
 
 
 def is_code_file(path: str) -> bool:
@@ -64,9 +74,12 @@ def _content(obj):
     return c if c is not None else obj.get("content")
 
 
+# anchored: these are machine entries only when they ARE the message, not when
+# a real user quotes them mid-prompt
 MACHINE_USER_RE = re.compile(
-    r"^This session is being continued from a previous conversation|"
-    r"<command-name>|<local-command-|^\[Request interrupted")
+    r"^\s*(This session is being continued from a previous conversation|"
+    r"<command-name>|<local-command-|<task-notification|<system-reminder|"
+    r"\[Request interrupted)")
 
 
 def is_real_user(obj) -> bool:
@@ -179,16 +192,17 @@ def scan_turn(path: str) -> dict:
                     rec["seen_result"] = True
                     rec["failed"] = bool(p.get("is_error")) or bool(FAIL_RE.search(body[-4000:]))
     # final verdict per test command (a later re-run overrides an earlier fail);
-    # mentions of test tools inside which/grep/install/etc. don't count
+    # judged per shell segment: `which pytest` doesn't count, but the pytest in
+    # `pip install -e . && pytest -q` does
     tests, final = [], {}
     verified = False
     for rec in bash.values():
         cmd = rec["command"]
-        if NOT_A_TEST_RE.search(cmd):
+        if not rec["seen_result"]:
             continue
-        if VERIFY_RE.search(cmd) and rec["seen_result"]:
+        if _runs_matching(cmd, VERIFY_RE):
             verified = True
-        if TEST_RE.search(cmd) and rec["seen_result"]:
+        if _runs_matching(cmd, TEST_RE):
             final[cmd.strip()[:60]] = rec["failed"]
     for cmd, failed in final.items():
         tests.append({"command": cmd, "failed": failed})
@@ -196,19 +210,26 @@ def scan_turn(path: str) -> dict:
             "verified": verified, "skills": skills, "out_tokens": out_tokens}
 
 
+# unambiguous stubs — never a legitimate part of "done" new code
+STRONG_STUB_PATTERNS = [
+    (re.compile(r"\.skip\(|\.only\(|\bxit\(|\bxdescribe\(|@pytest\.mark\.skip"), "skipped/only test"),
+    (re.compile(r"NotImplementedError|not implemented", re.I), "unimplemented stub"),
+]
+
+
 def introduced_stubs(edits) -> list:
-    """Stub markers present in NEW content but not in the replaced content,
-    code files only. Full-file Writes have no old baseline, so they are skipped
-    — a pre-existing TODO in a rewritten file is not 'introduced'. Returns
+    """Stub markers introduced this turn, code files only. Edits are diffed
+    new-vs-old; full-file Writes have no old baseline, so only the STRONG
+    patterns apply there (a pre-existing TODO in a rewritten file is not
+    'introduced', but a fresh NotImplementedError scaffold is). Returns
     ['file: kind', ...]."""
     found = []
     for e in edits:
         if not is_code_file(e.get("file", "")):
             continue
         old = e.get("old") or ""
-        if not old:
-            continue  # Write/new-file: no reliable diff baseline
-        for rx, kind in STUB_PATTERNS:
+        patterns = STUB_PATTERNS if old else STRONG_STUB_PATTERNS
+        for rx, kind in patterns:
             if len(rx.findall(e.get("new") or "")) > len(rx.findall(old)):
                 found.append(f"{os.path.basename(e['file'])}: {kind}")
     return sorted(set(found))
@@ -281,22 +302,35 @@ def selftest() -> int:
     assert context_pct("/nonexistent") == -1
     assert is_code_file("a/b.py") and not is_code_file("a/b.md") and not is_code_file("x")
     assert not FAIL_RE.search("0 failed, 12 passed")
-    # gate false-positive regressions (adversarial review, mission plugin-quality):
-    # 1) full-file Write keeps a pre-existing TODO -> NOT an introduced stub
+    # gate false-positive/negative regressions (adversarial review + verify pass):
+    # 1) full-file Write keeps a pre-existing TODO -> NOT an introduced stub...
     assert introduced_stubs([{"file": "a.py", "new": "x=1  # TODO old note", "old": ""}]) == []
+    # ...but a fresh NotImplementedError scaffold via Write IS caught (strong stub)
+    assert introduced_stubs([{"file": "h.py", "new": "def f():\n    raise NotImplementedError",
+                              "old": ""}]) == ["h.py: unimplemented stub"]
     # 2) HTML placeholder attribute is not an 'unimplemented stub'
     assert introduced_stubs([{"file": "L.tsx", "new": '<input placeholder="Email">',
                               "old": "<input>"}]) == []
-    # 3) mentioning a test tool is not running one
-    assert NOT_A_TEST_RE.search("which pytest") and NOT_A_TEST_RE.search("pip install pytest")
-    assert NOT_A_TEST_RE.search("grep -rn pytest .") and not NOT_A_TEST_RE.search("pytest -q")
-    # 4) machine-generated 'user' entries are not real prompts
+    # 3) mentioning a test tool is not running one — but compound commands count
+    assert not _runs_matching("which pytest", TEST_RE)
+    assert not _runs_matching("pip install pytest", TEST_RE)
+    assert not _runs_matching("grep -rn pytest .", TEST_RE)
+    assert _runs_matching("pytest -q", TEST_RE)
+    assert _runs_matching("pip install -e . && pytest -q", TEST_RE)
+    assert _runs_matching("npm install && npm test", VERIFY_RE)
+    assert _runs_matching("find . -name 'test_*' | xargs pytest", TEST_RE)
+    # 4) machine-generated 'user' entries are not real prompts — but a real user
+    # QUOTING those markers mid-prompt still is
     assert not is_real_user({"type": "user", "message": {"content":
         "This session is being continued from a previous conversation. Summary: ..."}})
     assert not is_real_user({"type": "user", "message": {"content":
         "<command-name>/compact</command-name> ran"}})
+    assert not is_real_user({"type": "user", "message": {"content":
+        "<task-notification>background job finished</task-notification>"}})
     assert is_real_user({"type": "user", "message": {"content": "fix the bug please"}})
-    print("selftest ok — turn scan, stub diff, test verdicts, context%, gate FP guards")
+    assert is_real_user({"type": "user", "message": {"content":
+        "why does <command-name> appear in my transcript? fix the hook"}})
+    print("selftest ok — turn scan, stub diff, test verdicts, context%, gate FP/FN guards")
     return 0
 
 

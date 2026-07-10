@@ -147,19 +147,20 @@ def gate_check(turn: dict) -> list:
     return problems
 
 
-_GATE_STATE = os.path.join(os.path.expanduser("~"), ".claude", "pantheon", "gate-state.json")
+_GATE_DIR = os.path.join(os.path.expanduser("~"), ".claude", "pantheon", "gate")
 
 
-def _gate_state_path():
-    return _GATE_STATE
+def _gate_state_path(session: str) -> str:
+    """One file per session: concurrent sessions never share a writer, so there
+    is no clobber and no read-modify-write race on the block counters (same-
+    session Stop hooks are sequential by construction)."""
+    sid = hashlib.md5((session or "no-session").encode()).hexdigest()[:12]
+    return os.path.join(_GATE_DIR, f"{sid}.json")
 
 
 def gate_blocks_used(session: str, turn_key: str) -> int:
-    """Per-session records — concurrent sessions must not clobber each other's
-    block counters (that would defeat the 2-blocks-then-yield escape hatch)."""
     try:
-        st = json.load(open(_gate_state_path(), encoding="utf-8"))
-        rec = st.get(session) or {}
+        rec = json.load(open(_gate_state_path(session), encoding="utf-8"))
         if rec.get("turn_key") == turn_key:
             return int(rec.get("blocks", 0))
     except Exception:
@@ -169,18 +170,10 @@ def gate_blocks_used(session: str, turn_key: str) -> int:
 
 def gate_record_block(session: str, turn_key: str, used: int) -> None:
     try:
-        p = _gate_state_path()
-        try:
-            st = json.load(open(p, encoding="utf-8"))
-        except Exception:
-            st = {}
-        if not isinstance(st, dict) or "session" in st:
-            st = {}  # migrate away from the old single-slot format
-        st[session] = {"turn_key": turn_key, "blocks": used + 1}
-        if len(st) > 40:
-            st = {session: st[session]}
+        p = _gate_state_path(session)
         os.makedirs(os.path.dirname(p), exist_ok=True)
-        json.dump(st, open(p, "w", encoding="utf-8"))
+        json.dump({"turn_key": turn_key, "blocks": used + 1},
+                  open(p, "w", encoding="utf-8"))
     except Exception:
         pass
 
@@ -212,7 +205,7 @@ def run_gate(turn: dict, cfg: dict, session: str, cwd: str) -> dict:
         pass
     reason = (f"pantheon verification gate — do not finish yet: {summary}. "
               "Before stopping again: make the failing tests pass, remove the introduced "
-              "stubs (TODO/FIXME/.skip/.only/placeholder), or run a real verification "
+              "stubs (TODO/FIXME/.skip/.only/NotImplementedError), or run a real verification "
               "(tests / build / lint / selftest) on the code you changed and report the result. "
               "If the user explicitly told you to skip verification, say so in one line and stop.")
     if used + 1 >= MAX_BLOCKS_PER_TURN:
@@ -288,21 +281,19 @@ def selftest() -> int:
     assert route_outcome("hydra", {"lethe"}) == "overridden"
     assert route_outcome("hydra", set()) == "ignored"
     assert route_outcome("my-custom", {"my-custom"}) == "accepted"
-    # gate block counters are per-session — concurrent sessions must not clobber
-    global _GATE_STATE
+    # gate block counters live in one file per session — concurrent sessions
+    # have no shared writer, so no clobber and no lost increments
+    global _GATE_DIR
     import tempfile
-    _GATE_STATE = os.path.join(tempfile.mkdtemp(prefix="pantheon-gs-"), "g.json")
+    _GATE_DIR = tempfile.mkdtemp(prefix="pantheon-gs-")
     gate_record_block("sessA", "t1", 0)
     gate_record_block("sessB", "t9", 0)
     gate_record_block("sessA", "t1", 1)
     assert gate_blocks_used("sessA", "t1") == 2
     assert gate_blocks_used("sessB", "t9") == 1
-    assert gate_blocks_used("sessA", "t2") == 0  # new turn resets
-    # old single-slot format migrates instead of crashing
-    json.dump({"session": "legacy", "turn_key": "x", "blocks": 2},
-              open(_GATE_STATE, "w", encoding="utf-8"))
-    gate_record_block("sessC", "t1", 0)
-    assert gate_blocks_used("sessC", "t1") == 1
+    assert gate_blocks_used("sessA", "t2") == 0   # new turn resets
+    assert gate_blocks_used("sessZ", "t1") == 0   # unknown session starts clean
+    assert _gate_state_path("a") != _gate_state_path("b")
     print("selftest ok — capture regex, gate rules (fail/unverified/stub/docs), "
           "modes, route outcomes")
     return 0
