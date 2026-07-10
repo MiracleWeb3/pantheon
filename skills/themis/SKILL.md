@@ -30,8 +30,8 @@ Then execute the plan. This keeps automation transparent — the human always se
 
 ## Concrete wiring
 
-- **`oh-my-claudecode`** → `code-reviewer` (severity-rated), `critic` (thorough multi-perspective), `security-reviewer` (OWASP/secrets).
-- **`superpowers`** → `requesting-code-review` / `receiving-code-review`.
+- **oh-my-claudecode engine installed** → its `code-reviewer` (severity-rated), `critic` (thorough multi-perspective), `security-reviewer` (OWASP/secrets) agents.
+- **Bundled** → `pantheon:requesting-code-review` / `pantheon:receiving-code-review`.
 - **The `code-review` skill** if present, or a fresh subagent handed the diff and told to find what's wrong.
 
 Pairs as the gate after `daedalus`/`hydra` and before `charon` — nothing gets ferried across until it's been weighed.

@@ -27,8 +27,8 @@ The discipline is **separate passes**: understand ≠ plan ≠ build ≠ verify,
 
 ## Concrete wiring (use what's installed, fall back when not)
 
-- **`oh-my-claudecode`**: the sharpest path is `deep-interview` (scope) → `ralplan` (Planner/Architect/Critic consensus) → `autopilot` (detects the consensus plan, then parallel execution → QA loop → 3-reviewer validation).
-- **`superpowers`**: `brainstorming` (scope) → `writing-plans` (plan) → `subagent-driven-development` (build) → `verification-before-completion` (verify).
+- **Bundled power modes** (drive the oh-my-claudecode engine when it's installed): `pantheon:deep-interview` (scope) → `pantheon:sisyphus-plan` (Planner/Architect/Critic consensus) → `pantheon:automedon` (detects the consensus plan, then parallel execution → QA loop → 3-reviewer validation).
+- **Bundled method skills**: `pantheon:brainstorming` (scope) → `pantheon:writing-plans` (plan) → `pantheon:subagent-driven-development` (build) → `pantheon:verification-before-completion` (verify).
 - **Neither**: do the five steps by hand — write the spec to a file, spawn a subagent to critique it, implement, then spawn a *fresh* subagent to review against the spec.
 
 For huge or sprawling builds, decompose with `argus` first, then run each slice through these gates. Keep the diff as small as `lethe` allows — the craftsman's mark is *no wasted material*.

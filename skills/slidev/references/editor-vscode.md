@@ -9,7 +9,7 @@ Manage slides visually in VS Code.
 
 ## Installation
 
-Install from VS Code Marketplace: `antfu.slidev`
+Install from VS Code Marketplace: `vue-philosophy.slidev`
 
 ## Features
 

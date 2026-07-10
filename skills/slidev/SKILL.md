@@ -155,7 +155,7 @@ Presenter notes go here
 | Feature | Usage | Reference |
 |---------|-------|-----------|
 | Side editor | Click edit icon | [editor-side](references/editor-side.md) |
-| VS Code extension | Install `antfu.slidev` | [editor-vscode](references/editor-vscode.md) |
+| VS Code extension | Install `vue-philosophy.slidev` | [editor-vscode](references/editor-vscode.md) |
 | Prettier | `prettier-plugin-slidev` | [editor-prettier](references/editor-prettier.md) |
 | Eject theme | `slidev theme eject` | [tool-eject-theme](references/tool-eject-theme.md) |
 

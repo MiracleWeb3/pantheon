@@ -189,3 +189,52 @@ pantheon vendors open-source skills from the projects below, merged into one plu
 - `verification-before-completion`
 - `writing-plans`
 - `writing-skills`
+
+## Pantheon-native names (renamed in v1.2)
+
+Vendored skills carry pantheon-native names; the table below maps each to the name it ships under in its source. Licenses in `LICENSES/` and all attribution are unchanged — renaming is permitted by the source licenses with attribution retained, which this file provides.
+
+| pantheon name | ships in source as |
+|---|---|
+| `archimedes` | `sciomc` |
+| `atlas-init` | `deepinit` |
+| `automedon` | `autopilot` |
+| `design-engineering` | `emil-design-eng` |
+| `engine-doctor` | `omc-doctor` |
+| `engine-hud` | `hud` |
+| `engine-install` | `omc-setup` |
+| `engine-reference` | `omc-reference` |
+| `engine-setup` | `setup` |
+| `engine-teams` | `omc-teams` |
+| `forge-session` | `skillify` |
+| `good-design-principles` | `rams` |
+| `gpt-taste` | `gpt-tasteskill` |
+| `hekaton` | `ultrawork` |
+| `hekaton-qa` | `ultraqa` |
+| `innovative-ux` | `bencium-innovative-ux-designer` |
+| `pythia` | `autoresearch` |
+| `sisyphus` | `ralph` |
+| `sisyphus-plan` | `ralplan` |
+| `spartan` | `ponytail` |
+| `spartan-audit` | `ponytail-audit` |
+| `spartan-debt` | `ponytail-debt` |
+| `spartan-gain` | `ponytail-gain` |
+| `spartan-help` | `ponytail-help` |
+| `spartan-review` | `ponytail-review` |
+| `telos` | `ultragoal` |
+| `triumvirate` | `ccg` |
+| `ts-mentor` | `ask-matt` |
+| `ts-mentor-setup` | `setup-matt-pocock-skills` |
+| `ui-collection` | `ui-skills-root` |
+| `using-pantheon` | `using-superpowers` |
+| `vue-best-practices` | `antfu-vue-best-practices` |
+| `vue-best-practices-deep` | `vuejs-ai-vue-best-practices` |
+| `vue-philosophy` | `antfu` |
+| `vue-router-practices` | `antfu-vue-router-best-practices` |
+| `vue-router-practices-deep` | `vuejs-ai-vue-router-best-practices` |
+| `vue-testing-practices` | `antfu-vue-testing-best-practices` |
+| `vue-testing-practices-deep` | `vuejs-ai-vue-testing-best-practices` |
+| `web-design-guidelines` | `vercel-labs-web-design-guidelines` |
+| `web-design-taste` | `antfu-web-design-guidelines` |
+
+The `spartan` family is the ponytail discipline set; legacy `ponytail:` code-comment markers are equivalent to `spartan:` markers.

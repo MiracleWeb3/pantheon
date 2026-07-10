@@ -4,7 +4,7 @@ description: Pinia official Vue state management library, type-safe and extensib
 metadata:
   author: Anthony Fu
   version: "2026.1.28"
-  source: Generated from https://github.com/vuejs/pinia, scripts located at https://github.com/antfu/skills
+  source: Generated from https://github.com/vuejs/pinia, scripts located at https://github.com/vue-philosophy/skills
 ---
 
 # Pinia

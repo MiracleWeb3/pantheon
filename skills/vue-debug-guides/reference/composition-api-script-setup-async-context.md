@@ -199,5 +199,5 @@ function setup() {
 
 ## Reference
 - [Composition API FAQ - Async Setup](https://vuejs.org/guide/extras/composition-api-faq.html)
-- [Composables - Async Without Await](https://antfu.me/posts/async-with-composition-api)
+- [Composables - Async Without Await](https://vue-philosophy.me/posts/async-with-composition-api)
 - [Suspense](https://vuejs.org/guide/built-ins/suspense.html)

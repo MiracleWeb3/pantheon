@@ -10,7 +10,7 @@ Converts plain functions into reactive functions. The converted function accepts
 ::: tip
 Interested to see some application or looking for some pre-reactified functions?
 
-Check out [⚗️ Vue Chemistry](https://github.com/antfu/vue-chemistry)!
+Check out [⚗️ Vue Chemistry](https://github.com/vue-philosophy/vue-chemistry)!
 :::
 
 ## Usage

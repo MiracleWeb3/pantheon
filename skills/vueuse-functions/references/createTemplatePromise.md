@@ -39,7 +39,7 @@ async function open() {
 - **Renderless** - you take full control of the UI
 - **Transition** - use support Vue transition
 
-This function is migrated from [vue-template-promise](https://github.com/antfu/vue-template-promise)
+This function is migrated from [vue-template-promise](https://github.com/vue-philosophy/vue-template-promise)
 
 ## Usage
 

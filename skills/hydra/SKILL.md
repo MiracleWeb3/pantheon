@@ -19,7 +19,7 @@ Then execute the plan. This keeps automation transparent — the human always se
 
 1. **Orient to the blast radius** — run `ariadne` on the symptom: map what calls and is called by the suspect area before reading line by line. Check whether this failure mode was hit and solved before.
 2. **Diagnose to root cause, not symptom** — form competing hypotheses and gather evidence *for and against each*. Don't touch code until you can name the mechanism ("inbound path reuses the outbound clock"), not just the symptom ("timestamp looks wrong").
-   - `superpowers` → `systematic-debugging`. `oh-my-claudecode` and it's nasty → the `tracer` agent (competing hypotheses, evidence tracking, next-probe).
+   - Bundled: `pantheon:systematic-debugging`. If the oh-my-claudecode engine is installed and it's nasty → its `tracer` agent (competing hypotheses, evidence tracking, next-probe).
 3. **Reproduce before fixing** — get the bug failing under a check you control (a test, a script, an observed value against real state). A fix you can't watch go fail→pass is a guess wearing a diff.
 4. **Fix at the root** — grep *every* caller of the function you're about to change. The smallest correct fix is usually one guard in the shared path, not N guards in each caller; patching only the reported path leaves every sibling caller a live head.
 5. **Cauterize** — if it could silently regress, seal it: a regression test that reproduces the bug and now passes, confirmed by a reviewer or a fresh run. This is the torch. Skip only for an obvious one-off.

@@ -30,8 +30,8 @@ Then execute the plan. This keeps automation transparent — the human always se
 
 ## Concrete wiring
 
-- **`oh-my-claudecode`** → `git-master` (atomic commits, style detection, rebasing).
-- **`superpowers`** → `finishing-a-development-branch`.
+- **oh-my-claudecode engine installed** → its `git-master` agent (atomic commits, style detection, rebasing).
+- **Bundled** → `pantheon:finishing-a-development-branch`.
 - **Otherwise** → group the diff into logical commits by hand, write real messages, and `gh pr create` with a proper body.
 
 The last mile after `themis` approves — foresight (`prometheus`), build (`daedalus`), review (`themis`), then the ferry across.

@@ -1,14 +1,14 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "pantheon",
-  "description": "A pantheon of problem-solving skills for Claude Code.",
+  "description": "A pantheon of disciplines for coding agents — one install, everything.",
   "owner": {
     "name": "CyberPunk"
   },
   "plugins": [
     {
       "name": "pantheon",
-      "description": "Orient, match the tool to the problem, do the least that works, compound what you learn. Six mythically-named skills (ariadne, daedalus, hydra, argus, lethe, mnemosyne) plus a learning-capture hook.",
+      "description": "16 pantheon-native disciplines (auto-routing that learns you, self-recalling memory, a verification gate that blocks fake 'done', receipts + dashboard, budget caps, doctor, team packs, forge, cross-agent export) plus 170+ merged skills under pantheon-native names — attributed, licenses retained. Zero dependencies.",
       "source": "./",
       "category": "productivity"
     }

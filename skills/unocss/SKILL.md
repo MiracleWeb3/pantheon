@@ -4,7 +4,7 @@ description: UnoCSS instant atomic CSS engine, superset of Tailwind CSS. Use whe
 metadata:
   author: Anthony Fu
   version: "2026.1.28"
-  source: Generated from https://github.com/unocss/unocss, scripts located at https://github.com/antfu/skills
+  source: Generated from https://github.com/unocss/unocss, scripts located at https://github.com/vue-philosophy/skills
 ---
 
 UnoCSS is an instant atomic CSS engine designed to be flexible and extensible. The core is un-opinionated - all CSS utilities are provided via presets. It's a superset of Tailwind CSS, so you can reuse your Tailwind knowledge for basic syntax usage.

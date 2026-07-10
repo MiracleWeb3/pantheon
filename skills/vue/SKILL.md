@@ -4,7 +4,7 @@ description: Vue 3 Composition API, script setup macros, reactivity system, and 
 metadata:
   author: Anthony Fu
   version: "2026.1.31"
-  source: Generated from https://github.com/vuejs/docs, scripts at https://github.com/antfu/skills
+  source: Generated from https://github.com/vuejs/docs, scripts at https://github.com/vue-philosophy/skills
 ---
 
 # Vue

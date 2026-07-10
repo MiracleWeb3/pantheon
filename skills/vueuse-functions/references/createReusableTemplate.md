@@ -270,7 +270,7 @@ const [DefineTemplate, ReuseTemplate] = createReusableTemplate<{
 
 ## References
 
-This function is migrated from [vue-reuse-template](https://github.com/antfu/vue-reuse-template).
+This function is migrated from [vue-reuse-template](https://github.com/vue-philosophy/vue-reuse-template).
 
 Existing Vue discussions/issues about reusing template:
 

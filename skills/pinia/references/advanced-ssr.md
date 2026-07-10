@@ -104,7 +104,7 @@ if (typeof window !== 'undefined') {
 
 ## SSR Examples
 
-- [Vitesse template](https://github.com/antfu/vitesse/blob/main/src/modules/pinia.ts)
+- [Vitesse template](https://github.com/vue-philosophy/vitesse/blob/main/src/modules/pinia.ts)
 - [vite-plugin-ssr](https://vite-plugin-ssr.com/pinia)
 
 ## Key Points

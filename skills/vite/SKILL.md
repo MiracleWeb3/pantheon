@@ -4,7 +4,7 @@ description: Vite build tool configuration, plugin API, SSR, and Vite 8 Rolldown
 metadata:
   author: Anthony Fu
   version: "2026.1.31"
-  source: Generated from https://github.com/vitejs/vite, scripts at https://github.com/antfu/skills
+  source: Generated from https://github.com/vitejs/vite, scripts at https://github.com/vue-philosophy/skills
 ---
 
 # Vite

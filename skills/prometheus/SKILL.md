@@ -25,7 +25,7 @@ Repeat one small behavior at a time.
 
 ## Concrete wiring
 
-- **`superpowers`** → the `test-driven-development` / `tdd` skill for the full discipline.
+- **Bundled** → `pantheon:test-driven-development` / `pantheon:tdd` for the full discipline.
 - **Otherwise** → do the loop by hand: write the failing test in the project's existing framework, run it, see red, implement, see green, refactor.
 
 ## When it fits (and when it doesn't)

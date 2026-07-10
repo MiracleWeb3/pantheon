@@ -41,35 +41,12 @@
     "source": "skills-dir",
     "url": "https://www.ui-skills.com/"
   },
-  "antfu": {
-    "author": "various",
-    "license": "unverified",
-    "source": "skills-dir",
-    "url": "https://www.ui-skills.com/"
-  },
-  "antfu-vue-best-practices": {
-    "author": "various",
-    "license": "MIT License",
-    "source": "skills-dir",
-    "url": "https://www.ui-skills.com/"
-  },
-  "antfu-vue-router-best-practices": {
-    "author": "various",
-    "license": "MIT License",
-    "source": "skills-dir",
-    "url": "https://www.ui-skills.com/"
-  },
-  "antfu-vue-testing-best-practices": {
-    "author": "various",
-    "license": "MIT License",
-    "source": "skills-dir",
-    "url": "https://www.ui-skills.com/"
-  },
-  "antfu-web-design-guidelines": {
-    "author": "various",
-    "license": "unverified",
-    "source": "skills-dir",
-    "url": "https://www.ui-skills.com/"
+  "archimedes": {
+    "author": "Yeachan Heo",
+    "license": "MIT",
+    "renamedFrom": "sciomc",
+    "source": "oh-my-claudecode",
+    "url": "https://github.com/Yeachan-Heo/oh-my-claudecode"
   },
   "ask": {
     "author": "Yeachan Heo",
@@ -77,31 +54,21 @@
     "source": "oh-my-claudecode",
     "url": "https://github.com/Yeachan-Heo/oh-my-claudecode"
   },
-  "ask-matt": {
-    "author": "various",
-    "license": "unverified",
-    "source": "skills-dir",
-    "url": "https://www.ui-skills.com/"
-  },
-  "autopilot": {
+  "atlas-init": {
     "author": "Yeachan Heo",
     "license": "MIT",
+    "renamedFrom": "deepinit",
     "source": "oh-my-claudecode",
     "url": "https://github.com/Yeachan-Heo/oh-my-claudecode"
   },
-  "autoresearch": {
+  "automedon": {
     "author": "Yeachan Heo",
     "license": "MIT",
+    "renamedFrom": "autopilot",
     "source": "oh-my-claudecode",
     "url": "https://github.com/Yeachan-Heo/oh-my-claudecode"
   },
   "baseline-ui": {
-    "author": "various",
-    "license": "unverified",
-    "source": "skills-dir",
-    "url": "https://www.ui-skills.com/"
-  },
-  "bencium-innovative-ux-designer": {
     "author": "various",
     "license": "unverified",
     "source": "skills-dir",
@@ -148,12 +115,6 @@
     "license": "present",
     "source": "skills-dir",
     "url": "https://www.ui-skills.com/"
-  },
-  "ccg": {
-    "author": "Yeachan Heo",
-    "license": "MIT",
-    "source": "oh-my-claudecode",
-    "url": "https://github.com/Yeachan-Heo/oh-my-claudecode"
   },
   "codebase-design": {
     "author": "various",
@@ -203,11 +164,12 @@
     "source": "oh-my-claudecode",
     "url": "https://github.com/Yeachan-Heo/oh-my-claudecode"
   },
-  "deepinit": {
-    "author": "Yeachan Heo",
-    "license": "MIT",
-    "source": "oh-my-claudecode",
-    "url": "https://github.com/Yeachan-Heo/oh-my-claudecode"
+  "design-engineering": {
+    "author": "various",
+    "license": "unverified",
+    "renamedFrom": "emil-design-eng",
+    "source": "skills-dir",
+    "url": "https://www.ui-skills.com/"
   },
   "design-lab": {
     "author": "various",
@@ -233,11 +195,47 @@
     "source": "skills-dir",
     "url": "https://www.ui-skills.com/"
   },
-  "emil-design-eng": {
-    "author": "various",
-    "license": "unverified",
-    "source": "skills-dir",
-    "url": "https://www.ui-skills.com/"
+  "engine-doctor": {
+    "author": "Yeachan Heo",
+    "license": "MIT",
+    "renamedFrom": "omc-doctor",
+    "source": "oh-my-claudecode",
+    "url": "https://github.com/Yeachan-Heo/oh-my-claudecode"
+  },
+  "engine-hud": {
+    "author": "Yeachan Heo",
+    "license": "MIT",
+    "renamedFrom": "hud",
+    "source": "oh-my-claudecode",
+    "url": "https://github.com/Yeachan-Heo/oh-my-claudecode"
+  },
+  "engine-install": {
+    "author": "Yeachan Heo",
+    "license": "MIT",
+    "renamedFrom": "omc-setup",
+    "source": "oh-my-claudecode",
+    "url": "https://github.com/Yeachan-Heo/oh-my-claudecode"
+  },
+  "engine-reference": {
+    "author": "Yeachan Heo",
+    "license": "MIT",
+    "renamedFrom": "omc-reference",
+    "source": "oh-my-claudecode",
+    "url": "https://github.com/Yeachan-Heo/oh-my-claudecode"
+  },
+  "engine-setup": {
+    "author": "Yeachan Heo",
+    "license": "MIT",
+    "renamedFrom": "setup",
+    "source": "oh-my-claudecode",
+    "url": "https://github.com/Yeachan-Heo/oh-my-claudecode"
+  },
+  "engine-teams": {
+    "author": "Yeachan Heo",
+    "license": "MIT",
+    "renamedFrom": "omc-teams",
+    "source": "oh-my-claudecode",
+    "url": "https://github.com/Yeachan-Heo/oh-my-claudecode"
   },
   "executing-plans": {
     "author": "Jesse Vincent",
@@ -275,6 +273,13 @@
     "source": "skills-dir",
     "url": "https://www.ui-skills.com/"
   },
+  "forge-session": {
+    "author": "Yeachan Heo",
+    "license": "MIT",
+    "renamedFrom": "skillify",
+    "source": "oh-my-claudecode",
+    "url": "https://github.com/Yeachan-Heo/oh-my-claudecode"
+  },
   "frontend-design": {
     "author": "various",
     "license": "present",
@@ -299,9 +304,17 @@
     "source": "skills-dir",
     "url": "https://www.ui-skills.com/"
   },
-  "gpt-tasteskill": {
+  "good-design-principles": {
     "author": "various",
     "license": "unverified",
+    "renamedFrom": "rams",
+    "source": "skills-dir",
+    "url": "https://www.ui-skills.com/"
+  },
+  "gpt-taste": {
+    "author": "various",
+    "license": "unverified",
+    "renamedFrom": "gpt-tasteskill",
     "source": "skills-dir",
     "url": "https://www.ui-skills.com/"
   },
@@ -317,9 +330,17 @@
     "source": "skills-dir",
     "url": "https://www.ui-skills.com/"
   },
-  "hud": {
+  "hekaton": {
     "author": "Yeachan Heo",
     "license": "MIT",
+    "renamedFrom": "ultrawork",
+    "source": "oh-my-claudecode",
+    "url": "https://github.com/Yeachan-Heo/oh-my-claudecode"
+  },
+  "hekaton-qa": {
+    "author": "Yeachan Heo",
+    "license": "MIT",
+    "renamedFrom": "ultraqa",
     "source": "oh-my-claudecode",
     "url": "https://github.com/Yeachan-Heo/oh-my-claudecode"
   },
@@ -332,6 +353,13 @@
   "improve-codebase-architecture": {
     "author": "various",
     "license": "unverified",
+    "source": "skills-dir",
+    "url": "https://www.ui-skills.com/"
+  },
+  "innovative-ux": {
+    "author": "various",
+    "license": "unverified",
+    "renamedFrom": "bencium-innovative-ux-designer",
     "source": "skills-dir",
     "url": "https://www.ui-skills.com/"
   },
@@ -413,30 +441,6 @@
     "source": "skills-dir",
     "url": "https://www.ui-skills.com/"
   },
-  "omc-doctor": {
-    "author": "Yeachan Heo",
-    "license": "MIT",
-    "source": "oh-my-claudecode",
-    "url": "https://github.com/Yeachan-Heo/oh-my-claudecode"
-  },
-  "omc-reference": {
-    "author": "Yeachan Heo",
-    "license": "MIT",
-    "source": "oh-my-claudecode",
-    "url": "https://github.com/Yeachan-Heo/oh-my-claudecode"
-  },
-  "omc-setup": {
-    "author": "Yeachan Heo",
-    "license": "MIT",
-    "source": "oh-my-claudecode",
-    "url": "https://github.com/Yeachan-Heo/oh-my-claudecode"
-  },
-  "omc-teams": {
-    "author": "Yeachan Heo",
-    "license": "MIT",
-    "source": "oh-my-claudecode",
-    "url": "https://github.com/Yeachan-Heo/oh-my-claudecode"
-  },
   "output-skill": {
     "author": "various",
     "license": "unverified",
@@ -467,42 +471,6 @@
     "source": "skills-dir",
     "url": "https://www.ui-skills.com/"
   },
-  "ponytail": {
-    "author": "Dietrich Gebert",
-    "license": "MIT",
-    "source": "ponytail",
-    "url": "https://github.com/DietrichGebert/ponytail"
-  },
-  "ponytail-audit": {
-    "author": "Dietrich Gebert",
-    "license": "MIT",
-    "source": "ponytail",
-    "url": "https://github.com/DietrichGebert/ponytail"
-  },
-  "ponytail-debt": {
-    "author": "Dietrich Gebert",
-    "license": "MIT",
-    "source": "ponytail",
-    "url": "https://github.com/DietrichGebert/ponytail"
-  },
-  "ponytail-gain": {
-    "author": "Dietrich Gebert",
-    "license": "MIT",
-    "source": "ponytail",
-    "url": "https://github.com/DietrichGebert/ponytail"
-  },
-  "ponytail-help": {
-    "author": "Dietrich Gebert",
-    "license": "MIT",
-    "source": "ponytail",
-    "url": "https://github.com/DietrichGebert/ponytail"
-  },
-  "ponytail-review": {
-    "author": "Dietrich Gebert",
-    "license": "MIT",
-    "source": "ponytail",
-    "url": "https://github.com/DietrichGebert/ponytail"
-  },
   "project-session-manager": {
     "author": "Yeachan Heo",
     "license": "MIT",
@@ -521,23 +489,12 @@
     "source": "skills-dir",
     "url": "https://www.ui-skills.com/"
   },
-  "ralph": {
+  "pythia": {
     "author": "Yeachan Heo",
     "license": "MIT",
+    "renamedFrom": "autoresearch",
     "source": "oh-my-claudecode",
     "url": "https://github.com/Yeachan-Heo/oh-my-claudecode"
-  },
-  "ralplan": {
-    "author": "Yeachan Heo",
-    "license": "MIT",
-    "source": "oh-my-claudecode",
-    "url": "https://github.com/Yeachan-Heo/oh-my-claudecode"
-  },
-  "rams": {
-    "author": "various",
-    "license": "unverified",
-    "source": "skills-dir",
-    "url": "https://www.ui-skills.com/"
   },
   "react-best-practices": {
     "author": "various",
@@ -611,29 +568,11 @@
     "source": "skills-dir",
     "url": "https://www.ui-skills.com/"
   },
-  "sciomc": {
-    "author": "Yeachan Heo",
-    "license": "MIT",
-    "source": "oh-my-claudecode",
-    "url": "https://github.com/Yeachan-Heo/oh-my-claudecode"
-  },
   "self-improve": {
     "author": "Yeachan Heo",
     "license": "MIT",
     "source": "oh-my-claudecode",
     "url": "https://github.com/Yeachan-Heo/oh-my-claudecode"
-  },
-  "setup": {
-    "author": "Yeachan Heo",
-    "license": "MIT",
-    "source": "oh-my-claudecode",
-    "url": "https://github.com/Yeachan-Heo/oh-my-claudecode"
-  },
-  "setup-matt-pocock-skills": {
-    "author": "various",
-    "license": "unverified",
-    "source": "skills-dir",
-    "url": "https://www.ui-skills.com/"
   },
   "shadcn": {
     "author": "various",
@@ -641,13 +580,21 @@
     "source": "skills-dir",
     "url": "https://www.ui-skills.com/"
   },
-  "skill": {
+  "sisyphus": {
     "author": "Yeachan Heo",
     "license": "MIT",
+    "renamedFrom": "ralph",
     "source": "oh-my-claudecode",
     "url": "https://github.com/Yeachan-Heo/oh-my-claudecode"
   },
-  "skillify": {
+  "sisyphus-plan": {
+    "author": "Yeachan Heo",
+    "license": "MIT",
+    "renamedFrom": "ralplan",
+    "source": "oh-my-claudecode",
+    "url": "https://github.com/Yeachan-Heo/oh-my-claudecode"
+  },
+  "skill": {
     "author": "Yeachan Heo",
     "license": "MIT",
     "source": "oh-my-claudecode",
@@ -676,6 +623,48 @@
     "license": "unverified",
     "source": "skills-dir",
     "url": "https://www.ui-skills.com/"
+  },
+  "spartan": {
+    "author": "Dietrich Gebert",
+    "license": "MIT",
+    "renamedFrom": "ponytail",
+    "source": "ponytail",
+    "url": "https://github.com/DietrichGebert/ponytail"
+  },
+  "spartan-audit": {
+    "author": "Dietrich Gebert",
+    "license": "MIT",
+    "renamedFrom": "ponytail-audit",
+    "source": "ponytail",
+    "url": "https://github.com/DietrichGebert/ponytail"
+  },
+  "spartan-debt": {
+    "author": "Dietrich Gebert",
+    "license": "MIT",
+    "renamedFrom": "ponytail-debt",
+    "source": "ponytail",
+    "url": "https://github.com/DietrichGebert/ponytail"
+  },
+  "spartan-gain": {
+    "author": "Dietrich Gebert",
+    "license": "MIT",
+    "renamedFrom": "ponytail-gain",
+    "source": "ponytail",
+    "url": "https://github.com/DietrichGebert/ponytail"
+  },
+  "spartan-help": {
+    "author": "Dietrich Gebert",
+    "license": "MIT",
+    "renamedFrom": "ponytail-help",
+    "source": "ponytail",
+    "url": "https://github.com/DietrichGebert/ponytail"
+  },
+  "spartan-review": {
+    "author": "Dietrich Gebert",
+    "license": "MIT",
+    "renamedFrom": "ponytail-review",
+    "source": "ponytail",
+    "url": "https://github.com/DietrichGebert/ponytail"
   },
   "stitch-skill": {
     "author": "various",
@@ -728,6 +717,13 @@
   "team": {
     "author": "Yeachan Heo",
     "license": "MIT",
+    "source": "oh-my-claudecode",
+    "url": "https://github.com/Yeachan-Heo/oh-my-claudecode"
+  },
+  "telos": {
+    "author": "Yeachan Heo",
+    "license": "MIT",
+    "renamedFrom": "ultragoal",
     "source": "oh-my-claudecode",
     "url": "https://github.com/Yeachan-Heo/oh-my-claudecode"
   },
@@ -839,6 +835,27 @@
     "source": "skills-dir",
     "url": "https://www.ui-skills.com/"
   },
+  "triumvirate": {
+    "author": "Yeachan Heo",
+    "license": "MIT",
+    "renamedFrom": "ccg",
+    "source": "oh-my-claudecode",
+    "url": "https://github.com/Yeachan-Heo/oh-my-claudecode"
+  },
+  "ts-mentor": {
+    "author": "various",
+    "license": "unverified",
+    "renamedFrom": "ask-matt",
+    "source": "skills-dir",
+    "url": "https://www.ui-skills.com/"
+  },
+  "ts-mentor-setup": {
+    "author": "various",
+    "license": "unverified",
+    "renamedFrom": "setup-matt-pocock-skills",
+    "source": "skills-dir",
+    "url": "https://www.ui-skills.com/"
+  },
   "tsdown": {
     "author": "various",
     "license": "The MIT License (MIT)",
@@ -851,9 +868,10 @@
     "source": "skills-dir",
     "url": "https://www.ui-skills.com/"
   },
-  "ui-skills-root": {
+  "ui-collection": {
     "author": "various",
     "license": "unverified",
+    "renamedFrom": "ui-skills-root",
     "source": "skills-dir",
     "url": "https://www.ui-skills.com/"
   },
@@ -862,24 +880,6 @@
     "license": "unverified",
     "source": "skills-dir",
     "url": "https://www.ui-skills.com/"
-  },
-  "ultragoal": {
-    "author": "Yeachan Heo",
-    "license": "MIT",
-    "source": "oh-my-claudecode",
-    "url": "https://github.com/Yeachan-Heo/oh-my-claudecode"
-  },
-  "ultraqa": {
-    "author": "Yeachan Heo",
-    "license": "MIT",
-    "source": "oh-my-claudecode",
-    "url": "https://github.com/Yeachan-Heo/oh-my-claudecode"
-  },
-  "ultrawork": {
-    "author": "Yeachan Heo",
-    "license": "MIT",
-    "source": "oh-my-claudecode",
-    "url": "https://github.com/Yeachan-Heo/oh-my-claudecode"
   },
   "unocss": {
     "author": "various",
@@ -893,17 +893,12 @@
     "source": "superpowers",
     "url": "https://github.com/anthropics/claude-plugins-official"
   },
-  "using-superpowers": {
+  "using-pantheon": {
     "author": "Jesse Vincent",
     "license": "MIT",
+    "renamedFrom": "using-superpowers",
     "source": "superpowers",
     "url": "https://github.com/anthropics/claude-plugins-official"
-  },
-  "vercel-labs-web-design-guidelines": {
-    "author": "various",
-    "license": "unverified",
-    "source": "skills-dir",
-    "url": "https://www.ui-skills.com/"
   },
   "verification-before-completion": {
     "author": "Jesse Vincent",
@@ -947,6 +942,20 @@
     "source": "skills-dir",
     "url": "https://www.ui-skills.com/"
   },
+  "vue-best-practices": {
+    "author": "various",
+    "license": "MIT License",
+    "renamedFrom": "antfu-vue-best-practices",
+    "source": "skills-dir",
+    "url": "https://www.ui-skills.com/"
+  },
+  "vue-best-practices-deep": {
+    "author": "various",
+    "license": "unverified",
+    "renamedFrom": "vuejs-ai-vue-best-practices",
+    "source": "skills-dir",
+    "url": "https://www.ui-skills.com/"
+  },
   "vue-debug-guides": {
     "author": "various",
     "license": "unverified",
@@ -965,27 +974,44 @@
     "source": "skills-dir",
     "url": "https://www.ui-skills.com/"
   },
+  "vue-philosophy": {
+    "author": "various",
+    "license": "unverified",
+    "renamedFrom": "antfu",
+    "source": "skills-dir",
+    "url": "https://www.ui-skills.com/"
+  },
   "vue-pinia-best-practices": {
     "author": "various",
     "license": "unverified",
     "source": "skills-dir",
     "url": "https://www.ui-skills.com/"
   },
-  "vuejs-ai-vue-best-practices": {
+  "vue-router-practices": {
     "author": "various",
-    "license": "unverified",
+    "license": "MIT License",
+    "renamedFrom": "antfu-vue-router-best-practices",
     "source": "skills-dir",
     "url": "https://www.ui-skills.com/"
   },
-  "vuejs-ai-vue-router-best-practices": {
+  "vue-router-practices-deep": {
     "author": "various",
     "license": "unverified",
+    "renamedFrom": "vuejs-ai-vue-router-best-practices",
     "source": "skills-dir",
     "url": "https://www.ui-skills.com/"
   },
-  "vuejs-ai-vue-testing-best-practices": {
+  "vue-testing-practices": {
+    "author": "various",
+    "license": "MIT License",
+    "renamedFrom": "antfu-vue-testing-best-practices",
+    "source": "skills-dir",
+    "url": "https://www.ui-skills.com/"
+  },
+  "vue-testing-practices-deep": {
     "author": "various",
     "license": "unverified",
+    "renamedFrom": "vuejs-ai-vue-testing-best-practices",
     "source": "skills-dir",
     "url": "https://www.ui-skills.com/"
   },
@@ -998,6 +1024,20 @@
   "wcag-audit-patterns": {
     "author": "various",
     "license": "unverified",
+    "source": "skills-dir",
+    "url": "https://www.ui-skills.com/"
+  },
+  "web-design-guidelines": {
+    "author": "various",
+    "license": "unverified",
+    "renamedFrom": "vercel-labs-web-design-guidelines",
+    "source": "skills-dir",
+    "url": "https://www.ui-skills.com/"
+  },
+  "web-design-taste": {
+    "author": "various",
+    "license": "unverified",
+    "renamedFrom": "antfu-web-design-guidelines",
     "source": "skills-dir",
     "url": "https://www.ui-skills.com/"
   },
