@@ -147,15 +147,21 @@ def gate_check(turn: dict) -> list:
     return problems
 
 
+_GATE_STATE = os.path.join(os.path.expanduser("~"), ".claude", "pantheon", "gate-state.json")
+
+
 def _gate_state_path():
-    return os.path.join(os.path.expanduser("~"), ".claude", "pantheon", "gate-state.json")
+    return _GATE_STATE
 
 
 def gate_blocks_used(session: str, turn_key: str) -> int:
+    """Per-session records — concurrent sessions must not clobber each other's
+    block counters (that would defeat the 2-blocks-then-yield escape hatch)."""
     try:
         st = json.load(open(_gate_state_path(), encoding="utf-8"))
-        if st.get("session") == session and st.get("turn_key") == turn_key:
-            return int(st.get("blocks", 0))
+        rec = st.get(session) or {}
+        if rec.get("turn_key") == turn_key:
+            return int(rec.get("blocks", 0))
     except Exception:
         pass
     return 0
@@ -164,9 +170,17 @@ def gate_blocks_used(session: str, turn_key: str) -> int:
 def gate_record_block(session: str, turn_key: str, used: int) -> None:
     try:
         p = _gate_state_path()
+        try:
+            st = json.load(open(p, encoding="utf-8"))
+        except Exception:
+            st = {}
+        if not isinstance(st, dict) or "session" in st:
+            st = {}  # migrate away from the old single-slot format
+        st[session] = {"turn_key": turn_key, "blocks": used + 1}
+        if len(st) > 40:
+            st = {session: st[session]}
         os.makedirs(os.path.dirname(p), exist_ok=True)
-        json.dump({"session": session, "turn_key": turn_key, "blocks": used + 1},
-                  open(p, "w", encoding="utf-8"))
+        json.dump(st, open(p, "w", encoding="utf-8"))
     except Exception:
         pass
 
@@ -272,6 +286,21 @@ def selftest() -> int:
     assert route_outcome("hydra", {"lethe"}) == "overridden"
     assert route_outcome("hydra", set()) == "ignored"
     assert route_outcome("my-custom", {"my-custom"}) == "accepted"
+    # gate block counters are per-session — concurrent sessions must not clobber
+    global _GATE_STATE
+    import tempfile
+    _GATE_STATE = os.path.join(tempfile.mkdtemp(prefix="pantheon-gs-"), "g.json")
+    gate_record_block("sessA", "t1", 0)
+    gate_record_block("sessB", "t9", 0)
+    gate_record_block("sessA", "t1", 1)
+    assert gate_blocks_used("sessA", "t1") == 2
+    assert gate_blocks_used("sessB", "t9") == 1
+    assert gate_blocks_used("sessA", "t2") == 0  # new turn resets
+    # old single-slot format migrates instead of crashing
+    json.dump({"session": "legacy", "turn_key": "x", "blocks": 2},
+              open(_GATE_STATE, "w", encoding="utf-8"))
+    gate_record_block("sessC", "t1", 0)
+    assert gate_blocks_used("sessC", "t1") == 1
     print("selftest ok — capture regex, gate rules (fail/unverified/stub/docs), "
           "modes, route outcomes")
     return 0

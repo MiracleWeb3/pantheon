@@ -34,8 +34,14 @@ CODE_EXT = {"py", "js", "jsx", "ts", "tsx", "go", "rs", "java", "rb", "php", "c"
 STUB_PATTERNS = [
     (re.compile(r"\bTODO\b|\bFIXME\b|\bXXX\b"), "TODO/FIXME"),
     (re.compile(r"\.skip\(|\.only\(|\bxit\(|\bxdescribe\(|@pytest\.mark\.skip"), "skipped/only test"),
-    (re.compile(r"NotImplementedError|not implemented|\bplaceholder\b", re.I), "unimplemented stub"),
+    # NOTE: no bare 'placeholder' — it false-positives on the HTML/JSX attribute
+    (re.compile(r"NotImplementedError|not implemented", re.I), "unimplemented stub"),
 ]
+
+# commands that merely mention a test tool without running one
+NOT_A_TEST_RE = re.compile(
+    r"^\s*(which|command -v|type|grep|rg|cat|echo|find|ls|man|head|tail|"
+    r"pip3? install|pipx|npm i(nstall)?|pnpm (add|i)|yarn add|apt(-get)?|brew)\b")
 
 
 def is_code_file(path: str) -> bool:
@@ -58,16 +64,25 @@ def _content(obj):
     return c if c is not None else obj.get("content")
 
 
+MACHINE_USER_RE = re.compile(
+    r"^This session is being continued from a previous conversation|"
+    r"<command-name>|<local-command-|^\[Request interrupted")
+
+
 def is_real_user(obj) -> bool:
-    """A genuine user prompt: user-typed text, not a tool_result carrier."""
+    """A genuine user prompt: user-typed text — not a tool_result carrier, and
+    not machine-generated user-typed entries (compact summaries, local-command
+    echoes), which would otherwise poison capture and truncate the turn scan."""
     if not obj or obj.get("type") != "user" or obj.get("isMeta"):
         return False
     c = _content(obj)
     if isinstance(c, str):
-        return bool(c.strip())
+        return bool(c.strip()) and not MACHINE_USER_RE.search(c)
     if isinstance(c, list):
         kinds = {p.get("type") for p in c if isinstance(p, dict)}
-        return "text" in kinds and "tool_result" not in kinds
+        if "text" not in kinds or "tool_result" in kinds:
+            return False
+        return not MACHINE_USER_RE.search(user_text(obj))
     return False
 
 
@@ -163,11 +178,14 @@ def scan_turn(path: str) -> dict:
                     body = body if isinstance(body, str) else ""
                     rec["seen_result"] = True
                     rec["failed"] = bool(p.get("is_error")) or bool(FAIL_RE.search(body[-4000:]))
-    # final verdict per test command (a later re-run overrides an earlier fail)
+    # final verdict per test command (a later re-run overrides an earlier fail);
+    # mentions of test tools inside which/grep/install/etc. don't count
     tests, final = [], {}
     verified = False
     for rec in bash.values():
         cmd = rec["command"]
+        if NOT_A_TEST_RE.search(cmd):
+            continue
         if VERIFY_RE.search(cmd) and rec["seen_result"]:
             verified = True
         if TEST_RE.search(cmd) and rec["seen_result"]:
@@ -180,13 +198,18 @@ def scan_turn(path: str) -> dict:
 
 def introduced_stubs(edits) -> list:
     """Stub markers present in NEW content but not in the replaced content,
-    code files only. Returns ['file: kind', ...]."""
+    code files only. Full-file Writes have no old baseline, so they are skipped
+    — a pre-existing TODO in a rewritten file is not 'introduced'. Returns
+    ['file: kind', ...]."""
     found = []
     for e in edits:
         if not is_code_file(e.get("file", "")):
             continue
+        old = e.get("old") or ""
+        if not old:
+            continue  # Write/new-file: no reliable diff baseline
         for rx, kind in STUB_PATTERNS:
-            if len(rx.findall(e.get("new") or "")) > len(rx.findall(e.get("old") or "")):
+            if len(rx.findall(e.get("new") or "")) > len(rx.findall(old)):
                 found.append(f"{os.path.basename(e['file'])}: {kind}")
     return sorted(set(found))
 
@@ -258,7 +281,22 @@ def selftest() -> int:
     assert context_pct("/nonexistent") == -1
     assert is_code_file("a/b.py") and not is_code_file("a/b.md") and not is_code_file("x")
     assert not FAIL_RE.search("0 failed, 12 passed")
-    print("selftest ok — turn scan, stub diff, test verdicts, context%")
+    # gate false-positive regressions (adversarial review, mission plugin-quality):
+    # 1) full-file Write keeps a pre-existing TODO -> NOT an introduced stub
+    assert introduced_stubs([{"file": "a.py", "new": "x=1  # TODO old note", "old": ""}]) == []
+    # 2) HTML placeholder attribute is not an 'unimplemented stub'
+    assert introduced_stubs([{"file": "L.tsx", "new": '<input placeholder="Email">',
+                              "old": "<input>"}]) == []
+    # 3) mentioning a test tool is not running one
+    assert NOT_A_TEST_RE.search("which pytest") and NOT_A_TEST_RE.search("pip install pytest")
+    assert NOT_A_TEST_RE.search("grep -rn pytest .") and not NOT_A_TEST_RE.search("pytest -q")
+    # 4) machine-generated 'user' entries are not real prompts
+    assert not is_real_user({"type": "user", "message": {"content":
+        "This session is being continued from a previous conversation. Summary: ..."}})
+    assert not is_real_user({"type": "user", "message": {"content":
+        "<command-name>/compact</command-name> ran"}})
+    assert is_real_user({"type": "user", "message": {"content": "fix the bug please"}})
+    print("selftest ok — turn scan, stub diff, test verdicts, context%, gate FP guards")
     return 0
 
 
