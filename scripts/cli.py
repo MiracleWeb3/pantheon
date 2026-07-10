@@ -127,12 +127,13 @@ def _spend():
             try:
                 e = json.loads(ln)
                 t = datetime.datetime.fromisoformat(e["t"]).timestamp()
+                d = float(e["d"])
+                if t >= week:
+                    s7 += d
+                    if t >= day:
+                        s1 += d
             except Exception:
-                continue
-            if t >= week:
-                s7 += e["d"]
-                if t >= day:
-                    s1 += e["d"]
+                continue  # one bad line must not abort the whole scan
     except Exception:
         pass
     return s1, s7

@@ -150,14 +150,22 @@ def scan_turn(path: str) -> dict:
     edits, skills, bash = [], [], {}
     out_tokens = 0
     last_user = ""
+    seen_msg_ids = set()
     for obj in entries:
         if is_real_user(obj):
             last_user = user_text(obj) or last_user
         t = obj.get("type")
         c = _content(obj)
         if t == "assistant":
-            u = (obj.get("message") or {}).get("usage") or {}
-            out_tokens += u.get("output_tokens", 0) or 0
+            msg = obj.get("message") or {}
+            u = msg.get("usage") or {}
+            mid = msg.get("id")
+            # Claude Code writes one JSONL line per content block, each carrying
+            # the SAME usage — count each message id once or tokens inflate 2-5x
+            if not mid or mid not in seen_msg_ids:
+                out_tokens += u.get("output_tokens", 0) or 0
+                if mid:
+                    seen_msg_ids.add(mid)
             if not isinstance(c, list):
                 continue
             for p in c:
@@ -265,7 +273,12 @@ def selftest() -> int:
         {"type": "user", "message": {"content": "old turn, ignore me"}},
         {"type": "assistant", "message": {"content": [], "usage": {"output_tokens": 99}}},
         {"type": "user", "message": {"content": "fix the parser and run tests"}},
-        {"type": "assistant", "message": {"usage": {"output_tokens": 50,
+        # same message split across two JSONL lines (one per block) — usage
+        # repeats on both; it must be counted ONCE
+        {"type": "assistant", "message": {"id": "m1", "usage": {"output_tokens": 50,
+            "input_tokens": 100_000, "cache_read_input_tokens": 0},
+            "content": [{"type": "text", "text": "on it"}]}},
+        {"type": "assistant", "message": {"id": "m1", "usage": {"output_tokens": 50,
             "input_tokens": 100_000, "cache_read_input_tokens": 0},
             "content": [
               {"type": "tool_use", "id": "t1", "name": "Edit",

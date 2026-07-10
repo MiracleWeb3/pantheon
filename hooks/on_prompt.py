@@ -275,12 +275,13 @@ def _ledger_sums():
             try:
                 e = json.loads(ln)
                 t = datetime.datetime.fromisoformat(e["t"]).timestamp()
+                d = float(e["d"])
+                if now - t <= 7 * 86400:
+                    s7 += d
+                    if now - t <= 86400:
+                        s24 += d
             except Exception:
-                continue
-            if now - t <= 7 * 86400:
-                s7 += e["d"]
-                if now - t <= 86400:
-                    s24 += e["d"]
+                continue  # one bad line must not abort the whole scan
     except Exception:
         pass
     return s24, s7
