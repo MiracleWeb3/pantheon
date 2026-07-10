@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/plugin.schema.json",
   "name": "pantheon",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "One install, everything: 16 disciplines (13 mythic + the dashboard/doctor/forge power tools) that auto-route from plain language and LEARN what you accept; retrieval-augmented memory that recalls past lessons by itself; a verification gate that blocks fake 'done' (failing tests / TODO stubs / unverified code); receipts + TUI dashboard; budget caps (warn/ask/block); team packs; custom-discipline forging; cross-agent export; a rich statusline HUD. PLUS 172 merged skills under pantheon-native names — 188 total (sources attributed, licenses retained, old→new map in CREDITS.md). Zero dependencies, fail-silent hooks, configurable full/economy/quiet.",
   "author": {
     "name": "CyberPunk"
