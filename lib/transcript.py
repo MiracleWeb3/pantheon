@@ -191,21 +191,21 @@ def scan_turn(path: str) -> dict:
                     body = body if isinstance(body, str) else ""
                     rec["seen_result"] = True
                     rec["failed"] = bool(p.get("is_error")) or bool(FAIL_RE.search(body[-4000:]))
-    # final verdict per test command (a later re-run overrides an earlier fail);
-    # judged per shell segment: `which pytest` doesn't count, but the pytest in
-    # `pip install -e . && pytest -q` does
+    # final verdict per check command (a later re-run overrides an earlier
+    # fail); judged per shell segment: `which pytest` doesn't count, but the
+    # pytest in `pip install -e . && pytest -q` does. Tests and build/lint
+    # commands are tracked alike — a FAILING build is not verification, it's
+    # a failing check.
     tests, final = [], {}
-    verified = False
     for rec in bash.values():
         cmd = rec["command"]
         if not rec["seen_result"]:
             continue
-        if _runs_matching(cmd, VERIFY_RE):
-            verified = True
-        if _runs_matching(cmd, TEST_RE):
+        if _runs_matching(cmd, TEST_RE) or _runs_matching(cmd, VERIFY_RE):
             final[cmd.strip()[:60]] = rec["failed"]
     for cmd, failed in final.items():
         tests.append({"command": cmd, "failed": failed})
+    verified = any(not f for f in final.values())
     return {"last_user": last_user, "edits": edits, "tests": tests,
             "verified": verified, "skills": skills, "out_tokens": out_tokens}
 
@@ -286,7 +286,8 @@ def selftest() -> int:
     assert t["out_tokens"] == 50, t["out_tokens"]          # old turn's 99 excluded
     assert t["edits"] and t["edits"][0]["file"] == "/x/app.py"
     assert t["tests"] == [{"command": "pytest -q tests/", "failed": True}]
-    assert t["verified"] and t["skills"] == ["pantheon:hydra"]
+    assert not t["verified"]  # the only check FAILED — that is not verification
+    assert t["skills"] == ["pantheon:hydra"]
     assert introduced_stubs(t["edits"]) == ["app.py: TODO/FIXME"]
     # a re-run that passes overrides the earlier fail
     rows.append({"type": "assistant", "message": {"content": [
@@ -298,6 +299,22 @@ def selftest() -> int:
         f.write("\n".join(json.dumps(r) for r in rows) + "\n")
     t2 = scan_turn(p)
     assert t2["tests"] == [{"command": "pytest -q tests/", "failed": False}], t2["tests"]
+    assert t2["verified"]  # a passing re-run restores verification
+    # a failing BUILD is a failing check, not verification
+    rows2 = [
+        {"type": "user", "message": {"content": "wire up the export module"}},
+        {"type": "assistant", "message": {"content": [
+            {"type": "tool_use", "id": "b9", "name": "Bash",
+             "input": {"command": "npm run build"}}]}},
+        {"type": "user", "message": {"content": [
+            {"type": "tool_result", "tool_use_id": "b9", "is_error": True,
+             "content": "error TS2304: Cannot find name"}]}},
+    ]
+    p2 = os.path.join(d, "t2.jsonl")
+    with open(p2, "w", encoding="utf-8") as f:
+        f.write("\n".join(json.dumps(r) for r in rows2) + "\n")
+    tb = scan_turn(p2)
+    assert not tb["verified"] and tb["tests"] == [{"command": "npm run build", "failed": True}]
     assert 45 <= context_pct(p) <= 55                       # 100k of 200k
     assert context_pct("/nonexistent") == -1
     assert is_code_file("a/b.py") and not is_code_file("a/b.md") and not is_code_file("x")

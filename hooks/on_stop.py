@@ -136,12 +136,12 @@ def gate_check(turn: dict) -> list:
     problems = []
     if code_edits:
         failing = [t["command"] for t in turn.get("tests", []) if t.get("failed")]
-        if failing:
-            problems.append("tests are failing (" + "; ".join(failing[:3]) + ")")
         added = sum(e.get("added", 0) for e in code_edits)
-        if added >= 15 and not turn.get("verified"):
+        if failing:
+            problems.append("verification is failing (" + "; ".join(failing[:3]) + ")")
+        elif added >= 15 and not turn.get("verified"):
             problems.append(f"{len(code_edits)} code file(s) changed (~{added} lines) "
-                            "but no verification ran (no tests/build/lint/selftest)")
+                            "but no verification passed (tests/build/lint/selftest)")
     stubs = _tr.introduced_stubs(turn.get("edits", []))
     if stubs:
         problems.append("stubs introduced: " + ", ".join(stubs[:5]))

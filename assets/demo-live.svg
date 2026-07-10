@@ -41,7 +41,7 @@
 
     <text x="24" y="215" fill="#6e7681" font-style="italic" class="l d6">⋯ hydra works: reproduces, root-causes, edits, runs the tests ⋯</text>
 
-    <text x="24" y="243" fill="#f85149" class="gate">⛔ pantheon gate — do not finish yet: tests are failing (pytest -q: 1 failed)</text>
+    <text x="24" y="243" fill="#f85149" class="gate">⛔ pantheon gate — do not finish yet: verification is failing (pytest -q: 1 failed)</text>
     <text x="24" y="264" fill="#3fb950" class="l d8">✓ fixed at the root · pytest -q: 3 passed · regression test added</text>
     <text x="24" y="285" fill="#8b949e" class="l d9">🧾 receipt: hydra — "root-caused inbound clock reuse, sealed" · 1.9k tok</text>
 
