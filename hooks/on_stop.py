@@ -269,8 +269,10 @@ def selftest() -> int:
     turn3 = {"edits": [{"file": "a.py", "added": 3, "new": "x=1", "old": ""}],
              "tests": [], "verified": False}
     assert gate_check(turn3) == []
-    # gate: stub introduced in a code file is caught even when verified
-    turn4 = {"edits": [{"file": "a.py", "added": 2, "new": "# TODO later", "old": ""}],
+    # gate: stub introduced via an Edit is caught even when verified
+    # (a Write with no old baseline is deliberately NOT flagged — see transcript.py)
+    turn4 = {"edits": [{"file": "a.py", "added": 2, "new": "x = 1  # TODO later",
+                        "old": "x = 1"}],
              "tests": [{"command": "pytest", "failed": False}], "verified": True}
     assert any("stubs" in p for p in gate_check(turn4))
     # docs-only turns never gate
