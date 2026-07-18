@@ -125,7 +125,7 @@ Track state in `.omc/ultraqa-state.json`:
 
 ## Cancellation
 
-User can cancel with `/pantheon:cancel` which clears the state file.
+User can cancel with `/pantheon:atropos` which clears the state file.
 
 ## Important Rules
 

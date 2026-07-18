@@ -86,7 +86,7 @@ Validate before decomposing or running anything:
 - Reject unsupported agent types up front. `/pantheon:engine-teams` only supports **`claude`**, **`codex`**, **`gemini`**, **`antigravity`**, **`grok`**, and **`cursor`**.
 - Treat Cursor workers as executor-style only. Accept `N:cursor` and `N:cursor:executor`; reject or reframe reviewer, critic, security-reviewer, verdict, or final-approval work onto native Claude/OMC reviewer agents.
 - If the user asks for an unsupported type such as `expert`, explain that `/pantheon:engine-teams` launches external CLI workers only.
-- For native Claude Code team agents/roles, direct them to **`/pantheon:team`** instead.
+- For native Claude Code team agents/roles, direct them to **`/pantheon:argonauts`** instead.
 
 ### Phase 2: Decompose task
 
@@ -188,7 +188,7 @@ If encountered, switch to `omc team ...` CLI commands.
 | ---------------------------- | ----------------------------------- | ----------------------------------------------------------------------------------- |
 | `not inside tmux`            | Requested in-place pane topology from a non-tmux surface | Start tmux and rerun, or let `omc team` use its detached-session fallback           |
 | `cmux surface detected`      | Running inside cmux without `$TMUX` | Use the normal `omc team ...` flow; OMC will create native cmux worker splits      |
-| `Unsupported agent type`     | Requested agent is not claude/codex/gemini/antigravity/grok/cursor | Use `claude`, `codex`, `gemini`, `antigravity`, `grok`, or `cursor`; for native Claude Code agents use `/pantheon:team` |
+| `Unsupported agent type`     | Requested agent is not claude/codex/gemini/antigravity/grok/cursor | Use `claude`, `codex`, `gemini`, `antigravity`, `grok`, or `cursor`; for native Claude Code agents use `/pantheon:argonauts` |
 | `codex: command not found`   | Codex CLI not installed             | `npm install -g @openai/codex`                                                      |
 | `gemini: command not found`  | Gemini CLI not installed            | `npm install -g @google/gemini-cli` (enterprise/API-key tier)                       |
 | `agy: command not found`     | Antigravity CLI not installed       | Install per the [official instructions](https://antigravity.google)                |

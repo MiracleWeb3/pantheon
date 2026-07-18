@@ -500,7 +500,7 @@ After the spec is written, mark it `pending approval` and present execution opti
 
 1. **Refine with omc-plan consensus (Recommended)**
    - Description: "Consensus-refine this spec with Planner/Architect/Critic, then stop for explicit execution approval. Maximum quality."
-   - Action: Only after the user selects this option, invoke `Skill("pantheon:plan")` with `--consensus --direct` flags and the spec file path as context. The `--direct` flag skips the omc-plan skill's interview phase (the deep interview already gathered requirements), while `--consensus` triggers the Planner/Architect/Critic loop. When consensus completes and produces a plan in `.omc/plans/`, stop with that plan marked `pending approval`; do not automatically invoke autopilot or any other execution skill.
+   - Action: Only after the user selects this option, invoke `Skill("pantheon:boule")` with `--consensus --direct` flags and the spec file path as context. The `--direct` flag skips the omc-plan skill's interview phase (the deep interview already gathered requirements), while `--consensus` triggers the Planner/Architect/Critic loop. When consensus completes and produces a plan in `.omc/plans/`, stop with that plan marked `pending approval`; do not automatically invoke autopilot or any other execution skill.
    - Pipeline: `deep-interview spec → explicit approval to refine → omc-plan --consensus --direct → pending approval → separate execution approval`
 
 2. **Execute with autopilot**
@@ -513,7 +513,7 @@ After the spec is written, mark it `pending approval` and present execution opti
 
 4. **Execute with team**
    - Description: "N coordinated parallel agents — fastest execution for large specs"
-   - Action: Invoke `Skill("pantheon:team")` with the spec file path as the shared plan.
+   - Action: Invoke `Skill("pantheon:argonauts")` with the spec file path as the shared plan.
 
 5. **Refine further**
    - Description: "Continue interviewing to improve clarity (current: {score}%)"
@@ -740,7 +740,7 @@ The recommended refinement path chains clarity and feasibility gates, then stops
   → Socratic Q&A until ambiguity ≤ <resolvedThresholdPercent>
   → Spec written to .omc/specs/deep-interview-{slug}.md
   → User explicitly selects "Refine with omc-plan consensus"
-  → /pantheon:plan --consensus --direct (spec as input, skip interview)
+  → /pantheon:boule --consensus --direct (spec as input, skip interview)
     → Planner creates implementation plan from spec
     → Architect reviews for architectural soundness
     → Critic validates quality and testability

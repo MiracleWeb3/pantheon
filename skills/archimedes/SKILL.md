@@ -151,7 +151,7 @@ Pending stages: {{PENDING_STAGES}}
 1. **Max Iterations:** 10 (configurable)
 2. **Continue until:** Promise tag emitted OR max iterations
 3. **State tracking:** Persist after each stage completion
-4. **Cancellation:** `/pantheon:cancel` or "stop", "cancel"
+4. **Cancellation:** `/pantheon:atropos` or "stop", "cancel"
 
 ### AUTO Mode Example
 
@@ -486,7 +486,7 @@ Optional settings in `.claude/settings.json`:
 ## Cancellation
 
 ```
-/pantheon:cancel
+/pantheon:atropos
 ```
 
 Or say: "stop research", "cancel research", "abort"

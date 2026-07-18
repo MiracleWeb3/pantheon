@@ -124,7 +124,7 @@ After confirmation, update state to `current_phase: "trace-executing"`.
 
 ## Phase 3: Trace Execution
 
-Run the trace autonomously using the `pantheon:trace` skill's behavioral contract.
+Run the trace autonomously using the `pantheon:ichnos` skill's behavioral contract.
 
 ### Team Mode Orchestration
 
@@ -323,7 +323,7 @@ If the guidance gate does not apply, or the pre-flight passes, present execution
 
 1. **Ralplan → Autopilot (Recommended)**
    - Description: "3-stage pipeline: consensus-refine this spec with Planner/Architect/Critic, then execute with full autopilot. Maximum quality."
-   - Action: Invoke `Skill("pantheon:plan")` with `--consensus --direct` flags and the spec file path (`spec_path` from state) as context. The `--direct` flag skips the omc-plan skill's interview phase (the deep-dive interview already gathered requirements), while `--consensus` triggers the Planner/Architect/Critic loop. When consensus completes and produces a plan in `.omc/plans/`, invoke `Skill("pantheon:automedon")` with the consensus plan as Phase 0+1 output — autopilot skips both Expansion and Planning, starting directly at Phase 2 (Execution).
+   - Action: Invoke `Skill("pantheon:boule")` with `--consensus --direct` flags and the spec file path (`spec_path` from state) as context. The `--direct` flag skips the omc-plan skill's interview phase (the deep-dive interview already gathered requirements), while `--consensus` triggers the Planner/Architect/Critic loop. When consensus completes and produces a plan in `.omc/plans/`, invoke `Skill("pantheon:automedon")` with the consensus plan as Phase 0+1 output — autopilot skips both Expansion and Planning, starting directly at Phase 2 (Execution).
    - Pipeline: `deep-dive spec → omc-plan --consensus --direct → autopilot execution`
 
 2. **Execute with autopilot (skip ralplan)**
@@ -336,7 +336,7 @@ If the guidance gate does not apply, or the pre-flight passes, present execution
 
 4. **Execute with team**
    - Description: "N coordinated parallel agents — fastest execution for large specs."
-   - Action: Invoke `Skill("pantheon:team")` with the spec file path as the shared plan.
+   - Action: Invoke `Skill("pantheon:argonauts")` with the spec file path as the shared plan.
 
 5. **Refine further**
    - Description: "Continue interviewing to improve clarity (current: {score}%)."
@@ -512,7 +512,7 @@ Deep-dive's output (`.omc/specs/deep-dive-{slug}.md`) feeds into the standard om
   → Trace (3 parallel lanes) + Interview (Socratic Q&A)
   → Spec: .omc/specs/deep-dive-{slug}.md
 
-  → /pantheon:plan --consensus --direct (spec as input)
+  → /pantheon:boule --consensus --direct (spec as input)
     → Planner/Architect/Critic consensus
     → Plan: .omc/plans/ralplan-*.md
 

@@ -38,7 +38,7 @@ Most non-trivial software tasks require coordinated phases: understanding requir
 - Parallel execution is used within phases where possible (Phase 2 and Phase 4)
 - QA cycles repeat up to 5 times; if the same error persists 3 times, stop and report the fundamental issue
 - Validation requires approval from all reviewers; rejected items get fixed and re-validated
-- Cancel with `/pantheon:cancel` at any time; progress is preserved for resume
+- Cancel with `/pantheon:atropos` at any time; progress is preserved for resume
 </Execution_Policy>
 
 <Steps>
@@ -75,7 +75,7 @@ Most non-trivial software tasks require coordinated phases: understanding requir
 
 6. **Phase 5 - Cleanup**: Delete all state files on successful completion
    - Remove `.omc/state/autopilot-state.json`, `ralph-state.json`, `ultrawork-state.json`, `ultraqa-state.json`
-   - Run `/pantheon:cancel` for clean exit
+   - Run `/pantheon:atropos` for clean exit
 </Steps>
 
 <Tool_Usage>

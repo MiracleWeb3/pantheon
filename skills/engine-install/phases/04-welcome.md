@@ -40,8 +40,8 @@ Just include these words naturally in your request:
 
 TEAMS:
 Spawn coordinated agents with shared task lists and real-time messaging:
-- /pantheon:team 3:executor "fix all TypeScript errors"
-- /pantheon:team 5:debugger "fix build errors in src/"
+- /pantheon:argonauts 3:executor "fix all TypeScript errors"
+- /pantheon:argonauts 5:debugger "fix build errors in src/"
 Teams use Claude Code's implicit agent team (spawn teammates directly with distinct `name` values; no TeamCreate/TeamDelete in Claude Code 2.1.178+).
 
 MCP SERVERS:
@@ -65,13 +65,13 @@ That's it! Just use Claude Code normally.
 OMC Setup Complete! (Upgraded from 2.x)
 
 GOOD NEWS: Your existing commands still work!
-- /pantheon:sisyphus, /pantheon:hekaton, /pantheon:plan, etc. all still function
+- /pantheon:sisyphus, /pantheon:hekaton, /pantheon:boule, etc. all still function
 
 WHAT'S NEW in 3.0:
 You no longer NEED those commands. Everything is automatic now:
 - Just say "don't stop until done" instead of /pantheon:sisyphus
 - Just say "fast" or "parallel" instead of /pantheon:hekaton
-- Just say "plan this" instead of /pantheon:plan
+- Just say "plan this" instead of /pantheon:boule
 - Just say "stop" instead of /cancel
 
 MAGIC KEYWORDS (power-user shortcuts):
@@ -80,12 +80,12 @@ MAGIC KEYWORDS (power-user shortcuts):
 | ralph | /pantheon:sisyphus | "ralph: fix the bug" |
 | ralplan | /pantheon:sisyphus-plan | "ralplan this feature" |
 | ulw | /pantheon:hekaton | "ulw refactor API" |
-| omc-plan | /pantheon:plan | "plan the endpoints" |
+| omc-plan | /pantheon:boule | "plan the endpoints" |
 | team | (new!) | "/team 3:executor fix errors" |
 
 TEAMS (NEW!):
 Spawn coordinated agents with shared task lists and real-time messaging:
-- /pantheon:team 3:executor "fix all TypeScript errors"
+- /pantheon:argonauts 3:executor "fix all TypeScript errors"
 - Uses Claude Code's implicit agent team (spawn teammates directly with distinct `name` values; no TeamCreate/TeamDelete in Claude Code 2.1.178+)
 
 HUD STATUSLINE:

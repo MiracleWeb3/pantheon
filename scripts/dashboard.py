@@ -2,7 +2,7 @@
 """pantheon dashboard — what the plugin did, caught, spent, and learned.
 
 Full-screen curses TUI on a real terminal (`pantheon dashboard`), plain text
-with `--plain` (what the dashboard skill shows in-session). Reads only local
+with `--plain` (what the clio skill shows in-session). Reads only local
 state: the SQLite store + the HUD's spend ledger. stdlib only, no network.
 
 Self-check: python3 dashboard.py --selftest
