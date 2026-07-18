@@ -6,7 +6,7 @@
 
 **14 disciplines** (11 mythic + 3 power tools) **+ 170 merged skills = 184** — a router that fires the right one, receipts for everything it does, and a verification gate that blocks fake "done" *and benchmarks itself proving it*. For [Claude Code](https://claude.com/claude-code).
 
-![version](https://img.shields.io/badge/version-3.0.0-8957e5?style=flat-square) &nbsp;![license](https://img.shields.io/badge/license-MIT-3fb950?style=flat-square) &nbsp;![Claude Code](https://img.shields.io/badge/Claude_Code-plugin-d97757?style=flat-square) &nbsp;![dependencies](https://img.shields.io/badge/dependencies-none-3fb950?style=flat-square) &nbsp;![skills](https://img.shields.io/badge/skills-184-8957e5?style=flat-square) &nbsp;[![selftests](https://img.shields.io/github/actions/workflow/status/MiracleWeb3/pantheon/selftest.yml?style=flat-square&label=selftests)](https://github.com/MiracleWeb3/pantheon/actions/workflows/selftest.yml) &nbsp;[![gate benchmark](https://img.shields.io/badge/gate_bench-10%2F10_caught_·_0_FP-3fb950?style=flat-square)](BENCHMARKS.md) &nbsp;![last commit](https://img.shields.io/github/last-commit/MiracleWeb3/pantheon?style=flat-square&color=d97757&label=last%20commit)
+![version](https://img.shields.io/badge/version-3.0.1-8957e5?style=flat-square) &nbsp;![license](https://img.shields.io/badge/license-MIT-3fb950?style=flat-square) &nbsp;![Claude Code](https://img.shields.io/badge/Claude_Code-plugin-d97757?style=flat-square) &nbsp;![dependencies](https://img.shields.io/badge/dependencies-none-3fb950?style=flat-square) &nbsp;![skills](https://img.shields.io/badge/skills-184-8957e5?style=flat-square) &nbsp;[![selftests](https://img.shields.io/github/actions/workflow/status/MiracleWeb3/pantheon/selftest.yml?style=flat-square&label=selftests)](https://github.com/MiracleWeb3/pantheon/actions/workflows/selftest.yml) &nbsp;[![gate benchmark](https://img.shields.io/badge/gate_bench-11%2F11_caught_·_0_FP-3fb950?style=flat-square)](BENCHMARKS.md) &nbsp;![last commit](https://img.shields.io/github/last-commit/MiracleWeb3/pantheon?style=flat-square&color=d97757&label=last%20commit)
 
 **[See it work](#what-it-feels-like) · [The disciplines](#the-pantheon) · [Config](#configuration) · [The HUD](#the-hud-optional) · [CLI](#the-store-and-the-cli) · [Benchmarks](BENCHMARKS.md) · [Credits](CREDITS.md)**
 
@@ -32,7 +32,7 @@ Every move is visible: the router says **why** a discipline fired, the disciplin
 
 <sub>Staged frames, real message formats — every line above is the exact text the hooks inject. (An asciinema of a live session is on the wishlist.)</sub>
 
-🛡 **Benchmarked, not asserted** — that gate refusal isn't a mockup: replayed against 20 transcript fixtures on every CI push, it catches **10/10 planted fake-dones** with **0 false positives** → [BENCHMARKS.md](BENCHMARKS.md)
+🛡 **Benchmarked, not asserted** — that gate refusal isn't a mockup: replayed against 21 transcript fixtures on every CI push, it catches **10/10 planted fake-dones** with **0 false positives** → [BENCHMARKS.md](BENCHMARKS.md)
 
 <table>
 <tr>
@@ -73,7 +73,7 @@ Because they each do *one layer*, and none of them **enforce** anything. Honest 
 | receipts + dashboard of what it did & caught | ✅ | ❌ | ⚠️ HUD only | ❌ |
 | hourly/weekly spend + budget caps | ✅ warn·ask·block | ❌ | ⚠️ display only | ❌ |
 | team packs — repo-inherited config + standards | ✅ | ❌ | ❌ | ❌ |
-| proof — a reproducible benchmark of the enforcement, in CI | ✅ [10/10, 0 FP](BENCHMARKS.md) | ❌ | ❌ | ❌ |
+| proof — a reproducible benchmark of the enforcement, in CI | ✅ [11/11, 0 FP](BENCHMARKS.md) | ❌ | ❌ | ❌ |
 | forge your own discipline, auto-routed | ✅ | ⚠️ authoring guide | ⚠️ skill manager | ❌ |
 | take the disciplines to Cursor / Codex | ✅ export | ❌ | ❌ | ❌ |
 | ships the others' skill sets too | ✅ 172, attributed | — | — | — |
@@ -247,7 +247,7 @@ With none installed, every skill still works.
 - **Zero dependencies.** No npm, no pip, no build step. Skills are Markdown; hooks, CLI, dashboard, HUD, and the MCP server are plain Python 3 (`sqlite3`/`curses` from the stdlib). CI runs the full suite on Linux, macOS, and Windows (Python 3.9 and 3.13); the hooks invoke `python3`, which Windows needs on PATH (the Microsoft Store Python provides `python3.exe`).
 - **Receipts your subagents can file.** A ~200-line stdlib MCP server exposes `pantheon_receipt_add` / `pantheon_stats`, so a dispatched subagent can ask "what do we know about X?" instead of starting blind. Recall itself is BM25-ranked (IDF-weighted, length-normalized) — rare shared terms outweigh common ones.
 - **Four bundled agents, model-tiered.** `reviewer` (opus, read-only), `worker` (sonnet), `researcher` (sonnet, read-only), `scout` (haiku) — the disciplines dispatch to these when the oh-my-claudecode engine isn't installed, so decompose/review work is cost-tiered out of the box.
-- **It measures itself.** [`BENCHMARKS.md`](BENCHMARKS.md): 20 replayed transcript fixtures through the real gate pipeline — 10/10 planted fake-dones caught, 0/10 false positives — re-run on every CI push.
+- **It measures itself.** [`BENCHMARKS.md`](BENCHMARKS.md): 21 replayed transcript fixtures through the real gate pipeline — 10/10 planted fake-dones caught, 0/10 false positives — re-run on every CI push.
 - **Everything ships a self-check.** Every module runs `--selftest`; `pantheon doctor` runs the whole suite plus install checks in one command — including a transcript-format tripwire that catches a Claude Code format change before it silently blinds the gate.
 
 <div align="center">

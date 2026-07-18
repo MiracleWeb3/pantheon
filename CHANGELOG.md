@@ -2,6 +2,16 @@
 
 All notable changes. Versions follow semver; the manifest (`.claude-plugin/plugin.json`) is the source of truth.
 
+## 3.0.1 — 2026-07-19
+
+Gate fix: the `--selftest` pattern had never worked.
+
+- **The bug.** `TEST_RE` listed `--selftest` inside a `\b(...)\b` group. A word boundary can never hold between a space and a leading `-`, so `python3 x.py --selftest` never matched. Measured against a real session transcript: 54 Bash commands in the turn, **0** recognised as checks.
+- **Impact, both directions.** Projects tested via `--selftest` never registered verification, so the gate nagged for work that HAD been verified — and, worse, a *failing* selftest was invisible too, so the gate could not catch its headline case on any stdlib-only project. Pantheon's own suite is `--selftest` throughout: the tool was blind to exactly the project it ships in.
+- **Why CI never caught it.** The `c8_selftest_passing` fixture used `python3 tokenizer.py --selftest`, which also didn't match — it passed as "clean" only because its edit was under the 15-line churn threshold, not because the selftest was recognised. It has been rewritten with a 30-line edit so recognition is the only thing keeping it clean, and a new `t11_failing_selftest` trap covers the other direction. Both fail against the old pattern; both pass against the fix.
+- **Heredoc bodies are no longer judged.** With flag matching working, `python3 - <<'PY' … --selftest … PY` started counting as a check, and a traceback in such a script's output as a *failing* check. A heredoc body is data, not commands — segmentation now cuts at the heredoc marker.
+- Benchmark: 21 fixtures, **11/11 caught, 0/10 false positives**.
+
 ## 3.0.0 — 2026-07-19
 
 The subtraction release: pantheon stops doing memory.

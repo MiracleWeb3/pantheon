@@ -16,13 +16,19 @@ import os, json, re
 
 CTX_WINDOW = 200_000  # mainline context budget, tokens
 
-TEST_RE = re.compile(
-    r"\b(pytest|py_compile|unittest|jest|vitest|mocha|go test|cargo (test|check)|"
-    r"npm (test|run test\w*)|yarn test|pnpm test|node --check|tsc\b|make (test|check)|"
-    r"rspec|phpunit|mix test|dotnet test|gradle test|mvn test|--selftest)\b")
-VERIFY_RE = re.compile(
-    TEST_RE.pattern[:-3] + r"|npm run build|yarn build|pnpm build|cargo build|go build|"
-    r"go vet|ruff|eslint|flake8|pylint|mypy|shellcheck|gcc|g\+\+|javac|swift build)\b")
+# Flag-form checks live in their own branch with NO leading \b. `--selftest`
+# used to sit inside the \b(...)\b group, where it was DEAD: a word boundary
+# can never hold between the space and the '-', so `python3 x.py --selftest`
+# never registered. That blinded the gate on every stdlib-only project (this
+# one included) — both to "verification ran" and to "the check failed".
+_RUNNERS = (r"pytest|py_compile|unittest|jest|vitest|mocha|go test|cargo (test|check)|"
+            r"npm (test|run test\w*)|yarn test|pnpm test|node --check|tsc|make (test|check)|"
+            r"rspec|phpunit|mix test|dotnet test|gradle test|mvn test")
+_BUILDERS = (r"npm run build|yarn build|pnpm build|cargo build|go build|go vet|ruff|"
+             r"eslint|flake8|pylint|mypy|shellcheck|gcc|g\+\+|javac|swift build")
+_FLAGS = r"--selftest|--self-test"
+TEST_RE = re.compile(rf"\b(?:{_RUNNERS})\b|(?:{_FLAGS})\b")
+VERIFY_RE = re.compile(rf"\b(?:{_RUNNERS}|{_BUILDERS})\b|(?:{_FLAGS})\b")
 FAIL_RE = re.compile(
     r"\b[1-9]\d* (failed|errors?)\b|FAILED|Traceback \(most recent|AssertionError|"
     r"npm ERR!|error TS\d|Exit code [1-9]|✗|\bFAIL\b")
@@ -46,8 +52,14 @@ NOT_A_TEST_RE = re.compile(
 
 def _cmd_segments(cmd: str):
     """Split a shell command on && ; | so `pip install x && pytest -q` is judged
-    per segment — the installer prefix must not hide (or fake) the test run."""
-    return [s.strip() for s in re.split(r"&&|\|\||;|\|", cmd or "") if s.strip()]
+    per segment — the installer prefix must not hide (or fake) the test run.
+
+    A heredoc BODY is data, not commands: `python3 - <<'PY' … --selftest … PY`
+    is a script that MENTIONS a check, not a check being run. Judging the body
+    would count arbitrary inline scripts as verification, and a traceback in
+    their output as a failing check — so cut everything from the heredoc on."""
+    cmd = re.split(r"<<-?\s*['\"]?\w+", cmd or "", maxsplit=1)[0]
+    return [s.strip() for s in re.split(r"&&|\|\||;|\|", cmd) if s.strip()]
 
 
 def _runs_matching(cmd: str, rx) -> bool:
@@ -351,6 +363,19 @@ def selftest() -> int:
     assert _runs_matching("pip install -e . && pytest -q", TEST_RE)
     assert _runs_matching("npm install && npm test", VERIFY_RE)
     assert _runs_matching("find . -name 'test_*' | xargs pytest", TEST_RE)
+    # REGRESSION: flag-form checks. These sat inside a \b(...) group where the
+    # boundary could never hold before '-', so every --selftest run was invisible
+    # — the gate nagged for verification that HAD run, and could not see one fail.
+    assert _runs_matching("python3 scripts/doctor.py --selftest", TEST_RE)
+    assert _runs_matching("python3 lib/store.py --selftest", VERIFY_RE)
+    assert _runs_matching("cd lib && python3 store.py --selftest", TEST_RE)
+    assert not _runs_matching("grep -rn selftest .", TEST_RE)      # mention ≠ run
+    assert not _runs_matching("echo --selftesting", TEST_RE)       # \b still guards the tail
+    # a heredoc BODY is data: an inline script that mentions a runner is not a
+    # check, and a traceback in its output must not read as a failing check
+    assert not _runs_matching("python3 - <<'PY'\nx = 'pytest --selftest'\nPY", TEST_RE)
+    assert not _runs_matching("cat <<EOF\nnpm test\nEOF", VERIFY_RE)
+    assert _runs_matching("python3 x.py --selftest && cat <<EOF\nnope\nEOF", TEST_RE)
     # 4) machine-generated 'user' entries are not real prompts — but a real user
     # QUOTING those markers mid-prompt still is
     assert not is_real_user({"type": "user", "message": {"content":

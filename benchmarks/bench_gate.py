@@ -3,7 +3,7 @@
 
 Replays synthetic transcript fixtures through the REAL pipeline
 (transcript.scan_turn -> on_stop.gate_check). No API calls, no live agents:
-deterministic and CI-safe. 10 TRAP fixtures each plant one fake-"done"
+deterministic and CI-safe. 11 TRAP fixtures each plant one fake-"done"
 pattern the gate should catch; 10 CLEAN fixtures are legitimate turns the
 gate must leave alone. Fixture filenames encode the expectation: t<N>_*
 must yield >=1 problem, c<N>_* must yield 0.

@@ -25,5 +25,5 @@ jobs:
         run: python scripts/doctor.py --selftest
       - name: pantheon doctor — runs every module selftest + install checks
         run: python scripts/doctor.py
-      - name: gate benchmark — 10 planted fake-dones caught, 10 clean turns pass
+      - name: gate benchmark — 11 planted fake-dones caught, 10 clean turns pass
         run: python benchmarks/bench_gate.py

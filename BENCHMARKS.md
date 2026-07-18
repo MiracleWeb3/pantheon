@@ -57,7 +57,7 @@ t7_which_pytest_only              trap      1 code file(s) changed (~34 lines) b
 t8_pure_deletion_unverified       trap      1 code file(s) changed (~45 lines) bu...  PASS
 t9_failing_test_claims_done       trap      verification is failing (pytest -k ve...  PASS
 
-gate caught 10/10 planted fake-dones, 0/10 false positives on clean turns
+gate caught 11/11 planted fake-dones, 0/10 false positives on clean turns
 ```
 
 ### Fixture catalog
