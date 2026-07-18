@@ -14,6 +14,9 @@ Runs when the agent tries to finish a turn:
      Hard evidence (failing checks, stubs) blocks at most twice per turn; the
      softer no-verification nudge blocks once — then the gate always yields
      (no infinite loops), and it fails OPEN if its counter can't persist.
+     The budget is keyed on the payload's prompt_id (one per user prompt), with
+     stop_hook_active as a floor — so repeating a prompt never inherits an
+     exhausted counter, and a lost counter still can't run away.
 
 Design constraints: fail-silent (exit 0 on any error), stdlib only.
 Self-check: python3 on_stop.py --selftest
@@ -202,8 +205,8 @@ def _gate_state_path(session: str) -> str:
 
 
 def gate_blocks_used(session: str, turn_key: str) -> int:
-    """turn_key is a hash of the prompt text, so an identical prompt hours later
-    would collide with an exhausted counter — records expire after 2h."""
+    """Blocks already spent on this turn. Records expire after 2h so a stale
+    counter can never mute a later turn."""
     try:
         rec = json.load(open(_gate_state_path(session), encoding="utf-8"))
         if rec.get("turn_key") == turn_key and time.time() - rec.get("ts", 0) < 7200:
@@ -225,7 +228,21 @@ def gate_record_block(session: str, turn_key: str, used: int) -> bool:
         return False
 
 
-def run_gate(turn: dict, cfg: dict, session: str, cwd: str) -> dict:
+def turn_key_for(prompt_id: str, last_user: str) -> str:
+    """Identity of the turn the block counter belongs to. Claude Code stamps
+    every user prompt with a unique prompt_id — use it. Hashing the prompt TEXT
+    (the old key) silently collided: type "continue" twice within the 2h window
+    and the second turn inherited the first turn's exhausted counter, so the
+    gate yielded without ever firing. Short repeated prompts are the norm, and a
+    gate that fails silent fails in the worst direction. Text hash stays only as
+    a fallback for payloads that carry no prompt_id."""
+    if prompt_id:
+        return hashlib.md5(str(prompt_id).encode()).hexdigest()[:12]
+    return hashlib.md5((last_user or "?")[:2000].encode()).hexdigest()[:12]
+
+
+def run_gate(turn: dict, cfg: dict, session: str, cwd: str,
+             prompt_id: str = "", stop_active: bool = False) -> dict:
     """Returns the hook output dict ({} = allow silently)."""
     mode = cfg.get("gate", "block")
     if mode == "off" or not turn.get("edits") and not turn.get("tests"):
@@ -236,7 +253,7 @@ def run_gate(turn: dict, cfg: dict, session: str, cwd: str) -> dict:
     summary = "; ".join(problems)
     if mode == "warn":
         return {"systemMessage": f"⚠ pantheon gate (warn-only): {summary}"}
-    turn_key = hashlib.md5((turn.get("last_user", "") or "?")[:2000].encode()).hexdigest()[:12]
+    turn_key = turn_key_for(prompt_id, turn.get("last_user", ""))
     # hard evidence (failing checks, stubs) earns two blocks; the softer
     # "no verification ran" heuristic gets one nudge, then yields — a repo with
     # no test harness must not lose two turns to a demand it can't satisfy
@@ -244,6 +261,12 @@ def run_gate(turn: dict, cfg: dict, session: str, cwd: str) -> dict:
                for p in problems)
     limit = MAX_BLOCKS_PER_TURN if hard else 1
     used = gate_blocks_used(session, turn_key)
+    # Claude Code sets stop_hook_active once a Stop hook has already blocked this
+    # turn. Trust it as a FLOOR, not a verdict: if our own counter was lost (state
+    # wiped mid-turn) it still proves one block was spent, so the ladder can never
+    # run away — while a live counter keeps the two-block budget others give up.
+    if stop_active:
+        used = max(used, 1)
     if used >= limit:
         return {"systemMessage": f"⚠ pantheon gate yielded after {used} block(s) — still open: {summary}"}
     if not gate_record_block(session, turn_key, used):
@@ -293,7 +316,9 @@ def main() -> int:
         pass
     out = {}
     try:
-        out = run_gate(turn, cfg, session, cwd)
+        out = run_gate(turn, cfg, session, cwd,
+                       prompt_id=payload.get("prompt_id", ""),
+                       stop_active=bool(payload.get("stop_hook_active")))
     except Exception:
         out = {}
     if out:
@@ -408,6 +433,25 @@ def selftest() -> int:
     assert h2.get("decision") == "block" and "Final gate pass" in h2["reason"]
     h3 = run_gate(hardt, {"gate": "block"}, "sHard", "")
     assert "yielded" in h3.get("systemMessage", "")
+    # REGRESSION: two turns whose prompt text is identical ("continue" typed
+    # twice) must each get a full budget. Keying on the text exhausted the
+    # counter on turn 1 and the gate silently never fired again.
+    _GATE_DIR = tempfile.mkdtemp(prefix="pantheon-gk-")
+    same = dict(turn, last_user="continue")
+    assert run_gate(same, {"gate": "block"}, "sK", "", prompt_id="p1").get("decision") == "block"
+    assert run_gate(same, {"gate": "block"}, "sK", "", prompt_id="p1").get("decision") == "block"
+    assert "yielded" in run_gate(same, {"gate": "block"}, "sK", "", prompt_id="p1").get("systemMessage", "")
+    assert run_gate(same, {"gate": "block"}, "sK", "", prompt_id="p2").get("decision") == "block"
+    assert turn_key_for("p1", "continue") != turn_key_for("p2", "continue")
+    assert turn_key_for("", "continue") == turn_key_for("", "continue")  # fallback stable
+    # stop_hook_active is a floor: a wiped counter still can't run away
+    _GATE_DIR = tempfile.mkdtemp(prefix="pantheon-gsa-")
+    assert run_gate(same, {"gate": "block"}, "sA", "", prompt_id="p9",
+                    stop_active=True).get("decision") == "block"   # 1 spent, 1 left
+    _GATE_DIR = tempfile.mkdtemp(prefix="pantheon-gsa2-")           # counter lost
+    soft2 = dict(turn2, last_user="continue")
+    assert "yielded" in run_gate(soft2, {"gate": "block"}, "sB", "", prompt_id="p9",
+                                 stop_active=True).get("systemMessage", "")
     plain = os.path.join(tempfile.mkdtemp(prefix="pantheon-gw-"), "plainfile")
     open(plain, "w").write("x")
     _GATE_DIR = os.path.join(plain, "sub")  # dir creation will fail
