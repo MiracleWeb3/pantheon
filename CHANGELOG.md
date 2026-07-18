@@ -2,6 +2,17 @@
 
 All notable changes. Versions follow semver; the manifest (`.claude-plugin/plugin.json`) is the source of truth.
 
+## 2.0.0 — 2026-07-18
+
+The naming release: every discipline carries its own name now, so nothing routes on ordinary English.
+
+- **Breaking — 21 disciplines renamed.** `dashboard`→`clio`, `doctor`→`asclepius`, `forge`→`hephaestus`, `forge-session`→`hephaestus-session`, `oracle`→`sibyl`, `ask`→`socrates`, `brag`→`kleos`, `budge`→`metron`, `cancel`→`atropos`, `debug`→`theseus`, `learner`→`mathesis`, `plan`→`boule`, `prototype`→`pygmalion`, `release`→`hermes`, `remember`→`anamnesis`, `skill`→`techne`, `team`→`argonauts`, `trace`→`ichnos`, `triage`→`krisis`, `verify`→`basanos`, `wiki`→`stele`.
+- **Why** — a discipline named after a common word gets matched on that word. "my postgres oracle migration is failing" summoned the read-the-docs discipline; "the forge is hot" summoned the skill author; a bug report that happened to say "dashboard chat" put the telemetry ledger on top of the debugging disciplines. Once junk lands on top you stop reading the suggestions at all, which is the exact failure the routing exists to prevent.
+- **Technology names kept** — `vitest`, `shadcn`, `threejs-*`, `vite`, `pnpm`. The name is the search term; nothing is improved by being called something in Greek.
+- **No discoverability cost** — routing reads descriptions as well as names, so every renamed discipline still comes back from a plain sentence about what it does. Checked one by one: "cancel the running mode" finds `atropos`, "guide me through cutting a release" finds `hermes`, "verify this really works before i claim its done" finds `basanos`.
+
+**Migration:** replace `/pantheon:<old>` with `/pantheon:<new>` from the list above. Nothing else changed.
+
 ## 1.4.0 — 2026-07-10
 
 The hardening release: a four-agent adversarial audit (core code, competitive gaps, skills integration, claim-vs-reality), every critical/high finding closed.

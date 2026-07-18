@@ -1,8 +1,8 @@
 {
   "$schema": "https://anthropic.com/claude-code/plugin.schema.json",
   "name": "pantheon",
-  "version": "1.4.0",
-  "description": "One install, everything: 16 mythic disciplines that auto-route from plain language and LEARN what you accept; BM25-ranked memory that recalls past lessons by itself — reachable by subagents via 4 bundled stdlib MCP tools; a verification gate that blocks fake 'done' (failing tests / stubs / unverified diffs) and proves itself with a reproducible benchmark in CI (10/10 fake-dones caught, 0 false positives); receipts + TUI dashboard; budget caps (warn/ask/block); team packs (hardened: clamped, project-scoped); 4 model-tiered agents; custom-discipline forging; cross-agent export; a rich statusline HUD with subscription 5h/weekly meters. PLUS 172 merged skills — 188 total, attributed, licenses retained where published (CREDITS.md). Zero dependencies, fail-silent atomic-state hooks, Linux/macOS/Windows CI, full/economy/quiet presets.",
+  "version": "2.0.0",
+  "description": "One install, everything: 16 mythic disciplines that auto-route from plain language and LEARN what you accept; BM25-ranked memory that recalls past lessons by itself \u2014 reachable by subagents via 4 bundled stdlib MCP tools; a verification gate that blocks fake 'done' (failing tests / stubs / unverified diffs) and proves itself with a reproducible benchmark in CI (10/10 fake-dones caught, 0 false positives); receipts + TUI dashboard; budget caps (warn/ask/block); team packs (hardened: clamped, project-scoped); 4 model-tiered agents; custom-discipline forging; cross-agent export; a rich statusline HUD with subscription 5h/weekly meters. PLUS 172 merged skills \u2014 188 total, attributed, licenses retained where published (CREDITS.md). Zero dependencies, fail-silent atomic-state hooks, Linux/macOS/Windows CI, full/economy/quiet presets.",
   "author": {
     "name": "CyberPunk"
   },
