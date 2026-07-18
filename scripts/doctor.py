@@ -213,7 +213,26 @@ def check_skills(root: str = ""):
         more = "…" if len(set(dups)) > 8 else ""
         return WARN, (f"{len(names)} skills; duplicate names: {shown}{more}"
                       + (f"; {unnamed} without a name" if unnamed else ""))
+    # Every router target must be a discipline that exists. Renaming a skill and
+    # leaving the router pointing at the old name routes prompts into nothing, and
+    # nothing else here notices -- names and duplicates both look fine.
+    dead = _dead_router_targets(os.path.dirname(root))  # root is <base>/skills by now
+    if dead:
+        return WARN, (f"{len(names)} skills, but the router points at "
+                      f"{len(dead)} that do not exist: {', '.join(sorted(dead))}")
     return OK, f"{len(names)} skills, no duplicate names{overhead}"
+
+
+def _dead_router_targets(root: str = ""):
+    base = root or os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    try:
+        src = open(os.path.join(base, "hooks", "on_prompt.py"), encoding="utf-8").read()
+    except OSError:
+        return []
+    targets = re.findall(r'^\s*\("([a-z0-9-]+)",\s*r?"', src, re.M)
+    skills_dir = os.path.join(base, "skills")
+    have = {d for d in os.listdir(skills_dir)} if os.path.isdir(skills_dir) else set()
+    return [t for t in targets if t not in have]
 
 
 def check_transcript_format(projects_dir: str = ""):

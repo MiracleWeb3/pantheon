@@ -30,9 +30,9 @@ try:
 except Exception:
     _config = _store = _paths = _tr = None
 
-OUR_SKILLS = {"ariadne", "oracle", "daedalus", "prometheus", "hydra", "argus", "themis",
+OUR_SKILLS = {"ariadne", "sibyl", "daedalus", "prometheus", "hydra", "argus", "themis",
               "charon", "lethe", "mnemosyne", "athena", "alexandria", "arachne",
-              "dashboard", "doctor", "forge"}
+              "clio", "asclepius", "hephaestus"}
 
 # Phrases that suggest the user is correcting or redirecting — worth a closer
 # look during consolidation. Deliberately broad; consolidation drops the noise.

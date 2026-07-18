@@ -316,9 +316,9 @@ def cmd_pack(a):
 
 
 # ── cross-agent export ───────────────────────────────────────────────────────
-CORE_SKILLS = ["ariadne", "oracle", "daedalus", "prometheus", "hydra", "argus",
+CORE_SKILLS = ["ariadne", "sibyl", "daedalus", "prometheus", "hydra", "argus",
                "themis", "charon", "lethe", "mnemosyne", "athena", "alexandria",
-               "arachne", "dashboard", "doctor", "forge"]
+               "arachne", "clio", "asclepius", "hephaestus"]
 
 
 def _split_frontmatter(body):

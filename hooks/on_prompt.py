@@ -35,13 +35,13 @@ except Exception:
 # Priority-ordered routing table: first match wins.
 # Patterns require word boundaries; all matching is case-insensitive.
 ROUTES = [
-    ("dashboard", r"\b(pantheon (dashboard|stats|status|report)|"
+    ("clio", r"\b(pantheon (dashboard|stats|status|report)|"
                   r"show (me )?(the )?dashboard|"
                   r"what (did|have) (you|we|pantheon) (do|done) (today|this week|lately))\b"),
-    ("doctor", r"\b(pantheon (doctor|is broken|isn'?t working|not working|acting up)|"
+    ("asclepius", r"\b(pantheon (doctor|is broken|isn'?t working|not working|acting up)|"
                r"fix pantheon|(diagnose|repair) (the )?plugin|"
                r"plugin (is )?(broken|not working))\b"),
-    ("forge", r"\b((create|make|forge|scaffold) (a |my )?(new |custom )?(skill|discipline)|"
+    ("hephaestus", r"\b((create|make|forge|scaffold) (a |my )?(new |custom )?(skill|discipline)|"
               r"new (custom )?discipline|custom discipline|"
               r"(share|import) (a |my |this )?(skill|discipline))\b"),
     ("hydra", r"\b(nasty bug|hard bug|difficult bug|bug (keeps|is back|returns|again)|"
@@ -62,7 +62,7 @@ ROUTES = [
     ("themis", r"\b(review (this|my|the)|code review|audit (this|the|my)|"
                r"is this (correct|right|safe)|check my (code|diff|change)|"
                r"find (bugs|issues|problems) in)\b"),
-    ("oracle", r"\b(how (do|to) (i|we|you) use|what'?s the api|which (library|sdk|package)|"
+    ("sibyl", r"\b(how (do|to) (i|we|you) use|what'?s the api|which (library|sdk|package)|"
                r"latest (version|docs)|read the docs|documentation for|"
                r"is there a (library|package|sdk))\b"),
     ("charon", r"\b(commit (this|it|the)|open a pr|pull request|land (it|this)|"
@@ -406,7 +406,7 @@ def selftest() -> int:
         "we need to migrate everything in the entire codebase": "argus",
         "build this right, once and for all": "daedalus",
         "review this diff before I merge": "themis",
-        "how do I use the stripe sdk here": "oracle",
+        "how do I use the stripe sdk here": "sibyl",
         "ok commit this and open a PR": "charon",
         "let's do it test-first please": "prometheus",
         "remember this: I hate one-letter variables": "mnemosyne",
@@ -415,9 +415,9 @@ def selftest() -> int:
         "design the settings page, it looks generic": "athena",
         "build the dependency graph for this project": "arachne",
         "document this decision in the wiki": "alexandria",
-        "show me the pantheon dashboard": "dashboard",
-        "pantheon isn't working, routing went silent": "doctor",
-        "let's forge a new skill for our deploy ritual": "forge",
+        "show me the pantheon dashboard": "clio",
+        "pantheon isn't working, routing went silent": "asclepius",
+        "let's forge a new skill for our deploy ritual": "hephaestus",
     }
     for prompt, want in cases.items():
         got, _, cluster = detect(prompt)
