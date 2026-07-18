@@ -3,7 +3,7 @@
 
 Segments (each shown only when it has real data):
   🏛 discipline · model · effort · ⧗session-time · ▓context% · +adds/-rems ·
-  $session · ⧖1h-spend · wk-spend · ⎇branch · 📥learning-inbox
+  $session · ⧖1h-spend · wk-spend · ⎇branch
 
 Everything is sourced from the real statusline payload
 (model, cost.total_cost_usd, cost.total_duration_ms, cost.total_lines_added/removed,
@@ -74,17 +74,6 @@ def last_route():
     except Exception:
         pass
     return ""
-
-
-def inbox_count(cwd):
-    n = 0
-    for p in (os.path.join(cwd, ".pantheon", "learning-inbox.md"),
-              os.path.join(PANDIR, "learning-inbox.md")):
-        try:
-            n += sum(1 for ln in open(p, encoding="utf-8") if ln.lstrip().startswith("-"))
-        except Exception:
-            pass
-    return n
 
 
 def context_pct(transcript_path):
@@ -378,9 +367,6 @@ def build_line(p):
     br = git_branch(cwd)
     if br:
         seg.append(f"{DIM}⎇ {br}{RESET}")
-    ib = inbox_count(cwd)
-    if ib:
-        seg.append(f"{YELLOW}📥{ib}{RESET}")
     return f" {DIM}·{RESET} ".join(seg)
 
 

@@ -105,7 +105,7 @@ def check_db(path: str = "", fix: bool = False):
                 tail = f", last prune {int((time.time() - last) / 86400)}d ago" if last else ""
             conn.close()
             mb = os.path.getsize(p) / 1e6
-            return OK, (f"store ok — schema v{ver}, {c['lessons']} lessons, "
+            return OK, (f"store ok — schema v{ver}, "
                         f"{c['receipts']} receipts, {c['routes']} routes "
                         f"({mb:.1f} MB{tail})")
         conn.close()

@@ -1,18 +1,16 @@
 #!/usr/bin/env python3
-"""pantheon prompt hook (UserPromptSubmit) — route, recall, clarify, guard.
+"""pantheon prompt hook (UserPromptSubmit) — route, clarify, guard.
 
-Four jobs on every user prompt:
+Three jobs on every user prompt:
   1. ROUTE — detect which discipline the prompt calls for and inject a hint so
      the agent invokes the right pantheon skill automatically. Explicit always
      beats automatic. Custom routes from config win over built-ins. ADAPTIVE:
      every fire is logged with its outcome; a route you keep ignoring demotes
      itself to a soft suggestion (decayed stats — old evidence fades).
-  2. RECALL — retrieval-augmented memory: match the prompt against captured
-     lessons and inject the top 1–3 relevant ones. Memory that surfaces itself.
-  3. CLARIFY — a broad, unanchored build request (no files/functions/specs
+  2. CLARIFY — a broad, unanchored build request (no files/functions/specs
      named) triggers 2–3 sharp questions BEFORE any work. Kills wrong-thing-
      built waste at the cheapest possible moment.
-  4. CONTEXT GUARD — when the context window passes the configured fill %%,
+  3. CONTEXT GUARD — when the context window passes the configured fill %%,
      inject a checkpoint directive so /compact or /clear loses nothing.
 
 Design constraints:
@@ -69,16 +67,11 @@ ROUTES = [
                r"push (this|it|the)|finish the branch|ready to merge)\b"),
     ("prometheus", r"\b(tdd|test[- ]first|test[- ]driven|red[- ]green|"
                    r"write (the )?tests? (first|before))\b"),
-    ("mnemosyne", r"\b(remember (this|that)|don'?t forget|from now on|"
-                  r"always do|never do|my preference|learn from this)\b"),
     ("lethe", r"\b(simplest|minimal(ist)?|yagni|over[- ]?engineer(ed|ing)?|"
               r"too (complex|complicated)|keep it simple|do less|bloat(ed)?)\b"),
     ("arachne", r"\b(map (the|this|our)? ?(code ?base|repo|project|dependencies)|"
                 r"build (the|a)? ?(graph|dependency map)|graphify|knowledge graph|"
                 r"visuali[sz]e (the )?(code ?base|repo|dependencies)|dependency (map|graph))\b"),
-    ("alexandria", r"\b(document (this|the|it)|write (it|this) (to the )?(wiki|docs)|"
-                   r"(add|update) (a |the )?(wiki|adr|decision record)|knowledge base|"
-                   r"what do we know about|is there a (doc|page) (on|about))\b"),
     ("ariadne", r"\b(how does\b.{0,40}\bwork|where (is|does|do)|"
                 r"understand (the|this) (code(base)?|repo|project|flow)|"
                 r"get up to speed|orient|walk me through)\b"),
@@ -166,32 +159,6 @@ def route_lines(prompt, cfg, cwd, session):
     return lines, skill
 
 
-def recall_lines(prompt, cfg, cwd, conn=None):
-    """Retrieval-augmented memory: relevant past lessons, or []."""
-    n = int(cfg.get("recall", 0) or 0)
-    if not _store or n <= 0 or len(prompt or "") < 20:
-        return []
-    own = conn is None
-    if own:
-        conn = _store.connect()
-    try:
-        hits = _store.recall(conn, prompt,
-                             keys=_paths.project_name(cwd) if _paths else "", limit=n)
-    finally:
-        if own:
-            conn.close()
-    if not hits:
-        return []
-    lines = ["[PANTHEON RECALL] Lessons captured in past sessions that match this "
-             "prompt — apply what fits, ignore what doesn't:"]
-    now = time.time()
-    for h in hits:
-        age = int(max(0, now - h["ts"]) // 86400)
-        when = "today" if age == 0 else f"{age}d ago"
-        lines.append(f"  • {h['text'][:240]}  ({when})")
-    return lines
-
-
 # ── intent clarifier ─────────────────────────────────────────────────────────
 BIG_RE = re.compile(
     r"\b(build|create|implement|redesign|rewrite|refactor|make|add|develop)\b"
@@ -253,9 +220,8 @@ def context_lines(transcript_path, session, cfg):
                if level == "high" else "filling up")
     return [f"[PANTHEON CONTEXT] The context window is ~{pct}% {urgency}. "
             "Write a checkpoint so nothing is lost to /compact or /clear: the live "
-            "plan, open threads, and key decisions — to durable storage "
-            "(`~/.claude/pantheon/bin/pantheon lesson add \"...\"`, the project wiki, "
-            "or a WIP doc). Then continue the task and suggest /compact at the next "
+            "plan, open threads, and key decisions — to a file in the repo "
+            "(a WIP doc, the plan file, or your notes). Then continue the task and suggest /compact at the next "
             "natural pause."]
 
 
@@ -367,7 +333,7 @@ def main() -> int:
     cwd = payload.get("cwd", "")
     session = payload.get("session_id", "")
     prompt = payload.get("prompt") or payload.get("user_prompt") or ""
-    cfg = _config.load(cwd) if _config else dict(routing="on", recall=0, disciplines={})
+    cfg = _config.load(cwd) if _config else dict(routing="on", disciplines={})
 
     out, routed = [], None
     try:
@@ -381,10 +347,6 @@ def main() -> int:
     try:
         lines, routed = route_lines(prompt, cfg, cwd, session)
         out += lines
-    except Exception:
-        pass
-    try:
-        out += recall_lines(prompt, cfg, cwd)
     except Exception:
         pass
     try:
@@ -409,13 +371,11 @@ def selftest() -> int:
         "how do I use the stripe sdk here": "sibyl",
         "ok commit this and open a PR": "charon",
         "let's do it test-first please": "prometheus",
-        "remember this: I hate one-letter variables": "mnemosyne",
         "this feels over-engineered, keep it simple": "lethe",
         "how does the auth flow work in this repo": "ariadne",
         "design the settings page, it looks generic": "athena",
         "build the dependency graph for this project": "arachne",
-        "document this decision in the wiki": "alexandria",
-        "show me the pantheon dashboard": "clio",
+                "show me the pantheon dashboard": "clio",
         "pantheon isn't working, routing went silent": "asclepius",
         "let's forge a new skill for our deploy ritual": "hephaestus",
     }
@@ -442,9 +402,8 @@ def selftest() -> int:
     # Persistence flag rides along with a route.
     s, p, _ = detect("fix this bug and keep going until it's done")
     assert s == "hydra" and p
-    # Recall path: quiet config or a short prompt stays silent.
-    assert recall_lines("hi", {"recall": 3}, "") == []
-    assert recall_lines("a long enough prompt about things", {"recall": 0}, "") == []
+    # memory belongs to claude-memory-light — this hook must not grow recall back
+    assert "recall_lines" not in globals()
     # Clarifier: vague+large fires; anchored / short / routed / disabled don't.
     on = {"clarify": True}
     assert clarify_lines("build me a booking system for my gym members", on, None)
@@ -479,7 +438,7 @@ def selftest() -> int:
     assert budget_output("hello again friend", cfgw, "s2") == ([], None)
     _ledger_sums, _session_cost = keep
     print("selftest ok — 16 routes, 4 silences, custom routes, persistence, "
-          "recall gates, clarifier, context guard, budget modes")
+          "clarifier, context guard, budget modes")
     return 0
 
 

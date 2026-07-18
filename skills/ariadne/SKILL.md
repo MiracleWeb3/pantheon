@@ -32,7 +32,7 @@ Code shows *what*, rarely *why*. Before changing something that looks wrong, che
 
 ## 3. The memory layer — "what did we already learn"
 
-Cross-session lessons live in the memory bank (`mnemosyne`). Recall relevant ones before starting; a memory that names a file or flag is a hypothesis to **verify against current reality**, not a fact to trust — it reflects what was true when written.
+Past sessions are searchable history, not pantheon's job — `cml search "<keywords>"` if claude-memory-light is installed, otherwise the project's own notes. Either way: a memory that names a file or flag is a hypothesis to **verify against current reality**, not a fact to trust — it reflects what was true when written.
 
 ## The one rule
 

@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 """pantheon MCP server — lets a dispatched subagent reach the store directly.
 
-Only the UserPromptSubmit hook can recall/save today; a subagent has no way
+Only the main session's hooks see the transcript today; a subagent has no way
 to ask "what do we know about X?". This exposes the same store operations
 over MCP stdio so any agent can call them mid-task.
 
 Protocol: JSON-RPC 2.0, one message per line on stdin/stdout (MCP stdio is
 newline-delimited, NOT Content-Length framed). stdlib only, no MCP SDK.
 
-Tools: pantheon_recall, pantheon_lesson_add, pantheon_receipt_add,
+Tools: pantheon_receipt_add,
 pantheon_stats — thin wrappers over lib/store.py, scoped to the cwd's
 project key like the hooks already do.
 
@@ -32,30 +32,6 @@ class RpcError(Exception):
 
 
 TOOLS = [
-    {
-        "name": "pantheon_recall",
-        "description": "Recall past pantheon lessons relevant to a query.",
-        "inputSchema": {
-            "type": "object",
-            "properties": {
-                "query": {"type": "string", "description": "text to match past lessons against"},
-                "limit": {"type": "integer", "description": "max lessons to return (<=5)"},
-            },
-            "required": ["query"],
-        },
-    },
-    {
-        "name": "pantheon_lesson_add",
-        "description": "Save a lesson to the pantheon memory store.",
-        "inputSchema": {
-            "type": "object",
-            "properties": {
-                "text": {"type": "string", "description": "the lesson text"},
-                "tags": {"type": "string", "description": "comma-separated tags"},
-            },
-            "required": ["text"],
-        },
-    },
     {
         "name": "pantheon_receipt_add",
         "description": "File a receipt recording what a discipline/skill did.",
@@ -84,24 +60,6 @@ def _keys():
     return paths.project_name(os.getcwd())
 
 
-def tool_recall(args):
-    conn = _connect()
-    hits = store.recall(conn, args.get("query", ""), keys=_keys(),
-                        limit=min(int(args.get("limit") or 3), 5))
-    conn.close()
-    if not hits:
-        return "no lessons clear the relevance bar for that query"
-    return "\n".join(f"({h['source']}) {h['text']}" for h in hits)
-
-
-def tool_lesson_add(args):
-    conn = _connect()
-    lid = store.add_lesson(conn, args.get("text", ""), tags=args.get("tags", ""),
-                           keys=_keys(), source="mcp")
-    conn.close()
-    return f"lesson #{lid} saved" if lid else "duplicate"
-
-
 def tool_receipt_add(args):
     conn = _connect()
     rid = store.add_receipt(conn, args.get("skill", ""), args.get("note", ""),
@@ -117,15 +75,14 @@ def tool_stats(args):
         "SELECT skill, COUNT(*) n FROM receipts WHERE ts>? GROUP BY skill "
         "ORDER BY n DESC LIMIT 6", (time.time() - 7 * 86400,)).fetchall()
     conn.close()
-    out = (f"store: {c['lessons']} lessons · {c['receipts']} receipts · "
+    out = (f"store: {c['receipts']} receipts · "
            f"{c['routes']} routes · {c['metrics']} metrics")
     if rows:
         out += "\n7d disciplines: " + " · ".join(f"{r['skill']}×{r['n']}" for r in rows)
     return out
 
 
-TOOL_FUNCS = {"pantheon_recall": tool_recall, "pantheon_lesson_add": tool_lesson_add,
-              "pantheon_receipt_add": tool_receipt_add, "pantheon_stats": tool_stats}
+TOOL_FUNCS = {"pantheon_receipt_add": tool_receipt_add, "pantheon_stats": tool_stats}
 
 
 def _plugin_version():
@@ -214,25 +171,26 @@ def selftest() -> int:
 
         send({"jsonrpc": "2.0", "id": 2, "method": "tools/list", "params": {}})
         r = recv()
-        assert r["id"] == 2 and len(r["result"]["tools"]) == 4, r
+        assert r["id"] == 2 and len(r["result"]["tools"]) == 2, r
+        # memory is claude-memory-light's job — no recall/lesson tool may return
+        assert not [t for t in r["result"]["tools"] if "lesson" in t["name"]
+                    or "recall" in t["name"]], r
 
         send({"jsonrpc": "2.0", "id": 3, "method": "tools/call",
-              "params": {"name": "pantheon_lesson_add",
-                        "arguments": {"text": "mcp selftest lesson: pipes work end to end",
-                                     "tags": "selftest"}}})
+              "params": {"name": "pantheon_receipt_add",
+                        "arguments": {"skill": "hydra", "note": "mcp selftest: pipes work"}}})
         r = recv()
-        assert r["id"] == 3 and "saved" in r["result"]["content"][0]["text"], r
+        assert r["id"] == 3 and "filed" in r["result"]["content"][0]["text"], r
 
         send({"jsonrpc": "2.0", "id": 4, "method": "tools/call",
-              "params": {"name": "pantheon_recall",
-                        "arguments": {"query": "does the mcp selftest prove pipes work end to end?"}}})
+              "params": {"name": "pantheon_recall", "arguments": {"query": "anything"}}})
         r = recv()
-        assert r["id"] == 4 and "pipes work" in r["result"]["content"][0]["text"], r
+        assert r["id"] == 4 and r["error"]["code"] == -32602, r
 
         send({"jsonrpc": "2.0", "id": 5, "method": "tools/call",
               "params": {"name": "pantheon_stats", "arguments": {}}})
         r = recv()
-        assert r["id"] == 5 and "lessons" in r["result"]["content"][0]["text"], r
+        assert r["id"] == 5 and "receipts" in r["result"]["content"][0]["text"], r
 
         send({"jsonrpc": "2.0", "id": 6, "method": "tools/call",
               "params": {"name": "nope", "arguments": {}}})
@@ -246,8 +204,8 @@ def selftest() -> int:
         proc.stdin.close()
         proc.wait(timeout=5)
 
-    print("selftest ok — initialize, tools/list x4, lesson_add + recall round trip, "
-          "stats, unknown tool/method errors")
+    print("selftest ok — initialize, tools/list x2, receipt_add round trip, "
+          "stats, retired-tool + unknown tool/method errors")
     return 0
 
 

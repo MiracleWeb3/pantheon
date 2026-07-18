@@ -105,9 +105,9 @@ def render(data):
     c, sp, cfg = data["counts"], data["spend"], data["cfg"]
     lines = [
         f"🏛  pantheon v{data['version']} — dashboard",
-        f"store: {c['lessons']} lessons · {c['receipts']} receipts · "
+        f"store: {c['receipts']} receipts · "
         f"{c['routes']} routes   config: {cfg['preset']} "
-        f"(routing {cfg['routing']} · gate {cfg['gate']} · recall {cfg['recall']})",
+        f"(routing {cfg['routing']} · gate {cfg['gate']})",
         "",
         f"spend  7d ${sp['week']:.2f} {spark(sp['series'])}   "
         f"today ${sp['today']:.2f} · last hour ${sp['hour']:.2f}",
@@ -177,14 +177,13 @@ def selftest() -> int:
     import tempfile
     db = os.path.join(tempfile.mkdtemp(prefix="pantheon-dash-"), "t.db")
     conn = store.connect(db)
-    store.add_lesson(conn, "always run the selftests before shipping a hook change")
     store.add_receipt(conn, "hydra", "root-caused the chrome leak", tokens=900)
     store.add_receipt(conn, "lethe", "deleted 340 lines of dead code")
     store.add_metric(conn, "gate_block", 1, "tests failed")
     conn.close()
     data = gather(db_path=db)
     out = "\n".join(render(data))
-    assert "pantheon v" in out and "1 lessons" in out.replace("lessons", "lessons", 1)
+    assert "pantheon v" in out and "receipts" in out
     assert "hydra" in out and "chrome leak" in out and "lethe" in out
     assert data["gate_blocks_7d"] == 1 and data["db_ok"]
     assert spark([0, 0, 0]) == "   " and len(spark([1, 5, 9])) == 3

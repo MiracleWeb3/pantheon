@@ -26,7 +26,7 @@ Then execute.
 - **Any repo-map / ctags / LSP index** — use it as the graph if graphify isn't present.
 - **Nothing installed** → fall back to a fast structural breadth pass (entry points → imports → call paths) and offer to set up a persistent map for next time.
 
-`arachne` weaves; `ariadne` reads; `alexandria` annotates the *why* over the top. Together they are the map, the guide, and the legend.
+`arachne` weaves the map; `ariadne` reads it. The *why* behind a decision lives in the repo's own docs — pantheon draws the map, it doesn't keep the archive.
 
 ## When NOT to use
 

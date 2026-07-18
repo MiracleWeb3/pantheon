@@ -1,13 +1,10 @@
 #!/usr/bin/env python3
-"""pantheon stop hook — learning capture, auto-receipts, and the verification gate.
+"""pantheon stop hook — auto-receipts and the verification gate.
 
 Runs when the agent tries to finish a turn:
-  1. CAPTURE — append the user's last message to the learning inbox (bounded);
-     only a STRONG correction signal also stores a lesson — the inbox is the
-     wide net, the store is curated fuel for recall.
-  2. RECEIPTS — log which pantheon disciplines actually ran this turn, with
+  1. RECEIPTS — log which pantheon disciplines actually ran this turn, with
      the tokens they cost. The dashboard renders these.
-  3. GATE — the enforcement feature. If this turn changed code and tests are
+  2. GATE — the enforcement feature. If this turn changed code and tests are
      failing, stubs (TODO/FIXME/.skip/.only) were introduced, or a non-trivial
      change shipped with no verification at all, the stop is BLOCKED and the
      agent is told exactly what to fix. Warn-only in economy, off in quiet.
@@ -34,79 +31,8 @@ except Exception:
     _config = _store = _paths = _tr = None
 
 OUR_SKILLS = {"ariadne", "sibyl", "daedalus", "prometheus", "hydra", "argus", "themis",
-              "charon", "lethe", "mnemosyne", "athena", "alexandria", "arachne",
+              "charon", "lethe", "athena", "arachne",
               "clio", "asclepius", "hephaestus"}
-
-# Phrases that suggest the user is correcting or redirecting — worth a closer
-# look during consolidation. Deliberately broad; consolidation drops the noise.
-CORRECTION = re.compile(
-    r"\b(no|not|don'?t|stop|wrong|actually|instead|isn'?t|aren'?t|"
-    r"i said|i told you|you (didn'?t|did not|forgot|missed|keep)|"
-    r"why (did|are|is)|that'?s not|never|again|still (not|doesn'?t|broken))\b",
-    re.IGNORECASE,
-)
-
-# The broad net above only flags the INBOX. Auto-STORING a lesson (fuel that
-# recall re-injects into future prompts) demands a strong, unambiguous signal —
-# a stray "no"/"not"/"again" in ordinary conversation must never become memory.
-STRONG_CORRECTION = re.compile(
-    r"\b(i (said|told you|asked (you )?for)|you keep\b|you'?re still\b|"
-    r"stop (doing|using|adding|writing)|that'?s (still )?wrong|"
-    r"(from now on|always|never) (do|use|add|write|run|put|make|call|check)|"
-    r"don'?t ever\b|remember (this|that|to)\b|my preference is)",
-    re.IGNORECASE,
-)
-
-
-def inbox_path(cwd: str) -> str:
-    """Project-local inbox if in a project, else a user-global one."""
-    if cwd and os.path.isdir(cwd):
-        return os.path.join(cwd, ".pantheon", "learning-inbox.md")
-    return os.path.join(os.path.expanduser("~"), ".claude", "pantheon", "learning-inbox.md")
-
-
-def _bound_inbox(path: str) -> None:
-    """Keep the inbox from growing forever: past 256KB, keep the last 64KB."""
-    try:
-        if os.path.getsize(path) > 262144:
-            data = open(path, "rb").read()[-65536:]
-            nl = data.find(b"\n")
-            open(path, "wb").write(data[nl + 1:] if nl >= 0 else data)
-    except Exception:
-        pass
-
-
-def capture(cwd: str, text: str) -> None:
-    """Inbox line always (the wide net, bounded); a stored lesson only on a
-    STRONG correction signal (the store is curated fuel for recall)."""
-    if not text:
-        return
-    snippet = " ".join(text.split())[:280]
-    flagged = bool(CORRECTION.search(text))
-    flag = " ⚠️ likely-correction" if flagged else ""
-    stamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
-    path = inbox_path(cwd)
-    d = os.path.dirname(path)
-    os.makedirs(d, exist_ok=True)
-    if d.endswith(".pantheon"):  # project-local: keep the noisy file out of git
-        gi = os.path.join(d, ".gitignore")
-        if not os.path.isfile(gi):
-            try:
-                open(gi, "w", encoding="utf-8").write("learning-inbox.md\n")
-            except Exception:
-                pass
-    with open(path, "a", encoding="utf-8") as f:
-        f.write(f"- [{stamp}]{flag} {snippet}\n")
-    _bound_inbox(path)
-    if flagged and STRONG_CORRECTION.search(text) and _store and len(snippet) >= 24:
-        try:
-            conn = _store.connect()
-            _store.add_lesson(conn, snippet, tags="correction,auto",
-                              keys=_paths.project_name(cwd), source="auto")
-            conn.close()
-        except Exception:
-            pass
-
 
 def route_outcome(routed: str, invoked: set) -> str:
     """Pure decision: what happened to the routed skill this turn?"""
@@ -303,10 +229,6 @@ def main() -> int:
         except Exception:
             turn = {}
     try:
-        capture(cwd, turn.get("last_user", ""))
-    except Exception:
-        pass
-    try:
         auto_receipts(turn, cfg, session, cwd)
     except Exception:
         pass
@@ -328,31 +250,6 @@ def main() -> int:
 
 def selftest() -> int:
     global _store, _GATE_DIR
-    assert CORRECTION.search("no, that's wrong")
-    assert CORRECTION.search("you forgot to save it")
-    assert not CORRECTION.search("please add a dark theme toggle")
-    # the capture ladder: broad flags the inbox, only STRONG stores a lesson
-    assert not STRONG_CORRECTION.search("no thanks, do the other one instead")
-    assert not STRONG_CORRECTION.search("why did the build fail again?")
-    assert not STRONG_CORRECTION.search("not sure about this approach")
-    assert STRONG_CORRECTION.search("I told you to use tabs, stop using spaces")
-    assert STRONG_CORRECTION.search("always use python3 for the hooks")
-    assert STRONG_CORRECTION.search("that's wrong, the timeout is 300")
-    assert STRONG_CORRECTION.search("remember this: I hate one-letter variables")
-    assert STRONG_CORRECTION.search("you keep reverting my rename")
-    # inbox: project dir gets a .gitignore, file stays bounded, line-aligned
-    import tempfile
-    cwd = tempfile.mkdtemp(prefix="pantheon-cap-")
-    capture(cwd, "no that's not what I meant at all")
-    ip = inbox_path(cwd)
-    assert os.path.isfile(ip) and "likely-correction" in open(ip, encoding="utf-8").read()
-    gi = open(os.path.join(cwd, ".pantheon", ".gitignore"), encoding="utf-8").read()
-    assert "learning-inbox" in gi
-    with open(ip, "w", encoding="utf-8") as f:
-        f.write(("- [x] " + "y" * 120 + "\n") * 3000)
-    _bound_inbox(ip)
-    assert os.path.getsize(ip) <= 65536
-    assert open(ip, "rb").read()[:1] == b"-"
     # gate: failing tests on a code change → block-worthy
     turn = {"last_user": "x", "edits": [{"file": "a.py", "added": 3, "new": "x=1", "old": ""}],
             "tests": [{"command": "pytest", "failed": True}], "verified": True}
@@ -458,7 +355,7 @@ def selftest() -> int:
     fo = run_gate(dict(turn2, last_user="q9"), {"gate": "block"}, "sWedge", "")
     assert "fail-open" in fo.get("systemMessage", "")
     _store = keep_store
-    print("selftest ok — capture regex, gate rules (fail/unverified/stub/docs), "
+    print("selftest ok — gate rules (fail/unverified/stub/docs), "
           "modes, route outcomes")
     return 0
 

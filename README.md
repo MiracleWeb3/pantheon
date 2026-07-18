@@ -4,9 +4,9 @@
 
 ### One install. Your coding agent stops winging it.
 
-**16 disciplines** (13 mythic + 3 power tools) **+ 172 merged skills = 188** — with memory that recalls itself, receipts for everything it does, and a verification gate that blocks fake "done" *and benchmarks itself proving it*. For [Claude Code](https://claude.com/claude-code).
+**14 disciplines** (11 mythic + 3 power tools) **+ 170 merged skills = 184** — a router that fires the right one, receipts for everything it does, and a verification gate that blocks fake "done" *and benchmarks itself proving it*. For [Claude Code](https://claude.com/claude-code).
 
-![version](https://img.shields.io/badge/version-2.0.0-8957e5?style=flat-square) &nbsp;![license](https://img.shields.io/badge/license-MIT-3fb950?style=flat-square) &nbsp;![Claude Code](https://img.shields.io/badge/Claude_Code-plugin-d97757?style=flat-square) &nbsp;![dependencies](https://img.shields.io/badge/dependencies-none-3fb950?style=flat-square) &nbsp;![skills](https://img.shields.io/badge/skills-188-8957e5?style=flat-square) &nbsp;[![selftests](https://img.shields.io/github/actions/workflow/status/MiracleWeb3/pantheon/selftest.yml?style=flat-square&label=selftests)](https://github.com/MiracleWeb3/pantheon/actions/workflows/selftest.yml) &nbsp;[![gate benchmark](https://img.shields.io/badge/gate_bench-10%2F10_caught_·_0_FP-3fb950?style=flat-square)](BENCHMARKS.md) &nbsp;![last commit](https://img.shields.io/github/last-commit/MiracleWeb3/pantheon?style=flat-square&color=d97757&label=last%20commit)
+![version](https://img.shields.io/badge/version-3.0.0-8957e5?style=flat-square) &nbsp;![license](https://img.shields.io/badge/license-MIT-3fb950?style=flat-square) &nbsp;![Claude Code](https://img.shields.io/badge/Claude_Code-plugin-d97757?style=flat-square) &nbsp;![dependencies](https://img.shields.io/badge/dependencies-none-3fb950?style=flat-square) &nbsp;![skills](https://img.shields.io/badge/skills-184-8957e5?style=flat-square) &nbsp;[![selftests](https://img.shields.io/github/actions/workflow/status/MiracleWeb3/pantheon/selftest.yml?style=flat-square&label=selftests)](https://github.com/MiracleWeb3/pantheon/actions/workflows/selftest.yml) &nbsp;[![gate benchmark](https://img.shields.io/badge/gate_bench-10%2F10_caught_·_0_FP-3fb950?style=flat-square)](BENCHMARKS.md) &nbsp;![last commit](https://img.shields.io/github/last-commit/MiracleWeb3/pantheon?style=flat-square&color=d97757&label=last%20commit)
 
 **[See it work](#what-it-feels-like) · [The disciplines](#the-pantheon) · [Config](#configuration) · [The HUD](#the-hud-optional) · [CLI](#the-store-and-the-cli) · [Benchmarks](BENCHMARKS.md) · [Credits](CREDITS.md)**
 
@@ -25,10 +25,10 @@ claude plugin install pantheon@pantheon
 ## What it feels like
 
 <div align="center">
-<img src="assets/demo-live.svg" alt="pantheon in action — auto-route, recall, announce, verification gate, receipt" width="760">
+<img src="assets/demo-live.svg" alt="pantheon in action — auto-route, announce, verification gate, receipt" width="760">
 </div>
 
-Every move is visible: the router says **why** a discipline fired, recall puts the **relevant past lesson** on the table, the discipline announces **what it's about to do**, the gate refuses a **"done" that isn't**, and the receipt records **what actually happened**.
+Every move is visible: the router says **why** a discipline fired, the discipline announces **what it's about to do**, the gate refuses a **"done" that isn't**, and the receipt records **what actually happened**.
 
 <sub>Staged frames, real message formats — every line above is the exact text the hooks inject. (An asciinema of a live session is on the wishlist.)</sub>
 
@@ -37,18 +37,15 @@ Every move is visible: the router says **why** a discipline fired, recall puts t
 <table>
 <tr>
 <td width="50%">🎯 <b>Routes itself — and learns you.</b> Plain language fires the right discipline; routes you keep ignoring demote themselves.</td>
-<td width="50%">🧠 <b>Recalls itself.</b> Past lessons and corrections inject into matching prompts. No <code>/remember</code>, no digging.</td>
+<td width="50%">🧾 <b>Proves itself.</b> Per-discipline receipts + a live dashboard: heatmap, spend, store health.</td>
 </tr>
 <tr>
 <td>🛡 <b>Blocks fake "done".</b> Failing tests, TODO stubs, unverified code — the agent is refused permission to stop.</td>
-<td>🧾 <b>Proves itself.</b> Per-discipline receipts + a live dashboard: heatmap, spend, store health.</td>
-</tr>
-<tr>
-<td>💸 <b>Budget caps.</b> Session / daily / weekly USD limits — warn, ask, or hard-block at the cap.</td>
 <td>🩺 <b>Heals itself.</b> <code>pantheon doctor --fix</code> checks every moving part and repairs what's safe.</td>
 </tr>
 <tr>
-<td>🤝 <b>Spreads through teams.</b> A committed pack file shares config, standards, and lessons with every teammate.</td>
+<td>💸 <b>Budget caps.</b> Session / daily / weekly USD limits — warn, ask, or hard-block at the cap.</td>
+<td>🤝 <b>Spreads through teams.</b> A committed pack file shares config and standards with every teammate.</td>
 <td>🔨 <b>Forge your own gods.</b> Mint custom disciplines with auto-routes; export them to Cursor / Codex.</td>
 </tr>
 </table>
@@ -61,8 +58,6 @@ Three mechanics nobody else ships — everything else from the grid above gets i
 
 > 🏛 **hydra** — slay it, then cauterize. **Task:** the timestamp bug that reappears after each deploy. **Plan:** reproduce against real data → trace the inbound clock path → fix the shared carry, not the caller → add a regression test that fails on the old code.
 
-**🧠 Memory with retrieval, not a diary.** Corrections are captured as they land; every new prompt is scored against them (*keyword overlap × recency × weight*, same-project boost) and the top lessons inject themselves. No `/remember`, no digging, no session-start dump.
-
 **🛡 "Done" is enforced, not asserted.** The Stop hook inspects the actual turn — failing tests on changed code, introduced `TODO`/`.skip` stubs, unverified non-trivial diffs — and refuses the stop with an exact fix list. Hard evidence (failing checks, stubs) blocks twice; the softer no-verification nudge blocks once; then it always yields — and it fails *open* if its own state can't persist, so it can never wedge a session. Others *advise* this. pantheon *enforces* it — and [measures itself](BENCHMARKS.md).
 
 <div align="center"><img src="assets/divider.svg" width="220" alt=""></div>
@@ -74,12 +69,10 @@ Because they each do *one layer*, and none of them **enforce** anything. Honest 
 | capability | **pantheon** | [superpowers](https://github.com/obra/superpowers) | [oh-my-claudecode](https://github.com/Yeachan-Heo/oh-my-claudecode) | [claude-mem](https://github.com/thedotmack/claude-mem) |
 |---|:---:|:---:|:---:|:---:|
 | a router that fires the right skill — and learns from your outcomes | ✅ | ⚠️ description matching only | ⚠️ magic keywords | ❌ |
-| memory that recalls itself, per-prompt relevance | ✅ | ❌ | ⚠️ manual lookup | ⚠️ session-start dump |
 | "done" gate enforced by a hook (not advice) | ✅ blocks | ⚠️ advisory | ⚠️ advisory | ❌ |
 | receipts + dashboard of what it did & caught | ✅ | ❌ | ⚠️ HUD only | ❌ |
 | hourly/weekly spend + budget caps | ✅ warn·ask·block | ❌ | ⚠️ display only | ❌ |
-| team packs — repo-inherited config + lessons | ✅ | ❌ | ❌ | ❌ |
-| lesson memory reachable by *subagents* (MCP tools) | ✅ 4 stdlib tools | ❌ | ⚠️ session search only | ⚠️ summaries |
+| team packs — repo-inherited config + standards | ✅ | ❌ | ❌ | ❌ |
 | proof — a reproducible benchmark of the enforcement, in CI | ✅ [10/10, 0 FP](BENCHMARKS.md) | ❌ | ❌ | ❌ |
 | forge your own discipline, auto-routed | ✅ | ⚠️ authoring guide | ⚠️ skill manager | ❌ |
 | take the disciplines to Cursor / Codex | ✅ export | ❌ | ❌ | ❌ |
@@ -95,7 +88,7 @@ Mythical names, plain-English triggers. Read top-to-bottom and it *is* the lifec
 
 | Skill | Say | The discipline |
 |---|---|---|
-| 🧵 **`ariadne`** | *"how does this work?"* | **Orient** — read the code-map, past decisions, and prior lessons *before* editing. The thread through the labyrinth. |
+| 🧵 **`ariadne`** | *"how does this work?"* | **Orient** — read the code-map and past decisions *before* editing. The thread through the labyrinth. |
 | 🕸 **`arachne`** | *"map the codebase"* | **Map** — weave a navigable knowledge graph (nodes, edges, god-nodes) so orientation is a query, not a grep. Builds what `ariadne` reads. |
 | 🔮 **`oracle`** | *"how do I use X?"* | **Research** — consult the real docs before an unfamiliar SDK/API. Never code a contract from memory. |
 | 🏗 **`daedalus`** | *"build this right"* | **Build** — scope → plan → challenge the plan → build → review with a different lens. |
@@ -106,10 +99,8 @@ Mythical names, plain-English triggers. Read top-to-bottom and it *is* the lifec
 | ⚖️ **`themis`** | *"review this"* | **Review** — adversarial, severity-ranked, self-verified. The reviewer is never the author. |
 | ⛴ **`charon`** | *"land it"* | **Ship** — atomic commits, a clean PR, branch hygiene. Never ships unasked. |
 | 🌊 **`lethe`** | *"keep it simple"* | **Simplify** — YAGNI, stdlib before custom, native before dependency, deletion over addition. |
-| 📜 **`mnemosyne`** | *"remember this"* | **Learn** — capture corrections, consolidate to memory, promote what recurs into always-loaded rules. |
-| 📚 **`alexandria`** | *"document this"* | **Knowledge** — a curated project wiki (the Karpathy LLM-wiki model) whose prose compounds across sessions. |
 
-> **Three knowledge layers, unified.** `arachne` maps the *structure* (your graphify graph), `alexandria` records the *prose* (your Obsidian/ADR wiki — the "why"), and `mnemosyne` holds the *facts* (your memory bank of corrections). `ariadne` reads all three to orient before any work. Graph + wiki + memory, one method.
+> **pantheon does not do memory.** No lesson store, no wiki, no recall injection — [claude-memory-light](https://github.com/MiracleWeb3/claude-memory-light) already indexes every transcript verbatim and answers recall better than a curated table ever did. `arachne` maps the *structure* and `ariadne` reads it; remembering is someone else's job, done properly.
 
 Plus three power tools in the same style: 📊 **`dashboard`** (the receipts ledger, rendered — heatmap, spend, health), 🩺 **`doctor`** (diagnose + repair the install), 🔨 **`forge`** (author and share your own disciplines).
 
@@ -130,19 +121,19 @@ Every merged source is attributed per-skill in [`CREDITS.md`](CREDITS.md), and t
 
 pantheon runs full-strength out of the box. Drop a `config.json` at `~/.claude/pantheon/config.json` (global) or `<project>/.pantheon/config.json` (per-project, wins) — or just tell your agent *"set pantheon to economy mode"* and it writes the file for you.
 
-| Preset | Routing | Announce | Recall | Gate | For |
-|---|---|---|---|---|---|
-| `full` *(default)* | on | shown | 3 lessons | **block** | the whole experience |
-| `economy` | suggest | hidden | 1 lesson | warn | saving tokens |
-| `quiet` | off | hidden | off | off | full manual control |
+| Preset | Routing | Announce | Gate | For |
+|---|---|---|---|---|
+| `full` *(default)* | on | shown | **block** | the whole experience |
+| `economy` | suggest | hidden | warn | saving tokens |
+| `quiet` | off | hidden | off | full manual control |
 
-**What the automation actually costs, measured from the injected strings:** a prompt that matches nothing gets **0 tokens** injected — silence is the default. When something fires: a route hint ≈ **110 tokens** (economy's one-line nudge ≈ 25), each recalled lesson ≈ **60–95**, the clarifier ≈ 100, the context-guard nudge ≈ 110 (once per session). Session-wide fixed cost: one ~40-token skills-discovery nudge at session start (what makes 188 skills actually get *considered*; off in `quiet`). And the cost no plugin can hide: Claude Code itself loads every installed skill's name+description — `pantheon doctor` measures pantheon's real figure on your install, and v1.4 put the fattest descriptions on a diet.
+**What the automation actually costs, measured from the injected strings:** a prompt that matches nothing gets **0 tokens** injected — silence is the default. When something fires: a route hint ≈ **110 tokens** (economy's one-line nudge ≈ 25), the clarifier ≈ 100, the context-guard nudge ≈ 110 (once per session). Session-wide fixed cost: one ~40-token skills-discovery nudge at session start (what makes 184 skills actually get *considered*; off in `quiet`). And the cost no plugin can hide: Claude Code itself loads every installed skill's name+description — `pantheon doctor` measures pantheon's real figure on your install, and v1.4 put the fattest descriptions on a diet.
 
 <details>
 <summary><b>Every knob</b> (override any single one)</summary>
 
 ```json
-{ "preset": "full", "gate": "warn", "recall": 2,
+{ "preset": "full", "gate": "warn",
   "budget": { "weekly": 25, "mode": "ask" },
   "custom_routes": { "deploy .*prod": "deploy-ritual" },
   "disciplines": { "athena": false } }
@@ -152,7 +143,6 @@ pantheon runs full-strength out of the box. Drop a `config.json` at `~/.claude/p
 |---|---|---|
 | `routing` | `on` · `suggest` · `off` | `on` |
 | `announce` | `true` · `false` | `true` |
-| `recall` | `0`–`3` past lessons injected per prompt | `3` |
 | `gate` | `block` · `warn` · `off` — the verification gate | `block` |
 | `clarify` | auto-question vague big asks | `true` |
 | `context_guard` | context-fill % that triggers a checkpoint (0 = off) | `85` |
@@ -199,7 +189,6 @@ Every segment is real data, shown only when it has a value. **Subscription meter
 | `+420/-95` | lines added / removed | `cost.total_lines_*` |
 | `$6.80` | this session's cost | `cost.total_cost_usd` |
 | `⧖1h $2.10` · `wk $18.40` | **rolling hourly / weekly spend** | pantheon's own cost-delta ledger |
-| `⎇ main` · `📥3` | branch · unconsolidated lessons | `.git/HEAD` · learning-inbox |
 
 **Already have a statusline?** Claude Code allows one `statusLine`, so pantheon won't silently fight it — chain both: your line renders first, pantheon's segment appends. If your command errors, pantheon shows just its own segment — never a blank bar.
 
@@ -214,7 +203,7 @@ Every segment is real data, shown only when it has a value. **Subscription meter
 
 ## The store and the CLI
 
-Everything pantheon learns and does lands in **one SQLite store** — `~/.claude/pantheon/pantheon.db` (WAL, stdlib, schema-versioned, self-migrating). Lessons, receipts, route outcomes, metrics: one substrate, so every feature compounds on the others. This is what the receipts ledger looks like rendered:
+Everything pantheon does lands in **one SQLite store** — `~/.claude/pantheon/pantheon.db` (WAL, stdlib, schema-versioned, self-migrating). Lessons, receipts, route outcomes, metrics: one substrate, so every feature compounds on the others. This is what the receipts ledger looks like rendered:
 
 <div align="center">
 <img src="assets/dashboard.svg" alt="pantheon dashboard — discipline heatmap, spend sparkline, receipts feed, store health" width="760">
@@ -228,7 +217,6 @@ A stable `pantheon` command is kept pointing at the installed plugin (refreshed 
 pantheon stats                          counts · top disciplines · spend
 pantheon dashboard                      full-screen TUI (or --plain)
 pantheon doctor [--fix]                 diagnose + repair the install
-pantheon lesson add "…" / recall "…"    feed and probe the memory
 pantheon receipt add --skill X --note … what a discipline just did
 pantheon forge new <name> --route "…"   your own discipline, auto-routed
 pantheon pack init / status             team pack in the current repo
@@ -243,7 +231,7 @@ pantheon export --target cursor|codex   take the disciplines to other agents
 
 - **[oh-my-claudecode](https://github.com/Yeachan-Heo/oh-my-claudecode)** — the bundled power modes (`sisyphus`, `automedon`, `hekaton`) drive its persistence loops, agents, and Workflow engine when it's installed.
 - **A code map** (a graphify knowledge graph, or any repo map you keep) — `ariadne` queries it before grepping.
-- **A decisions wiki** (Obsidian, `docs/adr/`) — `ariadne` / `alexandria` read and write it.
+- **A decisions record** (Obsidian, `docs/adr/`) — `ariadne` reads it while orienting.
 - **Design skills** (`frontend-design`, `shadcn`, …) — `athena` drives whichever you have installed and reviews the output against its craft standard.
 
 With none installed, every skill still works.
@@ -255,21 +243,21 @@ With none installed, every skill still works.
 
 ## Under the hood
 
-- **Three hooks, stdlib-only, fail-silent — audit them in 30 seconds:** [`hooks/on_prompt.py`](hooks/on_prompt.py) (UserPromptSubmit: route + recall + clarifier + context guard + budget), [`hooks/on_stop.py`](hooks/on_stop.py) (Stop: learning capture + receipts + route outcomes + the verification gate), [`hooks/session-start.py`](hooks/session-start.py) (config directive, store migration, CLI shim, team-pack import, update check). No network calls except the opt-out daily version check; a broken hook never breaks your session — every failure path exits 0.
+- **Three hooks, stdlib-only, fail-silent — audit them in 30 seconds:** [`hooks/on_prompt.py`](hooks/on_prompt.py) (UserPromptSubmit: route + clarifier + context guard + budget), [`hooks/on_stop.py`](hooks/on_stop.py) (Stop: receipts + route outcomes + the verification gate), [`hooks/session-start.py`](hooks/session-start.py) (config directive, store migration, CLI shim, team-pack import, update check). No network calls except the opt-out daily version check; a broken hook never breaks your session — every failure path exits 0.
 - **Zero dependencies.** No npm, no pip, no build step. Skills are Markdown; hooks, CLI, dashboard, HUD, and the MCP server are plain Python 3 (`sqlite3`/`curses` from the stdlib). CI runs the full suite on Linux, macOS, and Windows (Python 3.9 and 3.13); the hooks invoke `python3`, which Windows needs on PATH (the Microsoft Store Python provides `python3.exe`).
-- **Memory your subagents can reach.** A ~200-line stdlib MCP server exposes `pantheon_recall` / `pantheon_lesson_add` / `pantheon_receipt_add` / `pantheon_stats`, so a dispatched subagent can ask "what do we know about X?" instead of starting blind. Recall itself is BM25-ranked (IDF-weighted, length-normalized) — rare shared terms outweigh common ones.
+- **Receipts your subagents can file.** A ~200-line stdlib MCP server exposes `pantheon_receipt_add` / `pantheon_stats`, so a dispatched subagent can ask "what do we know about X?" instead of starting blind. Recall itself is BM25-ranked (IDF-weighted, length-normalized) — rare shared terms outweigh common ones.
 - **Four bundled agents, model-tiered.** `reviewer` (opus, read-only), `worker` (sonnet), `researcher` (sonnet, read-only), `scout` (haiku) — the disciplines dispatch to these when the oh-my-claudecode engine isn't installed, so decompose/review work is cost-tiered out of the box.
 - **It measures itself.** [`BENCHMARKS.md`](BENCHMARKS.md): 20 replayed transcript fixtures through the real gate pipeline — 10/10 planted fake-dones caught, 0/10 false positives — re-run on every CI push.
 - **Everything ships a self-check.** Every module runs `--selftest`; `pantheon doctor` runs the whole suite plus install checks in one command — including a transcript-format tripwire that catches a Claude Code format change before it silently blinds the gate.
 
 <div align="center">
-<img src="assets/flow.svg" alt="how it's wired — on_prompt (route · recall · clarify · budget) → the agent works → on_stop (capture · receipts · gate); gate refusals loop back, clean stops land; everything writes to pantheon.db, which feeds the HUD, dashboard, and doctor" width="760">
+<img src="assets/flow.svg" alt="how it's wired — on_prompt (route · clarify · budget) → the agent works → on_stop (receipts · gate); gate refusals loop back, clean stops land; everything writes to pantheon.db, which feeds the HUD, dashboard, and doctor" width="760">
 </div>
 
 ## Questions people ask
 
 > [!NOTE]
-> **Local-first by construction.** Lessons, receipts, and the spend ledger live in `~/.claude/pantheon/` and never leave your machine. The only network call is an optional once-daily version check (2s timeout, `"updateCheck": false` kills it). No telemetry, ever.
+> **Local-first by construction.** Receipts and the spend ledger live in `~/.claude/pantheon/` and never leave your machine. The only network call is an optional once-daily version check (2s timeout, `"updateCheck": false` kills it). No telemetry, ever.
 
 <details>
 <summary><b>The gate blocked me and I disagree.</b></summary>
@@ -295,7 +283,7 @@ The default is already frugal: prompts that match nothing get **zero** injected 
 <details>
 <summary><b>Uninstall cleanly?</b></summary>
 
-`claude plugin uninstall pantheon@pantheon` — then `rm -rf ~/.claude/pantheon` if you also want the local store (lessons, ledger, receipts) gone. Nothing else is touched.
+`claude plugin uninstall pantheon@pantheon` — then `rm -rf ~/.claude/pantheon` if you also want the local store (ledger, receipts) gone. Nothing else is touched.
 
 </details>
 
@@ -303,7 +291,7 @@ The default is already frugal: prompts that match nothing get **zero** injected 
 
 ## Roadmap
 
-The original 12-feature roadmap **shipped in full** across v0.8 → v1.1 (retrieval-augmented memory, receipts, dashboard, blocking gate, adaptive routing, intent clarifier, context guard, budget caps, doctor, team packs, forge, cross-agent export) — [docs/ROADMAP.md](docs/ROADMAP.md) documents what each feature does and how they layer. Next up is sharpening from real use: file issues at [MiracleWeb3/pantheon](https://github.com/MiracleWeb3/pantheon/issues).
+The original 12-feature roadmap **shipped in full** across v0.8 → v1.1 (receipts, dashboard, blocking gate, adaptive routing, intent clarifier, context guard, budget caps, doctor, team packs, forge, cross-agent export) — [docs/ROADMAP.md](docs/ROADMAP.md) documents what each feature does and how they layer. Next up is sharpening from real use: file issues at [MiracleWeb3/pantheon](https://github.com/MiracleWeb3/pantheon/issues).
 
 ## License
 

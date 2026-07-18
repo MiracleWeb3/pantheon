@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""pantheon CLI — receipts, lessons, recall, stats, dashboard.
+"""pantheon CLI — receipts, stats, dashboard, doctor, forge, packs.
 
 Reached via the shim `~/.claude/pantheon/bin/pantheon` (rewritten every
 SessionStart to point at the installed plugin), or directly:
@@ -8,16 +8,12 @@ SessionStart to point at the installed plugin), or directly:
 Commands:
     receipt add --skill S --note "..."     file a receipt for a discipline
     receipt list [--days 7]
-    lesson add "text" [--tags a,b] [--keys proj] [--weight 1.3]
-    lesson list [--limit 20] / lesson search "query"
-    lesson import-inbox                    pull ⚠️-flagged inbox lines into the store
-    recall "some prompt"                   debug what auto-recall would surface
     stats                                  counts, top disciplines, spend
     dashboard [--plain]                    the TUI (scripts/dashboard.py)
     doctor [--fix]                         diagnose + repair the install
     forge new NAME [--route REGEX] ...     scaffold a custom discipline
     forge export NAME / forge import FILE  share disciplines as single files
-    pack init / pack status                team pack: config+lessons in the repo
+    pack init / pack status                team pack: config + standards in the repo
     export --target cursor|codex|generic   package disciplines for other agents
     version
 
@@ -65,57 +61,6 @@ def cmd_receipt(a):
     return 0
 
 
-def cmd_lesson(a):
-    conn = store.connect()
-    if a.action == "add":
-        lid = store.add_lesson(conn, a.text, tags=a.tags, weight=a.weight,
-                               keys=a.keys or paths.project_name(os.getcwd()),
-                               source="manual")
-        print(f"lesson #{lid} saved" if lid else "skipped (duplicate or too short)")
-        return 0
-    if a.action == "import-inbox":
-        n = 0
-        for p in (os.path.join(os.getcwd(), ".pantheon", "learning-inbox.md"),
-                  os.path.join(paths.state_dir(), "learning-inbox.md")):
-            try:
-                for ln in open(p, encoding="utf-8"):
-                    if "likely-correction" in ln and ln.lstrip().startswith("-"):
-                        text = ln.split("likely-correction", 1)[1].strip()
-                        if store.add_lesson(conn, text, tags="correction,inbox",
-                                            keys=paths.project_name(os.getcwd()),
-                                            source="auto"):
-                            n += 1
-            except Exception:
-                continue
-        print(f"imported {n} flagged inbox line(s) as lessons "
-              "(inbox files untouched — consolidate/delete them yourself)")
-        return 0
-    q = "SELECT * FROM lessons ORDER BY ts DESC LIMIT ?"
-    args = [a.limit]
-    if a.action == "search" and a.text:
-        q = ("SELECT * FROM lessons WHERE text LIKE ? OR tags LIKE ? "
-             "ORDER BY ts DESC LIMIT ?")
-        like = f"%{a.text}%"
-        args = [like, like, a.limit]
-    rows = list(conn.execute(q, args))
-    if not rows:
-        print("no lessons yet — `pantheon lesson add \"...\"` or let capture feed them")
-    for r in rows:
-        uses = f" ·{r['uses']}×" if r["uses"] else ""
-        print(f"#{r['id']:<4}{_age(r['ts']):>4} [{r['source']}{uses}] {r['text'][:110]}")
-    return 0
-
-
-def cmd_recall(a):
-    conn = store.connect()
-    hits = store.recall(conn, a.text, keys=paths.project_name(os.getcwd()), limit=3)
-    if not hits:
-        print("nothing clears the relevance bar for that prompt")
-    for h in hits:
-        print(f"• ({_age(h['ts'])}, {h['source']}) {h['text'][:160]}")
-    return 0
-
-
 def _spend():
     """(today, last-7d) USD from the HUD's ledger; (0, 0) when absent."""
     day = time.time() - 86400
@@ -142,7 +87,7 @@ def _spend():
 def cmd_stats(a):
     conn = store.connect()
     c = store.counts(conn)
-    print(f"store: {c['lessons']} lessons · {c['receipts']} receipts · "
+    print(f"store: {c['receipts']} receipts · "
           f"{c['routes']} routes · {c['metrics']} metrics")
     rows = list(conn.execute(
         "SELECT skill, COUNT(*) n FROM receipts WHERE ts>? GROUP BY skill "
@@ -154,7 +99,7 @@ def cmd_stats(a):
         print(f"spend: ${s1:.2f} today · ${s7:.2f} last 7d")
     cfg = cfgmod.load(os.getcwd())
     print(f"config: preset={cfg['preset']} routing={cfg['routing']} gate={cfg['gate']} "
-          f"recall={cfg['recall']} receipts={cfg['receipts']}")
+          f"receipts={cfg['receipts']}")
     return 0
 
 
@@ -277,47 +222,29 @@ def cmd_pack(a):
             print("pack: pantheon.pack.json exists (--force to regenerate)")
             return 2
         cfg = cfgmod.load(os.getcwd())
-        conn = store.connect()
-        # auto-captured lessons are raw user sentences (may hold secrets/paths);
-        # they stay private unless explicitly shared
-        where = "" if a.include_captured else "WHERE source != 'auto' "
-        top = conn.execute(
-            "SELECT text,tags,keys,weight FROM lessons " + where +
-            "ORDER BY weight*(uses+1) DESC, ts DESC LIMIT 20").fetchall()
-        conn.close()
         pack = {"pantheon_pack": 1,
                 "name": os.path.basename(os.getcwd()),
                 "preset": cfg["preset"] if cfg["preset"] in ("full", "economy", "quiet") else "full",
-                "overrides": {"gate": cfg["gate"], "recall": cfg["recall"]},
+                "overrides": {"gate": cfg["gate"]},
                 "disciplines": cfg["disciplines"],
-                "standards": "",
-                "lessons": [dict(r) for r in top]}
+                "standards": ""}
         json.dump(pack, open(p, "w", encoding="utf-8"), indent=2, ensure_ascii=False)
-        print(f"wrote {p} — {len(pack['lessons'])} shared lesson(s). Fill in "
-              "\"standards\", commit it, and every teammate inherits this on install.")
-        if not a.include_captured:
-            print("(auto-captured lessons excluded — pass --include-captured to "
-                  "share them; review for secrets first)")
+        print(f"wrote {p} — fill in \"standards\", commit it, and every teammate "
+              "inherits this config on install.")
         return 0
     path, pk = cfgmod.find_pack(os.getcwd())
     if not pk:
         print("no pantheon.pack.json found from here upward")
         return 0
-    conn = store.connect()
-    import hashlib
-    h = hashlib.md5(json.dumps(pk, sort_keys=True).encode()).hexdigest()[:10]
-    imported = h in store.get_meta(conn, "packs_imported", "").split(",")
-    conn.close()
     print(f"pack: {pk.get('name', '?')} @ {path}")
-    print(f"  preset {pk.get('preset', '-')} · {len(pk.get('lessons', []))} lesson(s) · "
-          f"standards {'yes' if pk.get('standards') else 'no'} · "
-          f"imported {'yes' if imported else 'not yet (next session start)'}")
+    print(f"  preset {pk.get('preset', '-')} · "
+          f"standards {'yes' if pk.get('standards') else 'no'}")
     return 0
 
 
 # ── cross-agent export ───────────────────────────────────────────────────────
 CORE_SKILLS = ["ariadne", "sibyl", "daedalus", "prometheus", "hydra", "argus",
-               "themis", "charon", "lethe", "mnemosyne", "athena", "alexandria",
+               "themis", "charon", "lethe", "athena",
                "arachne", "clio", "asclepius", "hephaestus"]
 
 
@@ -372,7 +299,7 @@ def cmd_export(a):
                 "\n".join(parts))
     print(f"exported {len(skills)} skill(s) → {out_root} ({', '.join(targets)})")
     print("honest note: the DISCIPLINES port everywhere (they're markdown); the "
-          "automation (router, recall, gate, receipts, HUD) is Claude Code-only.")
+          "automation (router, gate, receipts, HUD) is Claude Code-only.")
     return 0
 
 
@@ -398,19 +325,6 @@ def build_parser():
     r.add_argument("--days", type=float, default=7)
     r.add_argument("--limit", type=int, default=30)
     r.set_defaults(fn=cmd_receipt)
-
-    l = sub.add_parser("lesson", help="add / list / search / import-inbox")
-    l.add_argument("action", choices=["add", "list", "search", "import-inbox"])
-    l.add_argument("text", nargs="?", default="")
-    l.add_argument("--tags", default="")
-    l.add_argument("--keys", default="")
-    l.add_argument("--weight", type=float, default=1.3)
-    l.add_argument("--limit", type=int, default=20)
-    l.set_defaults(fn=cmd_lesson)
-
-    rc = sub.add_parser("recall", help="debug: what auto-recall would surface")
-    rc.add_argument("text")
-    rc.set_defaults(fn=cmd_recall)
 
     st = sub.add_parser("stats", help="counts, top disciplines, spend")
     st.set_defaults(fn=cmd_stats)
@@ -439,8 +353,6 @@ def build_parser():
     pk = sub.add_parser("pack", help="team pack in this repo")
     pk.add_argument("action", choices=["init", "status"])
     pk.add_argument("--force", action="store_true")
-    pk.add_argument("--include-captured", action="store_true",
-                    help="also share auto-captured lessons (review for secrets first)")
     pk.set_defaults(fn=cmd_pack)
 
     ex = sub.add_parser("export", help="package disciplines for other agents")
@@ -469,8 +381,14 @@ def selftest() -> int:
     ap = build_parser()
     a = ap.parse_args(["receipt", "add", "--skill", "hydra", "--note", "x"])
     assert a.fn is cmd_receipt and a.skill == "hydra"
-    a = ap.parse_args(["lesson", "add", "some text", "--tags", "t"])
-    assert a.fn is cmd_lesson and a.text == "some text"
+    # memory moved to claude-memory-light — these verbs must be gone for good
+    import contextlib, io
+    for retired in (["lesson", "add", "x"], ["recall", "x"]):
+        with contextlib.redirect_stderr(io.StringIO()):
+            try:
+                ap.parse_args(retired); assert False, retired
+            except SystemExit:
+                pass
     a = ap.parse_args(["dashboard", "--plain"])
     assert a.fn is cmd_dashboard and a.plain
     a = ap.parse_args(["doctor", "--fix"])
@@ -480,9 +398,7 @@ def selftest() -> int:
     a = ap.parse_args(["export", "--target", "cursor"])
     assert a.fn is cmd_export and not a.full
     a = ap.parse_args(["pack", "init"])
-    assert a.fn is cmd_pack and not a.include_captured
-    a = ap.parse_args(["pack", "init", "--include-captured"])
-    assert a.include_captured
+    assert a.fn is cmd_pack
     assert _age(time.time() - 30) == "0m" and _age(time.time() - 90000) == "1d"
     s1, s7 = _spend()
     assert s1 >= 0 and s7 >= s1

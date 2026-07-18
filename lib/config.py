@@ -7,23 +7,22 @@ Resolves configuration from, in order of precedence:
   3. ~/.claude/pantheon/config.json     (user-global)
   4. built-in defaults (preset "full")
 
-A team pack is a committed file that carries preset/overrides/disciplines,
-team standards, and shared lessons — set "packs": false to opt out of it.
+A team pack is a committed file that carries preset/overrides/disciplines
+and team standards — set "packs": false to opt out of it.
 
 A `preset` expands to a set of flags; explicit flags override the preset.
 Everything is best-effort: a missing or malformed file falls back to defaults,
 never an error (a broken config must not break the session).
 
 Presets:
-  full     the whole experience: routing on, announce, recall 3, gate blocks,
+  full     the whole experience: routing on, announce, gate blocks,
            clarifier + context guard on, receipts on
-  economy  save tokens: routing suggests, no announce, recall 1, gate warns
-  quiet    fully manual: no routing, no recall, no gate, no receipts
+  economy  save tokens: routing suggests, no announce, gate warns
+  quiet    fully manual: no routing, no gate, no receipts
 
 Explicit keys (override the preset):
   "routing":        "on" | "suggest" | "off"
   "announce":       true | false
-  "recall":         0..3            # max past lessons injected per prompt
   "gate":           "block" | "warn" | "off"
   "clarify":        true | false    # auto intent-clarifier on vague big asks
   "context_guard":  0..99           # context %% that triggers a checkpoint nudge (0 = off)
@@ -38,11 +37,11 @@ Self-check:  python3 config.py --selftest
 import os, json
 
 PRESETS = {
-    "full":    {"routing": "on",      "announce": True,  "recall": 3, "gate": "block",
+    "full":    {"routing": "on",      "announce": True,  "gate": "block",
                 "clarify": True,  "context_guard": 85, "receipts": True},
-    "economy": {"routing": "suggest", "announce": False, "recall": 1, "gate": "warn",
+    "economy": {"routing": "suggest", "announce": False, "gate": "warn",
                 "clarify": True,  "context_guard": 90, "receipts": True},
-    "quiet":   {"routing": "off",     "announce": False, "recall": 0, "gate": "off",
+    "quiet":   {"routing": "off",     "announce": False, "gate": "off",
                 "clarify": False, "context_guard": 0,  "receipts": False},
 }
 DEFAULT = dict(PRESETS["full"], disciplines={}, custom_routes={}, updateCheck=True,
@@ -116,10 +115,6 @@ def load(cwd: str = "") -> dict:
     for key in ("announce", "clarify", "receipts", "updateCheck"):
         if isinstance(raw.get(key), bool):
             cfg[key] = raw[key]
-    if isinstance(raw.get("recall"), bool):
-        cfg["recall"] = 3 if raw["recall"] else 0
-    elif isinstance(raw.get("recall"), int):
-        cfg["recall"] = max(0, min(3, raw["recall"]))
     if raw.get("gate") in ("block", "warn", "off"):
         cfg["gate"] = raw["gate"]
     if isinstance(raw.get("context_guard"), (int, float)):
@@ -153,7 +148,7 @@ def enabled(cfg: dict, skill: str) -> bool:
     return cfg.get("disciplines", {}).get(skill, True)
 
 
-KNOWN_KEYS = {"_comment", "preset", "routing", "announce", "recall", "gate", "clarify",
+KNOWN_KEYS = {"_comment", "preset", "routing", "announce", "gate", "clarify",
               "context_guard", "receipts", "budget", "disciplines", "custom_routes",
               "updateCheck", "packs", "usage"}
 
@@ -173,7 +168,7 @@ def validate(raw: dict):
 def selftest() -> int:
     d = load("/nonexistent")
     assert d["routing"] == "on" and d["announce"] is True and d["preset"] == "full"
-    assert d["recall"] == 3 and d["gate"] == "block" and d["context_guard"] == 85
+    assert d["gate"] == "block" and d["context_guard"] == 85 and "recall" not in d
     assert d["budget"]["mode"] == "warn" and d["budget"]["weekly"] is None
     assert d["usage"] == {"mode": "auto", "five_hour_tokens": None, "weekly_tokens": None}
     assert PRESETS["quiet"]["gate"] == "off" and PRESETS["economy"]["gate"] == "warn"

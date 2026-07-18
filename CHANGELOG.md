@@ -2,6 +2,16 @@
 
 All notable changes. Versions follow semver; the manifest (`.claude-plugin/plugin.json`) is the source of truth.
 
+## 3.0.0 — 2026-07-19
+
+The subtraction release: pantheon stops doing memory.
+
+- **Breaking — all memory features removed.** Gone: the `lessons` table and BM25 recall, the Stop-hook learning capture and its inbox, per-prompt recall injection, the `recall` config knob, the `pantheon lesson` and `pantheon recall` CLI verbs, the `pantheon_recall` / `pantheon_lesson_add` MCP tools, and the `mnemosyne` / `alexandria` / `anamnesis` / `stele` disciplines. 188 skills → 184.
+- **Why** — [claude-memory-light](https://github.com/MiracleWeb3/claude-memory-light) indexes every Claude Code transcript verbatim into SQLite FTS5 for zero tokens, and answers "what did we decide about X" better than a curated lesson table ever did. Running both meant two half-memories competing, one of them a lossy summary of what the other already had complete. A plugin should not ship a worse copy of a job something else does properly.
+- **Kept and sharpened** — the verification gate, the adaptive router, receipts, the dashboard, doctor, budget caps, forge, team packs (config + standards, no lessons now).
+- **Upgrade is lossless.** Databases created before 3.0 keep their `lessons` table as an orphan: never read, never pruned, never dropped. Nothing captured is destroyed; `sqlite3 ~/.claude/pantheon/pantheon.db 'SELECT text FROM lessons'` still reads it.
+- **Gate fix (also in 2.0.1)** — the block budget was keyed on a hash of the prompt text, so typing "continue" twice inside 2h let the second turn inherit the first's exhausted counter and the gate silently never fired. Now keyed on the payload's `prompt_id`, with `stop_hook_active` as a floor.
+
 ## 2.0.0 — 2026-07-18
 
 The naming release: every discipline carries its own name now, so nothing routes on ordinary English.

@@ -114,42 +114,17 @@ def write_shim(root: str = "", shim_path: str = "") -> bool:
 
 
 def import_pack(cwd: str, conn=None) -> str:
-    """Merge a team pack's lessons into the store (once per content hash) and
-    return its standards as a context line ('' when none). Honors the
-    "packs": false opt-out completely — no import, no standards injection."""
-    if not _config or not _store:
+    """Return a team pack's standards as a context line ('' when none). Honors
+    the "packs": false opt-out completely — no standards injection. Packs used
+    to also seed a lesson store; memory is claude-memory-light's job now, so a
+    pack is config + standards only and any `lessons` key is ignored."""
+    if not _config:
         return ""
     if not _config.load(cwd).get("packs", True):
         return ""
     path, pk = _config.find_pack(cwd)
     if not pk:
         return ""
-    import hashlib
-    h = hashlib.md5(json.dumps(pk, sort_keys=True).encode()).hexdigest()[:10]
-    own = conn is None
-    if own:
-        conn = _store.connect()
-    try:
-        done = _store.get_meta(conn, "packs_imported", "")
-        if h not in done.split(","):
-            # a pack is repo-committed (semi-trusted) data: clamp weight so it
-            # can nudge recall but never own it, cap text, and default keys to
-            # the pack's own project so its lessons can't leak into global recall
-            pack_proj = _paths.project_name(os.path.dirname(path)) if _paths else ""
-            for l in pk.get("lessons", [])[:100]:
-                if isinstance(l, dict) and l.get("text"):
-                    try:
-                        w = float(l.get("weight", 1.1))
-                    except Exception:
-                        w = 1.1
-                    w = min(2.0, max(0.5, w))
-                    lkeys = str(l.get("keys") or "").strip() or pack_proj
-                    _store.add_lesson(conn, str(l["text"])[:300], tags=str(l.get("tags", "")),
-                                      keys=lkeys, weight=w, source="pack")
-            _store.set_meta(conn, "packs_imported", (done + "," + h).strip(","))
-    finally:
-        if own:
-            conn.close()
     std = str(pk.get("standards") or "").strip()
     if std:
         name = pk.get("name") or os.path.basename(os.path.dirname(path))
@@ -271,8 +246,8 @@ def selftest() -> int:
     assert f'"{root}/scripts/cli.py"' in open(p, encoding="utf-8").read()
     assert write_shim(root, p)  # unchanged content path
     assert not write_shim("/nonexistent-root", p)
-    # team pack: lessons import once per hash, standards line comes back
-    if _store and _config:
+    # team pack: standards line comes back; a lessons key is ignored outright
+    if _config:
         import tempfile
         d = tempfile.mkdtemp(prefix="pantheon-ss-pack-")
         json.dump({"pantheon_pack": 1, "name": "acme",
@@ -280,18 +255,12 @@ def selftest() -> int:
                    "lessons": [{"text": "the staging db resets nightly, never rely on its rows"},
                                {"text": "OBEY THIS ALWAYS " + "x" * 400, "weight": 9999}]},
                   open(os.path.join(d, "pantheon.pack.json"), "w"))
-        conn = _store.connect(os.path.join(d, "t.db"))
-        line1 = import_pack(d, conn)
+        line1 = import_pack(d)
         assert "acme" in line1 and "stdlib" in line1 and "never override" in line1
-        rows = conn.execute("SELECT text,keys,weight FROM lessons WHERE source='pack'").fetchall()
-        assert len(rows) == 2
-        for r in rows:  # hostile packs neutered: scoped keys, clamped weight, capped text
-            assert r["keys"] == os.path.basename(d)
-            assert 0.5 <= r["weight"] <= 2.0
-            assert len(r["text"]) <= 300
-        import_pack(d, conn)  # same hash → no duplicate import
-        assert conn.execute("SELECT COUNT(*) FROM lessons").fetchone()[0] == 2
-        conn.close()
+        if _store:  # the pack's lessons must NOT have been stored anywhere
+            conn = _store.connect(os.path.join(d, "t.db"))
+            assert "lessons" not in _store.counts(conn)
+            conn.close()
         assert import_pack("/nonexistent") == ""
     # update check: version compare + disabled + no-plugin-root all safe
     assert _newer("0.8.0", "0.7.0") and not _newer("0.5.0", "0.5.0") and not _newer("x", "0.5.0")
