@@ -22,11 +22,19 @@ CTX_WINDOW = 200_000  # mainline context budget, tokens
 # never registered. That blinded the gate on every stdlib-only project (this
 # one included) — both to "verification ran" and to "the check failed".
 _RUNNERS = (r"pytest|py_compile|unittest|jest|vitest|mocha|go test|cargo (test|check)|"
-            r"npm (test|run test\w*)|yarn test|pnpm test|node --check|tsc|make (test|check)|"
-            r"rspec|phpunit|mix test|dotnet test|gradle test|mvn test")
-_BUILDERS = (r"npm run build|yarn build|pnpm build|cargo build|go build|go vet|ruff|"
-             r"eslint|flake8|pylint|mypy|shellcheck|gcc|g\+\+|javac|swift build")
-_FLAGS = r"--selftest|--self-test"
+            r"npm (test|run test\w*)|yarn test|pnpm test|bun test|deno test|"
+            r"node --check|tsc|make (test|check)|"
+            r"rspec|phpunit|mix test|dotnet test|gradle test|mvn test|"
+            r"(ba)?sh [\w./-]*(test|check)[\w./-]*\.sh")
+# A bare `make` IS the build on a C/C++ project — the same evidence `gcc` or
+# `npm run build` is. `make clean|install` is housekeeping and proves nothing,
+# so it stays excluded or every teardown would read as verification.
+_BUILDERS = (r"npm run build|yarn build|pnpm build|cargo build|cargo clippy|go build|go vet|"
+             r"ruff|eslint|flake8|pylint|mypy|shellcheck|bash -n|gcc|g\+\+|cc|clang|javac|"
+             r"cmake|ninja|swift build|make(?!\s+(clean|install|uninstall|distclean))")
+# Patterns that START with a non-word char belong HERE, not in the group above:
+# a leading \b can never hold before '-' or '.', which is what killed --selftest.
+_FLAGS = r"--selftest|--self-test|\./[\w./-]*(test|check)[\w./-]*\.sh"
 TEST_RE = re.compile(rf"\b(?:{_RUNNERS})\b|(?:{_FLAGS})\b")
 VERIFY_RE = re.compile(rf"\b(?:{_RUNNERS}|{_BUILDERS})\b|(?:{_FLAGS})\b")
 FAIL_RE = re.compile(
@@ -69,6 +77,11 @@ def _runs_matching(cmd: str, rx) -> bool:
 def is_code_file(path: str) -> bool:
     p = (path or "").replace("\\", "/")
     if "/docs/" in p or "/node_modules/" in p:
+        return False
+    # Harness scratchpad: throwaway probes and one-shot diagnostics, not the
+    # user's codebase. Counting them inflates churn, so a turn that only poked
+    # at something trips the gate as if it had shipped code.
+    if "/scratchpad/" in p or "/tmp/claude-" in p:
         return False
     return p.rsplit(".", 1)[-1].lower() in CODE_EXT if "." in p else False
 
@@ -376,6 +389,25 @@ def selftest() -> int:
     assert not _runs_matching("python3 - <<'PY'\nx = 'pytest --selftest'\nPY", TEST_RE)
     assert not _runs_matching("cat <<EOF\nnpm test\nEOF", VERIFY_RE)
     assert _runs_matching("python3 x.py --selftest && cat <<EOF\nnope\nEOF", TEST_RE)
+    # 5) C / shell projects were a blind spot: `make` IS the build and
+    # ./test.sh IS the suite, but neither was in the runner list, so the gate
+    # nagged for verification that had already run and passed.
+    assert _runs_matching("make", VERIFY_RE)
+    assert _runs_matching("cd ~/dev/tool && make 2>&1 | tail -5", VERIFY_RE)
+    assert _runs_matching("make check", TEST_RE)
+    assert not _runs_matching("make clean", VERIFY_RE)     # teardown proves nothing
+    assert not _runs_matching("make install", VERIFY_RE)   # nor does shipping it
+    assert _runs_matching("timeout 300 bash test.sh", TEST_RE)
+    assert _runs_matching("./test.sh", TEST_RE)
+    assert _runs_matching("bash tests/run-checks.sh", TEST_RE)
+    assert _runs_matching("bun test", TEST_RE)
+    assert _runs_matching("bash -n deploy.sh", VERIFY_RE)
+    assert not _runs_matching("cat test.sh", VERIFY_RE)    # reading ≠ running
+    assert not _runs_matching("ls scripts/test.sh", VERIFY_RE)
+    # 6) harness scratchpad probes are not the user's codebase
+    assert not is_code_file("/tmp/claude-1000/-home-u/s/scratchpad/probe.py")
+    assert not is_code_file("/home/u/x/scratchpad/diag.sh")
+    assert is_code_file("/home/u/dev/tool/src/main.py")
     # 4) machine-generated 'user' entries are not real prompts — but a real user
     # QUOTING those markers mid-prompt still is
     assert not is_real_user({"type": "user", "message": {"content":

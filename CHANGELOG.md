@@ -2,6 +2,16 @@
 
 All notable changes. Versions follow semver; the manifest (`.claude-plugin/plugin.json`) is the source of truth.
 
+## 3.0.2 — 2026-07-20
+
+Gate fix: a bare `make` and `./test.sh` never counted as verification.
+
+- **The bug.** The runner list knew pytest, jest, cargo and npm, but nothing about how a C or shell project is actually checked. A clean `make` build and a `bash test.sh` suite both read as "nothing ran", so the gate blocked turns whose work *had* been verified and passed. Same failure as 3.0.1 one layer up: the check runs, the reader cannot see it.
+- **What counts now.** `make` as the build — with `clean`/`install`/`uninstall`/`distclean` excluded, since teardown proves nothing — plus `cc`, `clang`, `cmake`, `ninja`, `bash -n`, `cargo clippy`, `bun test`, `deno test`, and test scripts in both spellings: `bash tests/run-checks.sh` and `./test.sh`.
+- **Where the path form had to go.** `./test.sh` starts with a `.`, so inside the `\b(...)\b` group it would have been dead on arrival for precisely the reason `--selftest` was in 3.0.1. It lives in the no-leading-`\b` branch instead.
+- **Scratchpad probes are not churn.** `is_code_file()` now excludes `/scratchpad/` and `/tmp/claude-`. Throwaway diagnostics written while investigating were counted as changed code, so a turn that only *looked* at something could cross the 15-line threshold and trip the gate as if it had shipped.
+- Selftest covers both directions, including the negatives that keep it honest: `make clean`, `make install`, `cat test.sh` and `ls scripts/test.sh` must still not register. Benchmark unchanged: **11/11 caught, 0/10 false positives**.
+
 ## 3.0.1 — 2026-07-19
 
 Gate fix: the `--selftest` pattern had never worked.
