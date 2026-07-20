@@ -2,6 +2,13 @@
 
 All notable changes. Versions follow semver; the manifest (`.claude-plugin/plugin.json`) is the source of truth.
 
+## 3.0.3 — 2026-07-20
+
+Load fix: the manifest declared the hooks file Claude Code already loads.
+
+- **The bug.** `.claude-plugin/plugin.json` carried `"hooks": "./hooks/hooks.json"`. Claude Code loads `hooks/hooks.json` automatically, so the manifest registered it a second time and the loader refused the whole file: *"Duplicate hooks file detected ... manifest.hooks should only reference additional hook files."* Every hook pantheon ships was dead on arrival, the verification gate among them — and because the plugin failed to load, `/plugin update` fetched 3.0.2 into the cache but could not activate it.
+- **The fix.** Drop the key. `manifest.hooks` is for *additional* hook files only; the standard path needs no declaration.
+
 ## 3.0.2 — 2026-07-20
 
 Gate fix: a bare `make` and `./test.sh` never counted as verification.
